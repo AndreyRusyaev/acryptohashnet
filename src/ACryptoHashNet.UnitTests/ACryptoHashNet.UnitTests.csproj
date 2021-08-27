@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseHashTest.cs" />
+    <Compile Include="BlockAlgorithmTests.cs" />
     <Compile Include="CounterTests\IntCounterTest.cs" />
     <Compile Include="Haval\Haval128Pass3Test.cs" />
     <Compile Include="Haval\Haval128Pass4Test.cs" />

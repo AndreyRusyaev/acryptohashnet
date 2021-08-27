@@ -67,33 +67,42 @@ namespace Home.Andir.Cryptography
             int currentOffset = offset;
             int currentLength = length;
 
-            if (lastBlockLength > 0)
+            int lastBlockRemaining = lastBlock.Length - lastBlockLength;
+            if (lastBlockLength > 0 && length >= lastBlockRemaining)
             {
+                // we were left with a partial block and we have enough data to fill it now
                 Buffer.BlockCopy(
-                    array, currentOffset,
-                    lastBlock, lastBlockLength,
-                    lastBlock.Length - lastBlockLength
-                    );
+                    array,
+                    currentOffset,
+                    lastBlock,
+                    lastBlockLength,
+                    lastBlockRemaining
+                                     );
 
                 ProcessBlock(lastBlock, 0);
 
-                currentOffset += lastBlockLength;
-                currentLength -= lastBlockLength;
+                currentOffset += lastBlockRemaining;
+                currentLength -= lastBlockRemaining;
 
                 lastBlockLength = 0;
             }
 
             int blockCount = currentLength / BlockSize;
-            lastBlockLength = currentLength % BlockSize;
 
             for (int ii = 0; ii < blockCount; ii++, currentOffset += BlockSize)
                 ProcessBlock(array, currentOffset);
 
-            if (lastBlockLength != 0)
+            int blockBoundaryOffset = currentLength % BlockSize;
+            if (blockBoundaryOffset != 0) // current data length does not fall on a block boundary
+            {
                 Buffer.BlockCopy(
-                    array, currentOffset,
-                    lastBlock, 0,
-                    lastBlockLength);
+                    array,
+                    currentOffset,
+                    lastBlock,
+                    lastBlockLength,
+                    blockBoundaryOffset);
+                lastBlockLength += blockBoundaryOffset;
+            }
         }
 
         /// <summary>
