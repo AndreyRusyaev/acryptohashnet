@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     /// <summary>
     /// RIPEMD-128 is a plug-in substitute for RIPEMD (or MD4 and MD5, for that matter) with a 128-bit result. 

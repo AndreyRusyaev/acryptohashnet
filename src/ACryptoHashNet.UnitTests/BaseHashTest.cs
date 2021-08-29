@@ -3,12 +3,11 @@ using System.Text;
 
 using NUnit.Framework;
 
-namespace Home.Andir.Cryptography.NUnitTests
+namespace acryptohashnet.UnitTests
 {
     public class BaseHashTest
     {
-        public BaseHashTest(string hashName,
-            HashAlgorithm algorithm)
+        public BaseHashTest(string hashName, HashAlgorithm algorithm)
         {
             this.AlgorithmName = hashName;
             this.Algorithm = algorithm;

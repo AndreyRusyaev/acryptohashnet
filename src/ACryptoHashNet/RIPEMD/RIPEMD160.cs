@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     /// <summary>
     /// RIPEMD-160 is a 160-bit cryptographic hash function, designed by Hans Dobbertin, Antoon Bosselaers, and Bart Preneel.

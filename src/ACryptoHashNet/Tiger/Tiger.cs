@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Design;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     /// <summary>
     /// Tiger: A Fast New Cryptographic Hash Function (Designed in 1995)

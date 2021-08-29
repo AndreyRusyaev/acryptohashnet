@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     /// <summary>
     /// RFC1321: The MD5 Message-Digest Algorithm

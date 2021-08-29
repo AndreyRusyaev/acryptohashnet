@@ -1,5 +1,5 @@
 ﻿
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     /// <summary>
     /// Ralph C. Merkle (1990). "A fast software one-way hash function"

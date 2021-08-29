@@ -3,7 +3,7 @@ using System.Text;
 
 using NUnit.Framework;
 
-namespace Home.Andir.Cryptography.UnitTests
+namespace acryptohashnet.UnitTests
 {
     [TestFixture]
     [Category("BlockAlgorithmTests")]

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     /// <summary>
     /// RFC1320: The MD4 Message-Digest Algorithm

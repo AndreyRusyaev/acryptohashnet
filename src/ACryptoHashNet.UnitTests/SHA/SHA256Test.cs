@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Home.Andir.Cryptography.NUnitTests
+namespace acryptohashnet.UnitTests
 {
     [TestFixture]
     [Category("SHATests")]

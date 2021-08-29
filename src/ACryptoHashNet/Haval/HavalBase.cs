@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     /// <summary>
     /// HAVAL — A One-Way Hashing Algorithm with Variable Length of Output

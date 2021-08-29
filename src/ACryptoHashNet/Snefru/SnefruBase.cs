@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     public abstract class SnefruBase : BlockHashAlgorithm
     {

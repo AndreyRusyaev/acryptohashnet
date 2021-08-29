@@ -1,5 +1,5 @@
 ﻿
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
     public enum HavalPassCount
     {
