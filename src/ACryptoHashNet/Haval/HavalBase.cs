@@ -56,7 +56,7 @@ namespace Home.Andir.Cryptography
 
         private readonly byte[] signature = new byte[2];
 
-        private readonly IntCounter counter = new IntCounter(2);
+        private readonly BigCounter counter = new BigCounter(8);
 
         private readonly uint[] state = new uint[8];
 

@@ -129,16 +129,18 @@ namespace Home.Andir.Cryptography
         {
             processedLength += BlockSize;
 
+            // fill buffer
+
             Buffer.BlockCopy(state, 0, buffer, 0, 16);
             Buffer.BlockCopy(array, offset, buffer, 16, 16);
-
             for (int ii = 0; ii < 16; ii++)
             {
                 buffer[ii + 32] = (byte)(state[ii] ^ array[offset + ii]);
             }
 
-            uint t = 0;
             // do 18 rounds
+
+            uint t = 0;
             for (int ii = 0; ii < 18; ii++)
             {
                 for (int jj = 0; jj < buffer.Length; jj++)
@@ -154,10 +156,9 @@ namespace Home.Andir.Cryptography
             t = checkSum[15];
             for (int ii = 0; ii < checkSum.Length; ii++)
             {
-                t = checkSum[ii] = (byte)(checkSum[ii] ^ Pi[array[offset + ii] ^ t]);
+                checkSum[ii] = (byte)(checkSum[ii] ^ Pi[array[offset + ii] ^ t]);
+                t = checkSum[ii];
             }
-
-            Array.Clear(buffer, 0, buffer.Length);
         }
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)

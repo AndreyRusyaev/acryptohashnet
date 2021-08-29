@@ -3,12 +3,12 @@
 namespace Home.Andir.Cryptography.NUnitTests
 {
     [TestFixture]
-    public class IntCounterTest
+    public class BigCounterTests
     {
         [Test]
         public void Test_Add0()
         {
-            IntCounter testCounter = new IntCounter(1);
+            BigCounter testCounter = new BigCounter(4);
 
             testCounter.Add(100);
 
@@ -18,7 +18,7 @@ namespace Home.Andir.Cryptography.NUnitTests
         [Test]
         public void Test_Add1()
         {
-            IntCounter testCounter = new IntCounter(1);
+            BigCounter testCounter = new BigCounter(4);
 
             testCounter.Add(100);
             testCounter.Add(200);
@@ -29,7 +29,7 @@ namespace Home.Andir.Cryptography.NUnitTests
         [Test]
         public void Test_Add3()
         {
-            IntCounter testCounter = new IntCounter(1);
+            BigCounter testCounter = new BigCounter(4);
 
             testCounter.Add(0xffff);
             testCounter.Add(0x1);
@@ -40,7 +40,7 @@ namespace Home.Andir.Cryptography.NUnitTests
         [Test]
         public void Test_Add4()
         {
-            IntCounter testCounter = new IntCounter(2);
+            BigCounter testCounter = new BigCounter(8);
 
             testCounter.Add(0xffffffff);
             testCounter.Add(0x1);
@@ -63,7 +63,7 @@ namespace Home.Andir.Cryptography.NUnitTests
         [Test]
         public void Test_Add5()
         {
-            IntCounter testCounter = new IntCounter(2);
+            BigCounter testCounter = new BigCounter(8);
 
             testCounter.Add(0xffffffff);
             testCounter.Add(0x1);

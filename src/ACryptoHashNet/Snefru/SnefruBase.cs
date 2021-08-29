@@ -974,7 +974,7 @@ namespace Home.Andir.Cryptography
 
         private static readonly int Mask = 0x0000000f;
 
-        private readonly IntCounter counter = new IntCounter(2);
+        private readonly BigCounter processedLength = new BigCounter(8);
 
         private readonly uint[] buffer = new uint[16];
 
@@ -1007,7 +1007,7 @@ namespace Home.Andir.Cryptography
         {
             base.Initialize();
 
-            counter.Clear();
+            processedLength.Clear();
 
             Array.Clear(finalBlock, 0, finalBlock.Length);
 
@@ -1016,7 +1016,7 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            counter.Add(BlockSize << 3);
+            processedLength.Add(BlockSize << 3); // * 8
 
             for (int ii = 0; ii < state.Length; ii++)
             {
@@ -1057,11 +1057,9 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            counter.Add(length << 3); // arg * 8
+            processedLength.Add(length << 3); // * 8
 
-            byte[] messageLength = counter.GetBytes();
-
-            counter.Clear();
+            byte[] messageLength = processedLength.GetBytes();
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 

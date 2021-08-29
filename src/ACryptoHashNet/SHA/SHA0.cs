@@ -16,7 +16,7 @@ namespace Home.Andir.Cryptography
             0xca62c1d6
         };
 
-        private readonly IntCounter counter = new IntCounter(2);
+        private readonly BigCounter processedLength = new BigCounter(8);
 
         private readonly uint[] state = new uint[5];
 
@@ -36,7 +36,7 @@ namespace Home.Andir.Cryptography
         {
             base.Initialize();
 
-            counter.Clear();
+            processedLength.Clear();
 
             Array.Clear(finalBlock, 0, finalBlock.Length);
 
@@ -45,7 +45,7 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            counter.Add(BlockSize << 3);
+            processedLength.Add(BlockSize << 3); // * 8
 
             // Fill buffer for transformations
             BigEndianBuffer.BlockCopy(array, offset, buffer, 0, BlockSize);
@@ -186,9 +186,9 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            counter.Add(length << 3); // arg * 8
+            processedLength.Add(length << 3); // * 8
 
-            byte[] messageLength = counter.GetBytes();
+            byte[] messageLength = processedLength.GetBytes();
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 

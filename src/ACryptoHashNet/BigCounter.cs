@@ -2,13 +2,22 @@
 
 namespace Home.Andir.Cryptography
 {
-    public sealed class IntCounter
+    public sealed class BigCounter
     {
+        private readonly int sizeInBytes;
         private readonly uint[] array;
 
-        public IntCounter(int count)
+        public BigCounter(int sizeInBytes)
         {
-            array = new uint[count];
+            this.sizeInBytes = sizeInBytes;
+
+            var sizeInUints = sizeInBytes / 4;
+            if (sizeInBytes % 4 > 0)
+            {
+                sizeInUints += 1;
+            }
+
+            array = new uint[sizeInUints];
         }
 
         public void Clear()
@@ -39,7 +48,6 @@ namespace Home.Andir.Cryptography
         private void Add(uint[] input)
         {
             int maxIndex = Math.Min(array.Length, input.Length);
-
             for (int ii = 0; ii < maxIndex; ii++)
             {
                 Add(ii, input[ii]);
@@ -69,7 +77,7 @@ namespace Home.Andir.Cryptography
 
         public byte[] GetBytes()
         {
-            byte[] result = new byte[array.Length << 2];
+            byte[] result = new byte[sizeInBytes];
 
             Buffer.BlockCopy(array, 0, result, 0, result.Length);
 
@@ -83,7 +91,7 @@ namespace Home.Andir.Cryptography
 
         public ulong ToULong()
         {
-            return (((ulong)array[1]) << 32) + (ulong)array[0];
+            return (((ulong)array[1]) << 32) + array[0];
         }
     }
 }
