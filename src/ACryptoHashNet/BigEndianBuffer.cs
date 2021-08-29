@@ -4,10 +4,25 @@ namespace acryptohashnet
 {
     public static class BigEndianBuffer
     {
-        public static void BlockCopy(uint[] src, int srcOffset, byte[] dst, int dstOffset, int countBytes)
+        public static void BlockCopy(uint[] src, int srcOffset, byte[] dst, int dstOffset, int length)
         {
-            int countUints = countBytes >> 2; // arg / 4
-            int lastCountBytes = countBytes & 0x3; // arg % 4
+            if (srcOffset >= src.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(srcOffset));
+            }
+
+            if (dstOffset >= dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dstOffset));
+            }
+
+            if (dstOffset + length > dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            int countUints = length >> 2; // arg / 4
+            int lastCountBytes = length & 0x3; // arg % 4
 
             for (int ii = 0; ii < countUints; ii++)
             {
@@ -17,17 +32,31 @@ namespace acryptohashnet
                 }
             }
 
-
             for (int jj = 0; jj < lastCountBytes; jj++)
             {
                 dst[(countUints << 2) + jj] = (byte)(src[srcOffset + countUints] >> (24 - (jj << 3)));
             }
         }
 
-        public static void BlockCopy(byte[] src, int srcOffset, uint[] dst, int dstOffset, int countBytes)
+        public static void BlockCopy(byte[] src, int srcOffset, uint[] dst, int dstOffset, int length)
         {
-            int countUints = countBytes >> 2; // arg / 4
-            int lastCountBytes = countBytes & 0x3; // arg % 4
+            if (srcOffset >= src.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(srcOffset));
+            }
+
+            if (dstOffset >= dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dstOffset));
+            }
+
+            if (dstOffset + length > dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            int countUints = length >> 2; // arg / 4
+            int lastCountBytes = length & 0x3; // arg % 4
 
             for (int ii = 0; ii < countUints; ii++)
             {
@@ -48,10 +77,25 @@ namespace acryptohashnet
             }
         }
 
-        public static void BlockCopy(ulong[] src, int srcOffset, byte[] dst, int dstOffset, int countBytes)
+        public static void BlockCopy(ulong[] src, int srcOffset, byte[] dst, int dstOffset, int length)
         {
-            int countUlongs = countBytes >> 3; // arg / 8
-            int lastCountBytes = countBytes & 0x7; // arg % 8
+            if (srcOffset >= src.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(srcOffset));
+            }
+
+            if (dstOffset >= dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dstOffset));
+            }
+
+            if (dstOffset + length > dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            int countUlongs = length >> 3; // arg / 8
+            int lastCountBytes = length & 0x7; // arg % 8
 
             for (int ii = 0; ii < countUlongs; ii++)
             {
@@ -67,10 +111,25 @@ namespace acryptohashnet
             }
         }
 
-        public static void BlockCopy(byte[] src, int srcOffset, ulong[] dst, int dstOffset, int countBytes)
+        public static void BlockCopy(byte[] src, int srcOffset, ulong[] dst, int dstOffset, int length)
         {
-            int countUlongs = countBytes >> 3; // arg / 8
-            int lastCountBytes = countBytes & 0x7; // arg % 8
+            if (srcOffset >= src.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(srcOffset));
+            }
+
+            if (dstOffset >= dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dstOffset));
+            }
+
+            if (dstOffset + length > dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            int countUlongs = length >> 3; // arg / 8
+            int lastCountBytes = length & 0x7; // arg % 8
 
             for (int ii = 0; ii < countUlongs; ii++)
             {
