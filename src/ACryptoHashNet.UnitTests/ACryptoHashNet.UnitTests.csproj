@@ -1,132 +1,17 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="4" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <ProjectType>Local</ProjectType>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9E466492-CFB2-4E7C-A243-A397C2B920AB}</ProjectGuid>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ApplicationIcon>
-    </ApplicationIcon>
-    <AssemblyKeyContainerName>
-    </AssemblyKeyContainerName>
-    <AssemblyName>ACryptoHashNet.UnitTests</AssemblyName>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-    <DefaultClientScript>JScript</DefaultClientScript>
-    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
-    <DefaultTargetSchema>IE50</DefaultTargetSchema>
-    <DelaySign>false</DelaySign>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Home.Andir.Cryptography.UnitTests</RootNamespace>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <StartupObject>
-    </StartupObject>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>0.0</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <BaseAddress>285212672</BaseAddress>
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
-    <ConfigurationOverrideFile>
-    </ConfigurationOverrideFile>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DocumentationFile>
-    </DocumentationFile>
-    <DebugSymbols>true</DebugSymbols>
-    <FileAlignment>4096</FileAlignment>
-    <NoStdLib>false</NoStdLib>
-    <NoWarn>
-    </NoWarn>
-    <Optimize>false</Optimize>
-    <RegisterForComInterop>false</RegisterForComInterop>
-    <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <BaseAddress>285212672</BaseAddress>
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
-    <ConfigurationOverrideFile>
-    </ConfigurationOverrideFile>
-    <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>
-    </DocumentationFile>
-    <DebugSymbols>false</DebugSymbols>
-    <FileAlignment>4096</FileAlignment>
-    <NoStdLib>false</NoStdLib>
-    <NoWarn>
-    </NoWarn>
-    <Optimize>true</Optimize>
-    <RegisterForComInterop>false</RegisterForComInterop>
-    <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>none</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.2.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libs\nunit\nunit.framework.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BaseHashTest.cs" />
-    <Compile Include="BlockAlgorithmTests.cs" />
-    <Compile Include="CounterTests\IntCounterTest.cs" />
-    <Compile Include="Haval\Haval128Pass3Test.cs" />
-    <Compile Include="Haval\Haval128Pass4Test.cs" />
-    <Compile Include="Haval\Haval128Pass5Test.cs" />
-    <Compile Include="Haval\Haval160Pass3Test.cs" />
-    <Compile Include="Haval\Haval160Pass4Test.cs" />
-    <Compile Include="Haval\Haval160Pass5Test.cs" />
-    <Compile Include="Haval\Haval192Pass3Test.cs" />
-    <Compile Include="Haval\Haval192Pass4Test.cs" />
-    <Compile Include="Haval\Haval192Pass5Test.cs" />
-    <Compile Include="Haval\Haval224Pass3Test.cs" />
-    <Compile Include="Haval\Haval224Pass4Test.cs" />
-    <Compile Include="Haval\Haval224Pass5Test.cs" />
-    <Compile Include="Haval\Haval256Pass3Test.cs" />
-    <Compile Include="Haval\Haval256Pass4Test.cs" />
-    <Compile Include="Haval\Haval256Pass5Test.cs" />
-    <Compile Include="MD\MD2Test.cs" />
-    <Compile Include="MD\MD4Test.cs" />
-    <Compile Include="MD\MD5Test.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RIPEMD\RIPEMD128Test.cs" />
-    <Compile Include="RIPEMD\RIPEMD160Test.cs" />
-    <Compile Include="SHA\SHA0Test.cs" />
-    <Compile Include="SHA\SHA1Test.cs" />
-    <Compile Include="SHA\SHA256Test.cs" />
-    <Compile Include="SHA\SHA384Test.cs" />
-    <Compile Include="SHA\SHA512Test.cs" />
-    <Compile Include="Snefru\Snefru256Test.cs" />
-    <Compile Include="Snefru\SnefruTest.cs" />
-    <Compile Include="Tiger\TigerTest.cs" />
-    <Compile Include="Utils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ACryptoHashNet\acryptohashnet.csproj">
-      <Project>{78B89198-E7B9-44C1-AB71-C8ECDB0C7ECB}</Project>
-      <Name>acryptohashnet</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+      <PackageReference Include="NUnit" Version="3.13.2" />
+      <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ACryptoHashNet\acryptohashnet.csproj" />
+    </ItemGroup>
+
 </Project>
