@@ -4,11 +4,11 @@ namespace Home.Andir.Cryptography
 {
     public sealed class IntCounter
     {
-        uint[] array;
+        private readonly uint[] array;
 
         public IntCounter(int count)
         {
-            this.array = new uint[count];
+            array = new uint[count];
         }
 
         public void Clear()
@@ -55,7 +55,9 @@ namespace Home.Andir.Cryptography
                 array[index] = value - array[index];
 
                 if (index + 1 >= array.Length)
+                {
                     throw new OverflowException("counter overflow!");
+                }
 
                 Add(index + 1, 1);
             }
@@ -74,16 +76,14 @@ namespace Home.Andir.Cryptography
             return result;
         }
 
-        public uint ToInt32()
+        public uint ToUInt32()
         {
-            return (uint)array[0];
+            return array[0];
         }
 
         public ulong ToULong()
         {
-            // Console.WriteLine("{0:x2} {1:x2}", values[0], values[1]);
-
-            return (((ulong)array[1]) << 32) + (ulong)array[0];;
+            return (((ulong)array[1]) << 32) + (ulong)array[0];
         }
     }
 }

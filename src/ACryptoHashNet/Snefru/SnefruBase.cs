@@ -2,71 +2,9 @@
 
 namespace Home.Andir.Cryptography
 {
-    public class SnefruBase : BlockHashAlgorithm
+    public abstract class SnefruBase : BlockHashAlgorithm
     {
-        public SnefruBase(SnefruOutputSize snefruOutputSize)
-            : base(GetBlockSize(snefruOutputSize))
-        {
-            int outputSize = 0;
-            switch (snefruOutputSize)
-            {
-                case SnefruOutputSize.Output4:
-                    outputSize = 4;
-                    break;
-                case SnefruOutputSize.Output8:
-                    outputSize = 8;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("snefruOutputSize");
-            }
-
-            this.state = new uint[outputSize];
-            this.finalBlock = new byte[this.BlockSize];
-            this.Initialize();
-        }
-
-        private static int GetBlockSize(SnefruOutputSize snefruOutputSize)
-        {
-            int outputSize = 0;
-            switch (snefruOutputSize)
-            {
-                case SnefruOutputSize.Output4:
-                    outputSize = 4;
-                    break;
-                case SnefruOutputSize.Output8:
-                    outputSize = 8;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("snefruOutputSize");
-            }
-
-            return 64 - (outputSize << 2);
-        }
-
-        private readonly IntCounter counter = new IntCounter(2);
-        private readonly uint[] state;
-        private readonly byte[] finalBlock;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            counter.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
-        }
-
-        private void InitializeState()
-        {
-            for (int ii = 0; ii < state.Length; ii++)
-                state[ii] = 0;
-        }
-
-        #region S-Boxes
-
-        uint[][] constants = new uint[][]
+        private static readonly uint[][] Constants = new uint[][]
         {
             #region S-Box 0
 
@@ -1029,75 +967,113 @@ namespace Home.Andir.Cryptography
             #endregion
         };
 
-        #endregion
-
-        private static readonly int[] shifts = new int[]
+        private static readonly int[] Shifts = new int[]
         {
             16, 8, 16, 24
         };
 
-        private static readonly int mask = 0x0000000f;
+        private static readonly int Mask = 0x0000000f;
+
+        private readonly IntCounter counter = new IntCounter(2);
 
         private readonly uint[] buffer = new uint[16];
-        
+
+        private readonly uint[] state;
+
+        private readonly byte[] finalBlock;
+
+        public SnefruBase(SnefruOutputSize snefruOutputSize)
+            : base(GetBlockSize(snefruOutputSize))
+        {
+            int outputSize = 0;
+            switch (snefruOutputSize)
+            {
+                case SnefruOutputSize.Output4:
+                    outputSize = 4;
+                    break;
+                case SnefruOutputSize.Output8:
+                    outputSize = 8;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("snefruOutputSize");
+            }
+
+            state = new uint[outputSize];
+            finalBlock = new byte[BlockSize];
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            counter.Clear();
+
+            Array.Clear(finalBlock, 0, finalBlock.Length);
+
+            InitializeState();
+        }
+
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            if (array.Length < offset + BlockSize)
-                throw new ArgumentOutOfRangeException("offset");
-
             counter.Add(BlockSize << 3);
 
             for (int ii = 0; ii < state.Length; ii++)
+            {
                 buffer[ii] = state[ii];
+            }
 
             BigEndianBuffer.BlockCopy(array, offset, buffer, state.Length, BlockSize);
 
             for (int ii = 0; ii < 8 /* TODO: SECURITY_LEVEL */; ii++)
             {
-                for (int jj = 0; jj < shifts.Length; jj++)
+                for (int jj = 0; jj < Shifts.Length; jj++)
                 {
                     for (int kk = 0; kk < buffer.Length; kk++)
                     {
-                        int next = (kk + 1) & mask;
-                        int last = (kk + mask) & mask;
+                        int next = (kk + 1) & Mask;
+                        int last = (kk + Mask) & Mask;
 
                         int sBoxNumber = (ii << 1) + ((kk >> 1) & 0x01);
 
-                        uint sboxEntry = constants[sBoxNumber][buffer[kk] & 0xff];
+                        uint sboxEntry = Constants[sBoxNumber][buffer[kk] & 0xff];
 
                         buffer[next] ^= sboxEntry;
                         buffer[last] ^= sboxEntry;
                     }
 
                     for (int kk = 0; kk < buffer.Length; kk++)
-                        buffer[kk] = (buffer[kk] >> shifts[jj]) | (buffer[kk] << (32 - shifts[jj]));
+                    {
+                        buffer[kk] = (buffer[kk] >> Shifts[jj]) | (buffer[kk] << (32 - Shifts[jj]));
+                    }
                 }
             }
 
             for (int ii = 0; ii < state.Length; ii++)
-                state[ii] ^= buffer[mask - ii];
+            {
+                state[ii] ^= buffer[Mask - ii];
+            }
         }
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            if (length >= BlockSize
-                || length > array.Length - offset)
-                throw new ArgumentOutOfRangeException("length");
-
             counter.Add(length << 3); // arg * 8
 
             byte[] messageLength = counter.GetBytes();
+
             counter.Clear();
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
             ProcessBlock(finalBlock, 0);
+
             Array.Clear(finalBlock, 0, finalBlock.Length);
 
             int endOffset = BlockSize - 8;
-
             for (int ii = 0; ii < 8; ii++)
+            {
                 finalBlock[endOffset + ii] = messageLength[7 - ii];
+            }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
@@ -1112,6 +1088,32 @@ namespace Home.Andir.Cryptography
                 BigEndianBuffer.BlockCopy(state, 0, result, 0, result.Length);
 
                 return result;
+            }
+        }
+
+        private static int GetBlockSize(SnefruOutputSize snefruOutputSize)
+        {
+            int outputSize = 0;
+            switch (snefruOutputSize)
+            {
+                case SnefruOutputSize.Output4:
+                    outputSize = 4;
+                    break;
+                case SnefruOutputSize.Output8:
+                    outputSize = 8;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("snefruOutputSize");
+            }
+
+            return 64 - (outputSize << 2);
+        }
+
+        private void InitializeState()
+        {
+            for (int ii = 0; ii < state.Length; ii++)
+            {
+                state[ii] = 0;
             }
         }
     }

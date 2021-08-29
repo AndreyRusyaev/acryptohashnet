@@ -4,38 +4,7 @@ namespace Home.Andir.Cryptography
 {
     public sealed class MD5 : BlockHashAlgorithm
     {
-        public MD5() : base(64)
-        {
-            this.HashSizeValue = 128;
-            this.finalBlock = new byte[BlockSize];
-
-            this.Initialize();
-        }
-
-        private readonly IntCounter counter = new IntCounter(2);
-        private readonly uint[] state = new uint[4];
-        private readonly byte[] finalBlock;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            counter.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x67452301;
-            state[1] = 0xefcdab89;
-            state[2] = 0x98badcfe;
-            state[3] = 0x10325476;
-        }
-
-        private static readonly uint[] constants = new uint[]
+        private static readonly uint[] Constants = new uint[]
         {
             // round 1
             0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
@@ -59,13 +28,35 @@ namespace Home.Andir.Cryptography
             0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
         };
 
-        private uint[] buffer = new uint[16];
+        private readonly IntCounter counter = new IntCounter(2);
+
+        private readonly uint[] state = new uint[4];
+
+        private readonly uint[] buffer = new uint[16];
+
+        private readonly byte[] finalBlock;
+
+        public MD5() : base(64)
+        {
+            HashSizeValue = 128;
+
+            finalBlock = new byte[BlockSize];
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            counter.Clear();
+
+            Array.Clear(finalBlock, 0, finalBlock.Length);
+
+            InitializeState();
+        }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            if (array.Length < offset + BlockSize)
-                throw new ArgumentOutOfRangeException("offset");
-
             counter.Add(BlockSize << 3);
 
             // Fill buffer for transformations
@@ -79,22 +70,22 @@ namespace Home.Andir.Cryptography
             // Round 1
             for (int ii = 0; ii < 16; ii += 4)
             {
-                a += buffer[ii + 0] + constants[ii + 0];
+                a += buffer[ii + 0] + Constants[ii + 0];
                 a += (b & c) | (~b & d);
                 a = a << 7 | a >> 25;
                 a += b;
 
-                d += buffer[ii + 1] + constants[ii + 1];
+                d += buffer[ii + 1] + Constants[ii + 1];
                 d += (a & b) | (~a & c);
                 d = d << 12 | d >> 20;
                 d += a;
 
-                c += buffer[ii + 2] + constants[ii + 2];
+                c += buffer[ii + 2] + Constants[ii + 2];
                 c += (d & a) | (~d & b);
                 c = c << 17 | c >> 15;
                 c += d;
 
-                b += buffer[ii + 3] + constants[ii + 3];
+                b += buffer[ii + 3] + Constants[ii + 3];
                 b += (c & d) | (~c & a);
                 b = b << 22 | b >> 10;
                 b += c;
@@ -103,22 +94,22 @@ namespace Home.Andir.Cryptography
             // Round 2
             for (int ii = 16; ii < 32; ii += 4)
             {
-                a += buffer[((ii + 0) * 5 + 1) & 0xf] + constants[ii + 0];
+                a += buffer[((ii + 0) * 5 + 1) & 0xf] + Constants[ii + 0];
                 a += (b & d) | (c & ~d);
                 a = a << 5 | a >> 27;
                 a += b;
 
-                d += buffer[((ii + 1) * 5 + 1) & 0xf] + constants[ii + 1];
+                d += buffer[((ii + 1) * 5 + 1) & 0xf] + Constants[ii + 1];
                 d += (a & c) | (b & ~c);
                 d = d << 9 | d >> 23;
                 d += a;
 
-                c += buffer[((ii + 2) * 5 + 1) & 0xf] + constants[ii + 2];
+                c += buffer[((ii + 2) * 5 + 1) & 0xf] + Constants[ii + 2];
                 c += ((d & b) | (a & ~b));
                 c = c << 14 | c >> 18;
                 c += d;
 
-                b += buffer[((ii + 3) * 5 + 1) & 0xf] + constants[ii + 3];
+                b += buffer[((ii + 3) * 5 + 1) & 0xf] + Constants[ii + 3];
                 b += (c & a) | (d & ~a);
                 b = b << 20 | b >> 12;
                 b += c;
@@ -127,22 +118,22 @@ namespace Home.Andir.Cryptography
             // Round 3
             for (int ii = 32; ii < 48; ii += 4)
             {
-                a += buffer[((ii + 0) * 3 + 5) & 0xf] + constants[ii + 0];
+                a += buffer[((ii + 0) * 3 + 5) & 0xf] + Constants[ii + 0];
                 a += b ^ c ^ d;
                 a = a << 4 | a >> 28;
                 a += b;
 
-                d += buffer[((ii + 1) * 3 + 5) & 0xf] + constants[ii + 1];
+                d += buffer[((ii + 1) * 3 + 5) & 0xf] + Constants[ii + 1];
                 d += a ^ b ^ c;
                 d = d << 11 | d >> 21;
                 d += a;
 
-                c += buffer[((ii + 2) * 3 + 5) & 0xf] + constants[ii + 2];
+                c += buffer[((ii + 2) * 3 + 5) & 0xf] + Constants[ii + 2];
                 c += d ^ a ^ b;
                 c = c << 16 | c >> 16;
                 c += d;
 
-                b += buffer[((ii + 3) * 3 + 5) & 0xf] + constants[ii + 3];
+                b += buffer[((ii + 3) * 3 + 5) & 0xf] + Constants[ii + 3];
                 b += c ^ d ^ a;
                 b = b << 23 | b >> 9;
                 b += c;
@@ -151,22 +142,22 @@ namespace Home.Andir.Cryptography
             // Round 4
             for (int ii = 48; ii < 64; ii += 4)
             {
-                a += buffer[((ii + 0) * 7 + 0) & 0xf] + constants[ii + 0];
+                a += buffer[((ii + 0) * 7 + 0) & 0xf] + Constants[ii + 0];
                 a += c ^ (b | ~d);
                 a = a << 6 | a >> 26;
                 a += b;
 
-                d += buffer[((ii + 1) * 7 + 0) & 0xf] + constants[ii + 1];
+                d += buffer[((ii + 1) * 7 + 0) & 0xf] + Constants[ii + 1];
                 d += b ^ (a | ~c);
                 d = d << 10 | d >> 22;
                 d += a;
 
-                c += buffer[((ii + 2) * 7 + 0) & 0xf] + constants[ii + 2];
+                c += buffer[((ii + 2) * 7 + 0) & 0xf] + Constants[ii + 2];
                 c += a ^ (d | ~b);
                 c = c << 15 | c >> 17;
                 c += d;
 
-                b += buffer[((ii + 3) * 7 + 0) & 0xf] + constants[ii + 3];
+                b += buffer[((ii + 3) * 7 + 0) & 0xf] + Constants[ii + 3];
                 b += d ^ (c | ~a);
                 b = b << 21 | b >> 11;
                 b += c;
@@ -197,7 +188,6 @@ namespace Home.Andir.Cryptography
             finalBlock[length] = 0x80;
 
             int endOffset = BlockSize - 8;
-
             if (length >= endOffset)
             {
                 ProcessBlock(finalBlock, 0);
@@ -206,7 +196,9 @@ namespace Home.Andir.Cryptography
             }
 
             for (int ii = 0; ii < 8; ii++)
+            {
                 finalBlock[endOffset + ii] = messageLength[ii];
+            }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
@@ -216,13 +208,20 @@ namespace Home.Andir.Cryptography
         {
             get
             {
-                // pack result
                 byte[] result = new byte[16];
 
                 Buffer.BlockCopy(state, 0, result, 0, result.Length);
 
                 return result;
             }
+        }
+
+        private void InitializeState()
+        {
+            state[0] = 0x67452301;
+            state[1] = 0xefcdab89;
+            state[2] = 0x98badcfe;
+            state[3] = 0x10325476;
         }
     }
 }

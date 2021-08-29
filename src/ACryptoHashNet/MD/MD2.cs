@@ -4,38 +4,7 @@ namespace Home.Andir.Cryptography
 {
     public sealed class MD2 : BlockHashAlgorithm
     {
-        public MD2() : base(16)
-        {
-            this.HashSizeValue = 128;
-            this.finalBlock = new byte[BlockSize];
-            this.checkSum = new byte[BlockSize];
-
-            this.Initialize();
-        }
-
-        private int processedLength = 0;
-        private readonly byte[] state = new byte[16];
-        private readonly byte[] finalBlock;
-        private readonly byte[] checkSum;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            processedLength = 0;
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-            Array.Clear(checkSum, 0, checkSum.Length);
-
-            InitializeState();
-        }
-
-        private void InitializeState()
-        {
-            Array.Clear(state, 0, state.Length);
-        }
-
-        private static readonly uint[] pi = new uint[]
+        private static readonly uint[] Pi = new uint[]
         {
             041, 046, 067, 201,
             162, 216, 124, 001,
@@ -118,34 +87,64 @@ namespace Home.Andir.Cryptography
             159, 017, 131, 020
         };
 
-        private static readonly uint[] constants = new uint[]
+        private static readonly uint[] Constants = new uint[]
         {
             0x00000000,
             0x5a827999,
             0x6ed9eba1,
         };
 
+        private readonly byte[] state = new byte[16];
+
         private readonly byte[] buffer = new byte[48];
+
+        private readonly byte[] finalBlock;
+
+        private readonly byte[] checkSum;
+
+        private int processedLength = 0;
+
+        public MD2() : base(16)
+        {
+            HashSizeValue = 128;
+            
+            finalBlock = new byte[BlockSize];
+            checkSum = new byte[BlockSize];
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            processedLength = 0;
+
+            Array.Clear(finalBlock, 0, finalBlock.Length);
+            Array.Clear(checkSum, 0, checkSum.Length);
+
+            InitializeState();
+        }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            if (array.Length < offset + BlockSize)
-                throw new ArgumentOutOfRangeException("offset");
-
             processedLength += BlockSize;
 
             Buffer.BlockCopy(state, 0, buffer, 0, 16);
             Buffer.BlockCopy(array, offset, buffer, 16, 16);
 
             for (int ii = 0; ii < 16; ii++)
+            {
                 buffer[ii + 32] = (byte)(state[ii] ^ array[offset + ii]);
+            }
 
             uint t = 0;
             // do 18 rounds
             for (int ii = 0; ii < 18; ii++)
             {
                 for (int jj = 0; jj < buffer.Length; jj++)
-                    t = buffer[jj] = (byte)(buffer[jj] ^ pi[t]);
+                {
+                    t = buffer[jj] = (byte)(buffer[jj] ^ Pi[t]);
+                }
 
                 t = (uint)((t + ii) & 0xff); // % 256
             }
@@ -154,29 +153,26 @@ namespace Home.Andir.Cryptography
 
             t = checkSum[15];
             for (int ii = 0; ii < checkSum.Length; ii++)
-                t = checkSum[ii] = (byte)(checkSum[ii] ^ pi[array[offset + ii] ^ t]);
+            {
+                t = checkSum[ii] = (byte)(checkSum[ii] ^ Pi[array[offset + ii] ^ t]);
+            }
 
             Array.Clear(buffer, 0, buffer.Length);
         }
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            if (length >= BlockSize
-                || length > array.Length - offset)
-                throw new ArgumentOutOfRangeException("length");
-
             int messageLength = processedLength + length;
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
             // padding message
             for (int ii = offset + length; ii < BlockSize; ii++)
+            {
                 finalBlock[ii] = (byte)(16 - (messageLength & 0xf));
-
-            // Processing of last block
+            }
+            
             ProcessBlock(finalBlock, 0);
-
-            // Processing of checksum
             ProcessBlock(checkSum, 0);
         }
 
@@ -184,13 +180,17 @@ namespace Home.Andir.Cryptography
         {
             get
             {
-                // pack result
                 byte[] result = new byte[16];
 
                 Buffer.BlockCopy(state, 0, result, 0, result.Length);
 
                 return result;
             }
+        }
+
+        private void InitializeState()
+        {
+            Array.Clear(state, 0, state.Length);
         }
     }
 }

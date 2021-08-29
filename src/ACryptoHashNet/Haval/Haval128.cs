@@ -5,10 +5,12 @@ namespace Home.Andir.Cryptography
     {
         public Haval128()
             : base(HavalHashSize.HashSize128, HavalPassCount.Pass5)
-        { }
+        {
+        }
 
         public Haval128(HavalPassCount havalPassCount)
             : base(HavalHashSize.HashSize128, havalPassCount)
-        { }
+        {
+        }
     }
 }

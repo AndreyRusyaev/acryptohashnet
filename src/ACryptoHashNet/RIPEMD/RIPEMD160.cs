@@ -4,41 +4,9 @@ namespace Home.Andir.Cryptography
 {
     public sealed class RIPEMD160 : BlockHashAlgorithm
     {
-        public RIPEMD160() : base(64)
-        {
-            this.HashSizeValue = 160;
-
-            this.finalBlock = new byte[BlockSize];
-            this.Initialize();
-        }
-
-        private readonly IntCounter counter = new IntCounter(2);
-        private readonly uint[] state = new uint[5];
-        private readonly byte[] finalBlock;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            counter.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x67452301;
-            state[1] = 0xefcdab89;
-            state[2] = 0x98badcfe;
-            state[3] = 0x10325476;
-            state[4] = 0xc3d2e1f0;
-        }
-
         #region algorithm constant parameters 
 
-        private static readonly uint[] constants1 = new uint[]
+        private static readonly uint[] Constants1 = new uint[]
         {
             0x00000000,
             0x5a827999, // [2 ^ 30 * sqrt(2)]
@@ -47,7 +15,7 @@ namespace Home.Andir.Cryptography
             0xa953fd4e  // [2 ^ 30 * sqrt(7)]
         };
 
-        private static readonly uint[] wordOrders1 = new uint[]
+        private static readonly uint[] WordOrders1 = new uint[]
         {
             // round 1
             00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15,
@@ -61,7 +29,7 @@ namespace Home.Andir.Cryptography
             04, 00, 05, 09, 07, 12, 02, 10, 14, 01, 03, 08, 11, 06, 15, 13
         };
 
-        private static readonly int[] shifts1 = new int[]
+        private static readonly int[] Shifts1 = new int[]
         {
             // round 1
             11, 14, 15, 12, 05, 08, 07, 09, 11, 13, 14, 15, 06, 07, 09, 08,
@@ -75,7 +43,7 @@ namespace Home.Andir.Cryptography
             09, 15, 05, 11, 06, 08, 13, 12, 05, 12, 13, 14, 11, 08, 05, 06
         };
 
-        private static readonly uint[] constants2 = new uint[]
+        private static readonly uint[] Constants2 = new uint[]
         {
             // root3: its root from 3 degree
             0x50a28be6, // [2 ^ 30 * root3(2)]
@@ -85,7 +53,7 @@ namespace Home.Andir.Cryptography
             0x00000000
         };
 
-        private static readonly uint[] wordOrders2 = new uint[]
+        private static readonly uint[] WordOrders2 = new uint[]
         {
             // round 1
             05, 14, 07, 00, 09, 02, 11, 04, 13, 06, 15, 08, 01, 10, 03, 12,
@@ -99,7 +67,7 @@ namespace Home.Andir.Cryptography
             12, 15, 10, 04, 01, 05, 08, 07, 06, 02, 13, 14, 00, 03, 09, 11
         };
 
-        private static readonly int[] shifts2 = new int[]
+        private static readonly int[] Shifts2 = new int[]
         {
             // round 1
             08, 09, 09, 11, 13, 15, 15, 05, 07, 07, 08, 11, 14, 14, 12, 06,
@@ -115,13 +83,35 @@ namespace Home.Andir.Cryptography
 
         #endregion
 
-        private uint[] buffer = new uint[16];
+        private readonly IntCounter counter = new IntCounter(2);
+
+        private readonly uint[] state = new uint[5];
+
+        private readonly uint[] buffer = new uint[16];
+
+        private readonly byte[] finalBlock;
+
+        public RIPEMD160() : base(64)
+        {
+            HashSizeValue = 160;
+
+            finalBlock = new byte[BlockSize];
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            counter.Clear();
+
+            Array.Clear(finalBlock, 0, finalBlock.Length);
+
+            InitializeState();
+        }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            if (array.Length < offset + BlockSize)
-                throw new ArgumentOutOfRangeException("Name: offset");
-
             counter.Add(BlockSize << 3);
 
             // Fill buffer for transformations
@@ -146,10 +136,6 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            if (length >= BlockSize
-                || length > array.Length - offset)
-                throw new ArgumentOutOfRangeException("length");
-
             counter.Add(length << 3);
 
             byte[] messageLength = counter.GetBytes();
@@ -171,7 +157,9 @@ namespace Home.Andir.Cryptography
             }
 
             for (int ii = 0; ii < 8; ii++)
-                finalBlock[endOffset + ii] = messageLength[ii]; ;
+            {
+                finalBlock[endOffset + ii] = messageLength[ii];
+            }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
@@ -181,13 +169,21 @@ namespace Home.Andir.Cryptography
         {
             get
             {
-                // pack results
                 byte[] result = new byte[20];
 
                 Buffer.BlockCopy(state, 0, result, 0, result.Length);
 
                 return result;
             }
+        }
+
+        private void InitializeState()
+        {
+            state[0] = 0x67452301;
+            state[1] = 0xefcdab89;
+            state[2] = 0x98badcfe;
+            state[3] = 0x10325476;
+            state[4] = 0xc3d2e1f0;
         }
 
         private void MDTransform1(ref uint a, ref uint b, ref uint c, ref uint d, ref uint e)
@@ -197,44 +193,44 @@ namespace Home.Andir.Cryptography
             for (ii = 0; ii < 15; ii += 5)
             {
                 a += (b ^ c ^ d);
-                a += constants1[0] + buffer[wordOrders1[ii + 00]];
-                a = a << shifts1[ii + 00] | a >> (32 - shifts1[ii + 00]);
+                a += Constants1[0] + buffer[WordOrders1[ii + 00]];
+                a = a << Shifts1[ii + 00] | a >> (32 - Shifts1[ii + 00]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += (a ^ b ^ c);
-                e += constants1[0] + buffer[wordOrders1[ii + 01]];
-                e = e << shifts1[ii + 01] | e >> (32 - shifts1[ii + 01]);
+                e += Constants1[0] + buffer[WordOrders1[ii + 01]];
+                e = e << Shifts1[ii + 01] | e >> (32 - Shifts1[ii + 01]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += (e ^ a ^ b);
-                d += constants1[0] + buffer[wordOrders1[ii + 02]];
-                d = d << shifts1[ii + 02] | d >> (32 - shifts1[ii + 02]);
+                d += Constants1[0] + buffer[WordOrders1[ii + 02]];
+                d = d << Shifts1[ii + 02] | d >> (32 - Shifts1[ii + 02]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += (d ^ e ^ a);
-                c += constants1[0] + buffer[wordOrders1[ii + 03]];
-                c = c << shifts1[ii + 03] | c >> (32 - shifts1[ii + 03]);
+                c += Constants1[0] + buffer[WordOrders1[ii + 03]];
+                c = c << Shifts1[ii + 03] | c >> (32 - Shifts1[ii + 03]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += (c ^ d ^ e);
-                b += constants1[0] + buffer[wordOrders1[ii + 04]];
-                b = b << shifts1[ii + 04] | b >> (32 - shifts1[ii + 04]);
+                b += Constants1[0] + buffer[WordOrders1[ii + 04]];
+                b = b << Shifts1[ii + 04] | b >> (32 - Shifts1[ii + 04]);
                 b += a;
 
                 d = d << 10 | d >> 22;
             }
 
             a += (b ^ c ^ d);
-            a += constants1[0] + buffer[wordOrders1[ii + 00]];
-            a = a << shifts1[ii + 00] | a >> (32 - shifts1[ii + 00]);
+            a += Constants1[0] + buffer[WordOrders1[ii + 00]];
+            a = a << Shifts1[ii + 00] | a >> (32 - Shifts1[ii + 00]);
             a += e;
 
             c = c << 10 | c >> 22;
@@ -243,44 +239,44 @@ namespace Home.Andir.Cryptography
             for (ii = 16; ii < 31; ii += 5)
             {
                 e += (a & b) | (~a & c);
-                e += constants1[1] + buffer[wordOrders1[ii + 00]];
-                e = e << shifts1[ii + 00] | e >> (32 - shifts1[ii + 00]);
+                e += Constants1[1] + buffer[WordOrders1[ii + 00]];
+                e = e << Shifts1[ii + 00] | e >> (32 - Shifts1[ii + 00]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += (e & a) | (~e & b);
-                d += constants1[1] + buffer[wordOrders1[ii + 01]];
-                d = d << shifts1[ii + 01] | d >> (32 - shifts1[ii + 01]);
+                d += Constants1[1] + buffer[WordOrders1[ii + 01]];
+                d = d << Shifts1[ii + 01] | d >> (32 - Shifts1[ii + 01]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += (d & e) | (~d & a);
-                c += constants1[1] + buffer[wordOrders1[ii + 02]];
-                c = c << shifts1[ii + 02] | c >> (32 - shifts1[ii + 02]);
+                c += Constants1[1] + buffer[WordOrders1[ii + 02]];
+                c = c << Shifts1[ii + 02] | c >> (32 - Shifts1[ii + 02]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += (c & d) | (~c & e);
-                b += constants1[1] + buffer[wordOrders1[ii + 03]];
-                b = b << shifts1[ii + 03] | b >> (32 - shifts1[ii + 03]);
+                b += Constants1[1] + buffer[WordOrders1[ii + 03]];
+                b = b << Shifts1[ii + 03] | b >> (32 - Shifts1[ii + 03]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += (b & c) | (~b & d);
-                a += constants1[1] + buffer[wordOrders1[ii + 04]];
-                a = a << shifts1[ii + 04] | a >> (32 - shifts1[ii + 04]);
+                a += Constants1[1] + buffer[WordOrders1[ii + 04]];
+                a = a << Shifts1[ii + 04] | a >> (32 - Shifts1[ii + 04]);
                 a += e;
 
                 c = c << 10 | c >> 22;
             }
 
             e += (a & b) | (~a & c);
-            e += constants1[1] + buffer[wordOrders1[ii + 00]];
-            e = e << shifts1[ii + 00] | e >> (32 - shifts1[ii + 00]);
+            e += Constants1[1] + buffer[WordOrders1[ii + 00]];
+            e = e << Shifts1[ii + 00] | e >> (32 - Shifts1[ii + 00]);
             e += d;
 
             b = b << 10 | b >> 22;
@@ -289,44 +285,44 @@ namespace Home.Andir.Cryptography
             for (ii = 32; ii < 47; ii += 5)
             {
                 d += (e | ~a) ^ b;
-                d += constants1[2] + buffer[wordOrders1[ii + 00]];
-                d = d << shifts1[ii + 00] | d >> (32 - shifts1[ii + 00]);
+                d += Constants1[2] + buffer[WordOrders1[ii + 00]];
+                d = d << Shifts1[ii + 00] | d >> (32 - Shifts1[ii + 00]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += (d | ~e) ^ a;
-                c += constants1[2] + buffer[wordOrders1[ii + 01]];
-                c = c << shifts1[ii + 01] | c >> (32 - shifts1[ii + 01]);
+                c += Constants1[2] + buffer[WordOrders1[ii + 01]];
+                c = c << Shifts1[ii + 01] | c >> (32 - Shifts1[ii + 01]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += (c | ~d) ^ e;
-                b += constants1[2] + buffer[wordOrders1[ii + 02]];
-                b = b << shifts1[ii + 02] | b >> (32 - shifts1[ii + 02]);
+                b += Constants1[2] + buffer[WordOrders1[ii + 02]];
+                b = b << Shifts1[ii + 02] | b >> (32 - Shifts1[ii + 02]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += (b | ~c) ^ d;
-                a += constants1[2] + buffer[wordOrders1[ii + 03]];
-                a = a << shifts1[ii + 03] | a >> (32 - shifts1[ii + 03]);
+                a += Constants1[2] + buffer[WordOrders1[ii + 03]];
+                a = a << Shifts1[ii + 03] | a >> (32 - Shifts1[ii + 03]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += (a | ~b) ^ c;
-                e += constants1[2] + buffer[wordOrders1[ii + 04]];
-                e = e << shifts1[ii + 04] | e >> (32 - shifts1[ii + 04]);
+                e += Constants1[2] + buffer[WordOrders1[ii + 04]];
+                e = e << Shifts1[ii + 04] | e >> (32 - Shifts1[ii + 04]);
                 e += d;
 
                 b = b << 10 | b >> 22;
             }
 
             d += (e | ~a) ^ b;
-            d += constants1[2] + buffer[wordOrders1[ii + 00]];
-            d = d << shifts1[ii + 00] | d >> (32 - shifts1[ii + 00]);
+            d += Constants1[2] + buffer[WordOrders1[ii + 00]];
+            d = d << Shifts1[ii + 00] | d >> (32 - Shifts1[ii + 00]);
             d += c;
 
             a = a << 10 | a >> 22;
@@ -335,44 +331,44 @@ namespace Home.Andir.Cryptography
             for (ii = 48; ii < 63; ii += 5)
             {
                 c += (d & a) | (e & ~a);
-                c += constants1[3] + buffer[wordOrders1[ii + 00]];
-                c = c << shifts1[ii + 00] | c >> (32 - shifts1[ii + 00]);
+                c += Constants1[3] + buffer[WordOrders1[ii + 00]];
+                c = c << Shifts1[ii + 00] | c >> (32 - Shifts1[ii + 00]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += (c & e) | (d & ~e);
-                b += constants1[3] + buffer[wordOrders1[ii + 01]];
-                b = b << shifts1[ii + 01] | b >> (32 - shifts1[ii + 01]);
+                b += Constants1[3] + buffer[WordOrders1[ii + 01]];
+                b = b << Shifts1[ii + 01] | b >> (32 - Shifts1[ii + 01]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += (b & d) | (c & ~d);
-                a += constants1[3] + buffer[wordOrders1[ii + 02]];
-                a = a << shifts1[ii + 02] | a >> (32 - shifts1[ii + 02]);
+                a += Constants1[3] + buffer[WordOrders1[ii + 02]];
+                a = a << Shifts1[ii + 02] | a >> (32 - Shifts1[ii + 02]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += (a & c) | (b & ~c);
-                e += constants1[3] + buffer[wordOrders1[ii + 03]];
-                e = e << shifts1[ii + 03] | e >> (32 - shifts1[ii + 03]);
+                e += Constants1[3] + buffer[WordOrders1[ii + 03]];
+                e = e << Shifts1[ii + 03] | e >> (32 - Shifts1[ii + 03]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += (e & b) | (a & ~b);
-                d += constants1[3] + buffer[wordOrders1[ii + 04]];
-                d = d << shifts1[ii + 04] | d >> (32 - shifts1[ii + 04]);
+                d += Constants1[3] + buffer[WordOrders1[ii + 04]];
+                d = d << Shifts1[ii + 04] | d >> (32 - Shifts1[ii + 04]);
                 d += c;
 
                 a = a << 10 | a >> 22;
             }
 
             c += (d & a) | (e & ~a);
-            c += constants1[3] + buffer[wordOrders1[ii + 00]];
-            c = c << shifts1[ii + 00] | c >> (32 - shifts1[ii + 00]);
+            c += Constants1[3] + buffer[WordOrders1[ii + 00]];
+            c = c << Shifts1[ii + 00] | c >> (32 - Shifts1[ii + 00]);
             c += b;
 
             e = e << 10 | e >> 22;
@@ -381,44 +377,44 @@ namespace Home.Andir.Cryptography
             for (ii = 64; ii < 79; ii += 5)
             {
                 b += c ^ (d | ~e);
-                b += constants1[4] + buffer[wordOrders1[ii + 00]];
-                b = b << shifts1[ii + 00] | b >> (32 - shifts1[ii + 00]);
+                b += Constants1[4] + buffer[WordOrders1[ii + 00]];
+                b = b << Shifts1[ii + 00] | b >> (32 - Shifts1[ii + 00]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += b ^ (c | ~d);
-                a += constants1[4] + buffer[wordOrders1[ii + 01]];
-                a = a << shifts1[ii + 01] | a >> (32 - shifts1[ii + 01]);
+                a += Constants1[4] + buffer[WordOrders1[ii + 01]];
+                a = a << Shifts1[ii + 01] | a >> (32 - Shifts1[ii + 01]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += a ^ (b | ~c);
-                e += constants1[4] + buffer[wordOrders1[ii + 02]];
-                e = e << shifts1[ii + 02] | e >> (32 - shifts1[ii + 02]);
+                e += Constants1[4] + buffer[WordOrders1[ii + 02]];
+                e = e << Shifts1[ii + 02] | e >> (32 - Shifts1[ii + 02]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += e ^ (a | ~b);
-                d += constants1[4] + buffer[wordOrders1[ii + 03]];
-                d = d << shifts1[ii + 03] | d >> (32 - shifts1[ii + 03]);
+                d += Constants1[4] + buffer[WordOrders1[ii + 03]];
+                d = d << Shifts1[ii + 03] | d >> (32 - Shifts1[ii + 03]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += d ^ (e | ~a);
-                c += constants1[4] + buffer[wordOrders1[ii + 04]];
-                c = c << shifts1[ii + 04] | c >> (32 - shifts1[ii + 04]);
+                c += Constants1[4] + buffer[WordOrders1[ii + 04]];
+                c = c << Shifts1[ii + 04] | c >> (32 - Shifts1[ii + 04]);
                 c += b;
 
                 e = e << 10 | e >> 22;
             }
 
             b += c ^ (d | ~e);
-            b += constants1[4] + buffer[wordOrders1[ii + 00]];
-            b = b << shifts1[ii + 00] | b >> (32 - shifts1[ii + 00]);
+            b += Constants1[4] + buffer[WordOrders1[ii + 00]];
+            b = b << Shifts1[ii + 00] | b >> (32 - Shifts1[ii + 00]);
             b += a;
 
             d = d << 10 | d >> 22;
@@ -431,44 +427,44 @@ namespace Home.Andir.Cryptography
             for (ii = 0; ii < 15; ii += 5)
             {
                 a += b ^ (c | ~d);
-                a += constants2[0] + buffer[wordOrders2[ii + 00]];
-                a = a << shifts2[ii + 00] | a >> (32 - shifts2[ii + 00]);
+                a += Constants2[0] + buffer[WordOrders2[ii + 00]];
+                a = a << Shifts2[ii + 00] | a >> (32 - Shifts2[ii + 00]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += a ^ (b | ~c);
-                e += constants2[0] + buffer[wordOrders2[ii + 01]];
-                e = e << shifts2[ii + 01] | e >> (32 - shifts2[ii + 01]);
+                e += Constants2[0] + buffer[WordOrders2[ii + 01]];
+                e = e << Shifts2[ii + 01] | e >> (32 - Shifts2[ii + 01]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += e ^ (a | ~b);
-                d += constants2[0] + buffer[wordOrders2[ii + 02]];
-                d = d << shifts2[ii + 02] | d >> (32 - shifts2[ii + 02]);
+                d += Constants2[0] + buffer[WordOrders2[ii + 02]];
+                d = d << Shifts2[ii + 02] | d >> (32 - Shifts2[ii + 02]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += d ^ (e | ~a);
-                c += constants2[0] + buffer[wordOrders2[ii + 03]];
-                c = c << shifts2[ii + 03] | c >> (32 - shifts2[ii + 03]);
+                c += Constants2[0] + buffer[WordOrders2[ii + 03]];
+                c = c << Shifts2[ii + 03] | c >> (32 - Shifts2[ii + 03]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += c ^ (d | ~e);
-                b += constants2[0] + buffer[wordOrders2[ii + 04]];
-                b = b << shifts2[ii + 04] | b >> (32 - shifts2[ii + 04]);
+                b += Constants2[0] + buffer[WordOrders2[ii + 04]];
+                b = b << Shifts2[ii + 04] | b >> (32 - Shifts2[ii + 04]);
                 b += a;
 
                 d = d << 10 | d >> 22;
             }
 
             a += b ^ (c | ~d);
-            a += constants2[0] + buffer[wordOrders2[ii + 00]];
-            a = a << shifts2[ii + 00] | a >> (32 - shifts2[ii + 00]);
+            a += Constants2[0] + buffer[WordOrders2[ii + 00]];
+            a = a << Shifts2[ii + 00] | a >> (32 - Shifts2[ii + 00]);
             a += e;
 
             c = c << 10 | c >> 22;
@@ -477,44 +473,44 @@ namespace Home.Andir.Cryptography
             for (ii = 16; ii < 31; ii += 5)
             {
                 e += (a & c) | (b & ~c);
-                e += constants2[1] + buffer[wordOrders2[ii + 00]];
-                e = e << shifts2[ii + 00] | e >> (32 - shifts2[ii + 00]);
+                e += Constants2[1] + buffer[WordOrders2[ii + 00]];
+                e = e << Shifts2[ii + 00] | e >> (32 - Shifts2[ii + 00]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += (e & b) | (a & ~b);
-                d += constants2[1] + buffer[wordOrders2[ii + 01]];
-                d = d << shifts2[ii + 01] | d >> (32 - shifts2[ii + 01]);
+                d += Constants2[1] + buffer[WordOrders2[ii + 01]];
+                d = d << Shifts2[ii + 01] | d >> (32 - Shifts2[ii + 01]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += (d & a) | (e & ~a);
-                c += constants2[1] + buffer[wordOrders2[ii + 02]];
-                c = c << shifts2[ii + 02] | c >> (32 - shifts2[ii + 02]);
+                c += Constants2[1] + buffer[WordOrders2[ii + 02]];
+                c = c << Shifts2[ii + 02] | c >> (32 - Shifts2[ii + 02]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += (c & e) | (d & ~e);
-                b += constants2[1] + buffer[wordOrders2[ii + 03]];
-                b = b << shifts2[ii + 03] | b >> (32 - shifts2[ii + 03]);
+                b += Constants2[1] + buffer[WordOrders2[ii + 03]];
+                b = b << Shifts2[ii + 03] | b >> (32 - Shifts2[ii + 03]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += (b & d) | (c & ~d);
-                a += constants2[1] + buffer[wordOrders2[ii + 04]];
-                a = a << shifts2[ii + 04] | a >> (32 - shifts2[ii + 04]);
+                a += Constants2[1] + buffer[WordOrders2[ii + 04]];
+                a = a << Shifts2[ii + 04] | a >> (32 - Shifts2[ii + 04]);
                 a += e;
 
                 c = c << 10 | c >> 22;
             }
 
             e += (a & c) | (b & ~c);
-            e += constants2[1] + buffer[wordOrders2[ii + 00]];
-            e = e << shifts2[ii + 00] | e >> (32 - shifts2[ii + 00]);
+            e += Constants2[1] + buffer[WordOrders2[ii + 00]];
+            e = e << Shifts2[ii + 00] | e >> (32 - Shifts2[ii + 00]);
             e += d;
 
             b = b << 10 | b >> 22;
@@ -523,44 +519,44 @@ namespace Home.Andir.Cryptography
             for (ii = 32; ii < 47; ii += 5)
             {
                 d += (e | ~a) ^ b;
-                d += constants2[2] + buffer[wordOrders2[ii + 00]];
-                d = d << shifts2[ii + 00] | d >> (32 - shifts2[ii + 00]);
+                d += Constants2[2] + buffer[WordOrders2[ii + 00]];
+                d = d << Shifts2[ii + 00] | d >> (32 - Shifts2[ii + 00]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += (d | ~e) ^ a;
-                c += constants2[2] + buffer[wordOrders2[ii + 01]];
-                c = c << shifts2[ii + 01] | c >> (32 - shifts2[ii + 01]);
+                c += Constants2[2] + buffer[WordOrders2[ii + 01]];
+                c = c << Shifts2[ii + 01] | c >> (32 - Shifts2[ii + 01]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += (c | ~d) ^ e;
-                b += constants2[2] + buffer[wordOrders2[ii + 02]];
-                b = b << shifts2[ii + 02] | b >> (32 - shifts2[ii + 02]);
+                b += Constants2[2] + buffer[WordOrders2[ii + 02]];
+                b = b << Shifts2[ii + 02] | b >> (32 - Shifts2[ii + 02]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += (b | ~c) ^ d;
-                a += constants2[2] + buffer[wordOrders2[ii + 03]];
-                a = a << shifts2[ii + 03] | a >> (32 - shifts2[ii + 03]);
+                a += Constants2[2] + buffer[WordOrders2[ii + 03]];
+                a = a << Shifts2[ii + 03] | a >> (32 - Shifts2[ii + 03]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += (a | ~b) ^ c;
-                e += constants2[2] + buffer[wordOrders2[ii + 04]];
-                e = e << shifts2[ii + 04] | e >> (32 - shifts2[ii + 04]);
+                e += Constants2[2] + buffer[WordOrders2[ii + 04]];
+                e = e << Shifts2[ii + 04] | e >> (32 - Shifts2[ii + 04]);
                 e += d;
 
                 b = b << 10 | b >> 22;
             }
 
             d += (e | ~a) ^ b;
-            d += constants2[2] + buffer[wordOrders2[ii + 00]];
-            d = d << shifts2[ii + 00] | d >> (32 - shifts2[ii + 00]);
+            d += Constants2[2] + buffer[WordOrders2[ii + 00]];
+            d = d << Shifts2[ii + 00] | d >> (32 - Shifts2[ii + 00]);
             d += c;
 
             a = a << 10 | a >> 22;
@@ -569,44 +565,44 @@ namespace Home.Andir.Cryptography
             for (ii = 48; ii < 63; ii += 5)
             {
                 c += (d & e) | (~d & a);
-                c += constants2[3] + buffer[wordOrders2[ii + 00]];
-                c = c << shifts2[ii + 00] | c >> (32 - shifts2[ii + 00]);
+                c += Constants2[3] + buffer[WordOrders2[ii + 00]];
+                c = c << Shifts2[ii + 00] | c >> (32 - Shifts2[ii + 00]);
                 c += b;
 
                 e = e << 10 | e >> 22;
 
                 b += (c & d) | (~c & e);
-                b += constants2[3] + buffer[wordOrders2[ii + 01]];
-                b = b << shifts2[ii + 01] | b >> (32 - shifts2[ii + 01]);
+                b += Constants2[3] + buffer[WordOrders2[ii + 01]];
+                b = b << Shifts2[ii + 01] | b >> (32 - Shifts2[ii + 01]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += (b & c) | (~b & d);
-                a += constants2[3] + buffer[wordOrders2[ii + 02]];
-                a = a << shifts2[ii + 02] | a >> (32 - shifts2[ii + 02]);
+                a += Constants2[3] + buffer[WordOrders2[ii + 02]];
+                a = a << Shifts2[ii + 02] | a >> (32 - Shifts2[ii + 02]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += (a & b) | (~a & c);
-                e += constants2[3] + buffer[wordOrders2[ii + 03]];
-                e = e << shifts2[ii + 03] | e >> (32 - shifts2[ii + 03]);
+                e += Constants2[3] + buffer[WordOrders2[ii + 03]];
+                e = e << Shifts2[ii + 03] | e >> (32 - Shifts2[ii + 03]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += (e & a) | (~e & b);
-                d += constants2[3] + buffer[wordOrders2[ii + 04]];
-                d = d << shifts2[ii + 04] | d >> (32 - shifts2[ii + 04]);
+                d += Constants2[3] + buffer[WordOrders2[ii + 04]];
+                d = d << Shifts2[ii + 04] | d >> (32 - Shifts2[ii + 04]);
                 d += c;
 
                 a = a << 10 | a >> 22;
             }
 
             c += (d & e) | (~d & a);
-            c += constants2[3] + buffer[wordOrders2[ii + 00]];
-            c = c << shifts2[ii + 00] | c >> (32 - shifts2[ii + 00]);
+            c += Constants2[3] + buffer[WordOrders2[ii + 00]];
+            c = c << Shifts2[ii + 00] | c >> (32 - Shifts2[ii + 00]);
             c += b;
 
             e = e << 10 | e >> 22;
@@ -615,44 +611,44 @@ namespace Home.Andir.Cryptography
             for (ii = 64; ii < 79; ii += 5)
             {
                 b += c ^ d ^ e;
-                b += constants2[4] + buffer[wordOrders2[ii + 00]];
-                b = b << shifts2[ii + 00] | b >> (32 - shifts2[ii + 00]);
+                b += Constants2[4] + buffer[WordOrders2[ii + 00]];
+                b = b << Shifts2[ii + 00] | b >> (32 - Shifts2[ii + 00]);
                 b += a;
 
                 d = d << 10 | d >> 22;
 
                 a += b ^ c ^ d;
-                a += constants2[4] + buffer[wordOrders2[ii + 01]];
-                a = a << shifts2[ii + 01] | a >> (32 - shifts2[ii + 01]);
+                a += Constants2[4] + buffer[WordOrders2[ii + 01]];
+                a = a << Shifts2[ii + 01] | a >> (32 - Shifts2[ii + 01]);
                 a += e;
 
                 c = c << 10 | c >> 22;
 
                 e += a ^ b ^ c;
-                e += constants2[4] + buffer[wordOrders2[ii + 02]];
-                e = e << shifts2[ii + 02] | e >> (32 - shifts2[ii + 02]);
+                e += Constants2[4] + buffer[WordOrders2[ii + 02]];
+                e = e << Shifts2[ii + 02] | e >> (32 - Shifts2[ii + 02]);
                 e += d;
 
                 b = b << 10 | b >> 22;
 
                 d += e ^ a ^ b;
-                d += constants2[4] + buffer[wordOrders2[ii + 03]];
-                d = d << shifts2[ii + 03] | d >> (32 - shifts2[ii + 03]);
+                d += Constants2[4] + buffer[WordOrders2[ii + 03]];
+                d = d << Shifts2[ii + 03] | d >> (32 - Shifts2[ii + 03]);
                 d += c;
 
                 a = a << 10 | a >> 22;
 
                 c += d ^ e ^ a;
-                c += constants2[4] + buffer[wordOrders2[ii + 04]];
-                c = c << shifts2[ii + 04] | c >> (32 - shifts2[ii + 04]);
+                c += Constants2[4] + buffer[WordOrders2[ii + 04]];
+                c = c << Shifts2[ii + 04] | c >> (32 - Shifts2[ii + 04]);
                 c += b;
 
                 e = e << 10 | e >> 22;
             }
 
             b += c ^ d ^ e;
-            b += constants2[4] + buffer[wordOrders2[ii + 00]];
-            b = b << shifts2[ii + 00] | b >> (32 - shifts2[ii + 00]);
+            b += Constants2[4] + buffer[WordOrders2[ii + 00]];
+            b = b << Shifts2[ii + 00] | b >> (32 - Shifts2[ii + 00]);
             b += a;
 
             d = d << 10 | d >> 22;

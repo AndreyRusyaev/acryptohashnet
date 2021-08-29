@@ -6,7 +6,7 @@ namespace Home.Andir.Cryptography
     {
         public static string ByteArrayToHexString(byte[] array)
         {
-            return String.Join(
+            return string.Join(
                 "", 
                 Array.ConvertAll(array, x => x.ToString("x2")));
         }

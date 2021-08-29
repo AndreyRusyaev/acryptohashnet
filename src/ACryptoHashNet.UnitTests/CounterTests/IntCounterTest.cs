@@ -12,7 +12,7 @@ namespace Home.Andir.Cryptography.NUnitTests
 
             testCounter.Add(100);
 
-            Assert.AreEqual(100, testCounter.ToInt32());
+            Assert.AreEqual(100, testCounter.ToUInt32());
         }
 
         [Test]
@@ -23,7 +23,7 @@ namespace Home.Andir.Cryptography.NUnitTests
             testCounter.Add(100);
             testCounter.Add(200);
 
-            Assert.AreEqual(300, testCounter.ToInt32());
+            Assert.AreEqual(300, testCounter.ToUInt32());
         }
 
         [Test]
@@ -34,7 +34,7 @@ namespace Home.Andir.Cryptography.NUnitTests
             testCounter.Add(0xffff);
             testCounter.Add(0x1);
 
-            Assert.AreEqual(0x010000, testCounter.ToInt32());
+            Assert.AreEqual(0x010000, testCounter.ToUInt32());
         }
 
         [Test]

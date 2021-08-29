@@ -4,42 +4,7 @@ namespace Home.Andir.Cryptography
 {
     public sealed class SHA512 : BlockHashAlgorithm
     {
-        public SHA512() : base(128)
-        {
-            this.HashSizeValue = 512;
-
-            this.finalBlock = new byte[BlockSize];
-            this.Initialize();
-        }
-
-        private readonly IntCounter counter = new IntCounter(4);
-        private readonly ulong[] state = new ulong[8];
-        private readonly byte[] finalBlock;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            counter.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x6a09e667f3bcc908;
-            state[1] = 0xbb67ae8584caa73b;
-            state[2] = 0x3c6ef372fe94f82b;
-            state[3] = 0xa54ff53a5f1d36f1;
-            state[4] = 0x510e527fade682d1;
-            state[5] = 0x9b05688c2b3e6c1f;
-            state[6] = 0x1f83d9abfb41bd6b;
-            state[7] = 0x5be0cd19137e2179;
-        }
-
-        private static readonly ulong[] constants = new ulong[]
+        private static readonly ulong[] Constants = new ulong[]
         {
             // round 1
             0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
@@ -73,20 +38,44 @@ namespace Home.Andir.Cryptography
             0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
         };
 
-        private ulong[] buffer = new ulong[80];
+        private readonly IntCounter counter = new IntCounter(4);
+
+        private readonly ulong[] state = new ulong[8];
+
+        private readonly ulong[] buffer = new ulong[80];
+
+        private readonly byte[] finalBlock;
+
+        public SHA512() : base(128)
+        {
+            HashSizeValue = 512;
+
+            finalBlock = new byte[BlockSize];
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            counter.Clear();
+
+            Array.Clear(finalBlock, 0, finalBlock.Length);
+
+            InitializeState();
+        }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            if (array.LongLength < BlockSize + (long)offset)
-                throw new ArgumentOutOfRangeException("offset");
-
             counter.Add(BlockSize << 3);
 
             // Fill buffer for transformations
             BigEndianBuffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
             for (int ii = 16; ii < 80; ii++)
+            {
                 buffer[ii] = Ro1(buffer[ii - 2]) + buffer[ii - 7] + Ro0(buffer[ii - 15]) + buffer[ii - 16];
+            }
 
             ulong a = state[0];
             ulong b = state[1];
@@ -100,7 +89,7 @@ namespace Home.Andir.Cryptography
             for (int ii = 0; ii < buffer.Length; ii += 8)
             {
                 // step 1
-                h += constants[ii + 0] + buffer[ii + 0];
+                h += Constants[ii + 0] + buffer[ii + 0];
                 h += (e & f) ^ (~e & g);
                 h += Sig1(e);
 
@@ -110,7 +99,7 @@ namespace Home.Andir.Cryptography
                 h += Sig0(a);
 
                 // step 2
-                g += constants[ii + 1] + buffer[ii + 1];
+                g += Constants[ii + 1] + buffer[ii + 1];
                 g += (d & e) ^ (~d & f);
                 g += Sig1(d);
 
@@ -120,7 +109,7 @@ namespace Home.Andir.Cryptography
                 g += Sig0(h);
 
                 // step 3
-                f += constants[ii + 2] + buffer[ii + 2];
+                f += Constants[ii + 2] + buffer[ii + 2];
                 f += (c & d) ^ (~c & e);
                 f += Sig1(c);
 
@@ -130,7 +119,7 @@ namespace Home.Andir.Cryptography
                 f += Sig0(g);
 
                 // step 4
-                e += constants[ii + 3] + buffer[ii + 3];
+                e += Constants[ii + 3] + buffer[ii + 3];
                 e += (b & c) ^ (~b & d);
                 e += Sig1(b);
 
@@ -140,7 +129,7 @@ namespace Home.Andir.Cryptography
                 e += Sig0(f);
 
                 // step 5
-                d += constants[ii + 4] + buffer[ii + 4];
+                d += Constants[ii + 4] + buffer[ii + 4];
                 d += (a & b) ^ (~a & c);
                 d += Sig1(a);
 
@@ -150,7 +139,7 @@ namespace Home.Andir.Cryptography
                 d += Sig0(e);
 
                 // step 6
-                c += constants[ii + 5] + buffer[ii + 5];
+                c += Constants[ii + 5] + buffer[ii + 5];
                 c += (h & a) ^ (~h & b);
                 c += Sig1(h);
 
@@ -160,7 +149,7 @@ namespace Home.Andir.Cryptography
                 c += Sig0(d);
 
                 // step 7
-                b += constants[ii + 6] + buffer[ii + 6];
+                b += Constants[ii + 6] + buffer[ii + 6];
                 b += (g & h) ^ (~g & a);
                 b += Sig1(g);
 
@@ -170,7 +159,7 @@ namespace Home.Andir.Cryptography
                 b += Sig0(c);
 
                 // step 8
-                a += constants[ii + 7] + buffer[ii + 7];
+                a += Constants[ii + 7] + buffer[ii + 7];
                 a += (f & g) ^ (~f & h);
                 a += Sig1(f);
 
@@ -192,10 +181,6 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            if (length >= BlockSize
-                || length > array.Length - offset)
-                throw new ArgumentOutOfRangeException("length");
-
             counter.Add(length << 3); // arg * 8
 
             byte[] messageLength = counter.GetBytes();
@@ -208,7 +193,6 @@ namespace Home.Andir.Cryptography
             finalBlock[length] = 0x80;
 
             int endOffset = BlockSize - 16;
-
             if (length >= endOffset)
             {
                 ProcessBlock(finalBlock, 0);
@@ -217,7 +201,9 @@ namespace Home.Andir.Cryptography
             }
 
             for (int ii = 0; ii < 16; ii++)
+            {
                 finalBlock[endOffset + ii] = messageLength[15 - ii];
+            }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
@@ -227,13 +213,24 @@ namespace Home.Andir.Cryptography
         {
             get
             {
-                // pack the results
                 byte[] result = new byte[64];
 
                 BigEndianBuffer.BlockCopy(state, 0, result, 0, result.Length);
 
                 return result;
             }
+        }
+
+        private void InitializeState()
+        {
+            state[0] = 0x6a09e667f3bcc908;
+            state[1] = 0xbb67ae8584caa73b;
+            state[2] = 0x3c6ef372fe94f82b;
+            state[3] = 0xa54ff53a5f1d36f1;
+            state[4] = 0x510e527fade682d1;
+            state[5] = 0x9b05688c2b3e6c1f;
+            state[6] = 0x1f83d9abfb41bd6b;
+            state[7] = 0x5be0cd19137e2179;
         }
 
         private ulong Ro0(ulong x)

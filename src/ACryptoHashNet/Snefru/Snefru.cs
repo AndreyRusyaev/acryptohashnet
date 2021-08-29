@@ -5,7 +5,7 @@ namespace Home.Andir.Cryptography
     {
         public Snefru() : base(SnefruOutputSize.Output4)
         {
-            this.HashSizeValue = 128;
+            HashSizeValue = 128;
         }
     }
 }

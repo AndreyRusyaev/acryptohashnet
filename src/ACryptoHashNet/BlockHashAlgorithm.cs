@@ -9,20 +9,22 @@ namespace Home.Andir.Cryptography
     public abstract class BlockHashAlgorithm : HashAlgorithm
     {
         private readonly byte[] lastBlock;
+
         private int lastBlockLength;
 
         /// <summary>
-        /// Constructor.
+        /// Block hash algorithm ctor.
         /// </summary>
-        public BlockHashAlgorithm(int blockSize) : base()
+        /// <param name="blockSize">size of the block for algorithm</param>
+        public BlockHashAlgorithm(int blockSize)
         {
-            this.BlockSize = blockSize;
+            BlockSize = blockSize;
 
-            this.lastBlock = new byte[this.BlockSize];
-            this.lastBlockLength = 0;
+            lastBlock = new byte[BlockSize];
+            lastBlockLength = 0;
         }
 
-        public int BlockSize { get; private set; }
+        public int BlockSize { get; }
 
         /// <summary>
         /// Processing block of bytes (size is @BlockSize), @array length must be >= than @offset + @BlockSize
@@ -45,15 +47,13 @@ namespace Home.Andir.Cryptography
         /// <value>byte array with hash value</value>
         protected abstract byte[] Result { get; }
 
-        #region HashAlghorithm implementation
-
         /// <summary>
         /// Initialization algorithm variables.
         /// </summary>
         public override void Initialize()
         {
             Array.Clear(lastBlock, 0, lastBlock.Length);
-            this.lastBlockLength = 0;
+            lastBlockLength = 0;
         }
 
         /// <summary>
@@ -76,8 +76,7 @@ namespace Home.Andir.Cryptography
                     currentOffset,
                     lastBlock,
                     lastBlockLength,
-                    lastBlockRemaining
-                                     );
+                    lastBlockRemaining);
 
                 ProcessBlock(lastBlock, 0);
 
@@ -88,9 +87,10 @@ namespace Home.Andir.Cryptography
             }
 
             int blockCount = currentLength / BlockSize;
-
             for (int ii = 0; ii < blockCount; ii++, currentOffset += BlockSize)
+            {
                 ProcessBlock(array, currentOffset);
+            }
 
             int blockBoundaryOffset = currentLength % BlockSize;
             if (blockBoundaryOffset != 0) // current data length does not fall on a block boundary
@@ -111,11 +111,13 @@ namespace Home.Andir.Cryptography
         /// <returns>hash value</returns>
         protected override byte[] HashFinal()
         {
-            ProcessFinalBlock(lastBlock, 0, lastBlockLength);
+            if (lastBlockLength > lastBlock.Length)
+            {
+                throw new InvalidOperationException("lastBlockLength > lastBlock.Length");
+            }
 
+            ProcessFinalBlock(lastBlock, 0, lastBlockLength);
             return Result;
         }
-
-        #endregion
     }
 }
