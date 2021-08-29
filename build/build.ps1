@@ -1,4 +1,11 @@
-$BinDir = "../../bin";
-$SourcesDir = "../src";
+Set-StrictMode -version Latest
 
-msbuild.exe "$SourcesDir/acryptohashnet.sln" /p:OutDir="$BinDir/"
+$SrcDir = "$PSScriptRoot/../src";
+$OutDir = "$PSScriptRoot/../src/acryptohashnet/bin/Release"
+$TargetDir = "$PSScriptRoot/../bin"
+
+msbuild.exe "$SrcDir/acryptohashnet.sln" /p:Configuration=Release
+
+New-Item -Force -Type Directory $TargetDir
+Copy-Item -Force "$OutDir/netstandard2.1/*" $TargetDir
+Copy-Item -Force "$OutDir/*.nupkg" $TargetDir
