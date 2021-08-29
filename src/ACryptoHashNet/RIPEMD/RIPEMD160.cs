@@ -190,7 +190,8 @@ namespace acryptohashnet
 
         private void MDTransform1(ref uint a, ref uint b, ref uint c, ref uint d, ref uint e)
         {
-            int ii = 0;
+            int ii;
+
             // Round 1
             for (ii = 0; ii < 15; ii += 5)
             {

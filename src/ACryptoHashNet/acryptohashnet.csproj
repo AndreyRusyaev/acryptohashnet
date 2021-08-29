@@ -14,6 +14,10 @@
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <WarningLevel>5</WarningLevel>
+    </PropertyGroup>
+
     <ItemGroup>
       <None Include="..\..\lgpl1.0.txt">
         <Pack>True</Pack>

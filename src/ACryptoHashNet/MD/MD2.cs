@@ -91,13 +91,6 @@ namespace acryptohashnet
             159, 017, 131, 020
         };
 
-        private static readonly uint[] Constants = new uint[]
-        {
-            0x00000000,
-            0x5a827999,
-            0x6ed9eba1,
-        };
-
         private readonly byte[] state = new byte[16];
 
         private readonly byte[] buffer = new byte[48];

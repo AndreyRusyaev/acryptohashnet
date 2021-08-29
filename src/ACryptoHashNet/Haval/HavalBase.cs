@@ -388,12 +388,10 @@ namespace acryptohashnet
             uint t6 = state[6];
             uint t7 = state[7];
 
-            uint t = 0;
-
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
             {
-                t = F1phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F1phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -445,7 +443,7 @@ namespace acryptohashnet
             // pass 2
             for (int ii = 32; ii < 64; ii += 8)
             {
-                t = F2phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F2phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -497,7 +495,7 @@ namespace acryptohashnet
             // pass 3
             for (int ii = 64; ii < 96; ii += 8)
             {
-                t = F3phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F3phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -549,7 +547,7 @@ namespace acryptohashnet
             // pass 4
             for (int ii = 96; ii < 128; ii += 8)
             {
-                t = F4phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F4phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -619,12 +617,10 @@ namespace acryptohashnet
             uint t6 = state[6];
             uint t7 = state[7];
 
-            uint t = 0;
-
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
             {
-                t = F1phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F1phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -676,7 +672,7 @@ namespace acryptohashnet
             // pass 2
             for (int ii = 32; ii < 64; ii += 8)
             {
-                t = F2phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F2phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -728,7 +724,7 @@ namespace acryptohashnet
             // pass 3
             for (int ii = 64; ii < 96; ii += 8)
             {
-                t = F3phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F3phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -780,7 +776,7 @@ namespace acryptohashnet
             // pass 4
             for (int ii = 96; ii < 128; ii += 8)
             {
-                t = F4phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F4phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -832,7 +828,7 @@ namespace acryptohashnet
             // pass 5
             for (int ii = 128; ii < 160; ii += 8)
             {
-                t = F5phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F5phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);

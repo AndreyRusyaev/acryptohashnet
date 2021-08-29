@@ -11,8 +11,8 @@ namespace acryptohashnet
         private static readonly uint[] Constants = new uint[]
         {
             0x00000000,
-            0x5a827999,
-            0x6ed9eba1,
+            0x5a827999, // [2 ^ 30 * sqrt(2)]
+            0x6ed9eba1, // [2 ^ 30 * sqrt(3)]
         };
 
         private readonly uint[] state = new uint[4];

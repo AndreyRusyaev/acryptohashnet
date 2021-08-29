@@ -985,18 +985,12 @@ namespace acryptohashnet
         public SnefruBase(SnefruOutputSize snefruOutputSize)
             : base(GetBlockSize(snefruOutputSize))
         {
-            int outputSize = 0;
-            switch (snefruOutputSize)
+            int outputSize = snefruOutputSize switch
             {
-                case SnefruOutputSize.Output4:
-                    outputSize = 4;
-                    break;
-                case SnefruOutputSize.Output8:
-                    outputSize = 8;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("snefruOutputSize");
-            }
+                SnefruOutputSize.Output4 => 4,
+                SnefruOutputSize.Output8 => 8,
+                _ => throw new ArgumentOutOfRangeException(nameof(snefruOutputSize)),
+            };
 
             state = new uint[outputSize];
             finalBlock = new byte[BlockSize];
