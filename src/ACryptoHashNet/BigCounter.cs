@@ -9,6 +9,11 @@ namespace Home.Andir.Cryptography
 
         public BigCounter(int sizeInBytes)
         {
+            if (sizeInBytes < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sizeInBytes));
+            }
+
             this.sizeInBytes = sizeInBytes;
 
             var sizeInUints = sizeInBytes / 4;
@@ -27,6 +32,11 @@ namespace Home.Andir.Cryptography
 
         public void Add(int value)
         {
+            if (value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value));
+            }
+
             Add((uint)value);
         }
 
@@ -37,6 +47,11 @@ namespace Home.Andir.Cryptography
 
         public void Add(long value)
         {
+            if (value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value));
+            }
+
             uint[] values = new uint[2];
 
             values[0] = (uint)value;

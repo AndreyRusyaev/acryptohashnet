@@ -2,6 +2,10 @@
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// HAVAL — A One-Way Hashing Algorithm with Variable Length of Output
+    /// Designed by Yuliang Zheng, Josef Pieprzyk and Jennifer Seberry.
+    /// </summary>
     public abstract class HavalBase : BlockHashAlgorithm
     {
         private const uint HavalVersion = 1;
@@ -56,7 +60,7 @@ namespace Home.Andir.Cryptography
 
         private readonly byte[] signature = new byte[2];
 
-        private readonly BigCounter counter = new BigCounter(8);
+        private readonly BigCounter lengthCounter = new BigCounter(8);
 
         private readonly uint[] state = new uint[8];
 
@@ -89,7 +93,7 @@ namespace Home.Andir.Cryptography
         {
             base.Initialize();
 
-            counter.Clear();
+            lengthCounter.Clear();
 
             Array.Clear(finalBlock, 0, finalBlock.Length);
 
@@ -98,7 +102,7 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            counter.Add(BlockSize << 3);
+            lengthCounter.Add(BlockSize << 3);
 
             Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
@@ -123,9 +127,9 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            counter.Add(length << 3); // arg * 8
+            lengthCounter.Add(length << 3); // arg * 8
 
-            byte[] messageLength = counter.GetBytes();
+            byte[] messageLength = lengthCounter.GetBytes();
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
@@ -207,12 +211,10 @@ namespace Home.Andir.Cryptography
             uint t6 = state[6];
             uint t7 = state[7];
 
-            uint t = 0;
-
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
             {
-                t = F1phi3(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F1phi3(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -264,7 +266,7 @@ namespace Home.Andir.Cryptography
             // pass 2
             for (int ii = 32; ii < 64; ii += 8)
             {
-                t = F2phi3(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F2phi3(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -316,7 +318,7 @@ namespace Home.Andir.Cryptography
             // pass 3
             for (int ii = 64; ii < 96; ii += 8)
             {
-                t = F3phi3(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F3phi3(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -992,93 +994,93 @@ namespace Home.Andir.Cryptography
             state[6] += (state[7] >> 00) & 0x0f;
         }
 
+        // common
+        protected uint F1(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x1 & (x0 ^ x4) ^ x2 & x5 ^ x3 & x6 ^ x0;
+        }
+
+        protected uint F2(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x2 & (x1 & ~x3 ^ x4 & x5 ^ x6 ^ x0) ^ x4 & (x1 ^ x5) ^ x3 & x5 ^ x0;
+        }
+
+        protected uint F3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x3 & (x1 & x2 ^ x6 ^ x0) ^ x1 & x4 ^ x2 & x5 ^ x0;
+        }
+
+        protected uint F4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x4 & (x5 & ~x2 ^ x3 & ~x6 ^ x1 ^ x6 ^ x0) ^ x3 & (x1 & x2 ^ x5 ^ x6) ^ x2 & x6 ^ x0;
+        }
+
+        protected uint F5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x0 & (x1 & x2 & x3 ^ ~x5) ^ x1 & x4 ^ x2 & x5 ^ x3 & x6;
+        }
+
         // pass 3
         private uint F1phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f1(x1, x0, x3, x5, x6, x2, x4);
+            return F1(x1, x0, x3, x5, x6, x2, x4);
         }
 
         private uint F2phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f2(x4, x2, x1, x0, x5, x3, x6);
+            return F2(x4, x2, x1, x0, x5, x3, x6);
         }
 
         private uint F3phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f3(x6, x1, x2, x3, x4, x5, x0);
+            return F3(x6, x1, x2, x3, x4, x5, x0);
         }
 
         // pass 4
         private uint F1phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f1(x2, x6, x1, x4, x5, x3, x0);
+            return F1(x2, x6, x1, x4, x5, x3, x0);
         }
 
         private uint F2phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f2(x3, x5, x2, x0, x1, x6, x4);
+            return F2(x3, x5, x2, x0, x1, x6, x4);
         }
 
         private uint F3phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f3(x1, x4, x3, x6, x0, x2, x5);
+            return F3(x1, x4, x3, x6, x0, x2, x5);
         }
 
         private uint F4phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f4(x6, x4, x0, x5, x2, x1, x3);
+            return F4(x6, x4, x0, x5, x2, x1, x3);
         }
 
         // pass 5
         private uint F1phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f1(x3, x4, x1, x0, x5, x2, x6);
+            return F1(x3, x4, x1, x0, x5, x2, x6);
         }
 
         private uint F2phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f2(x6, x2, x1, x0, x3, x4, x5);
+            return F2(x6, x2, x1, x0, x3, x4, x5);
         }
 
         private uint F3phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f3(x2, x6, x0, x4, x3, x1, x5);
+            return F3(x2, x6, x0, x4, x3, x1, x5);
         }
 
         private uint F4phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f4(x1, x5, x3, x2, x0, x4, x6);
+            return F4(x1, x5, x3, x2, x0, x4, x6);
         }
 
         private uint F5phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f5(x2, x5, x0, x6, x4, x3, x1);
-        }
-
-        // common
-        protected uint f1(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x1 & (x0 ^ x4) ^ x2 & x5 ^ x3 & x6 ^ x0;
-        }
-
-        protected uint f2(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x2 & (x1 & ~x3 ^ x4 & x5 ^ x6 ^ x0) ^ x4 & (x1 ^ x5) ^ x3 & x5 ^ x0;
-        }
-
-        protected uint f3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x3 & (x1 & x2 ^ x6 ^ x0) ^ x1 & x4 ^ x2 & x5 ^ x0;
-        }
-
-        protected uint f4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x4 & (x5 & ~x2 ^ x3 & ~x6 ^ x1 ^ x6 ^ x0) ^ x3 & (x1 & x2 ^ x5 ^ x6) ^ x2 & x6 ^ x0;
-        }
-
-        protected uint f5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x0 & (x1 & x2 & x3 ^ ~x5) ^ x1 & x4 ^ x2 & x5 ^ x3 & x6;
+            return F5(x2, x5, x0, x6, x4, x3, x1);
         }
     }
 }

@@ -2,6 +2,10 @@
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// RFC1321: The MD5 Message-Digest Algorithm
+    /// https://datatracker.ietf.org/doc/html/rfc1321
+    /// </summary>
     public sealed class MD5 : BlockHashAlgorithm
     {
         private static readonly uint[] Constants = new uint[]

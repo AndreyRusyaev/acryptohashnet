@@ -2,6 +2,10 @@
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// RIPEMD-160 is a 160-bit cryptographic hash function, designed by Hans Dobbertin, Antoon Bosselaers, and Bart Preneel.
+    /// https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
+    /// </summary>
     public sealed class RIPEMD160 : BlockHashAlgorithm
     {
         #region algorithm constant parameters 

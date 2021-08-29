@@ -2,6 +2,10 @@
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// RFC1320: The MD4 Message-Digest Algorithm
+    /// https://datatracker.ietf.org/doc/html/rfc1320
+    /// </summary>
     public sealed class MD4 : BlockHashAlgorithm
     {
         private static readonly uint[] Constants = new uint[]

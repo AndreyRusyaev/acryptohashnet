@@ -1,7 +1,13 @@
 ﻿using System;
+using System.ComponentModel.Design;
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// Tiger: A Fast New Cryptographic Hash Function (Designed in 1995)
+    /// by Eli Biham & Ross Anderson
+    /// https://www.cs.technion.ac.il/~biham/Reports/Tiger/
+    /// </summary>
     public sealed class Tiger : BlockHashAlgorithm
     {
         #region Constants (S-Boxes)

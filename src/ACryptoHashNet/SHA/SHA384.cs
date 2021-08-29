@@ -2,6 +2,9 @@
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// Defined by FIPS 180-4: Secure Hash Standard (SHS)
+    /// </summary>
     public sealed class SHA384 : BlockHashAlgorithm
     {
         private static readonly ulong[] Constants = new ulong[]

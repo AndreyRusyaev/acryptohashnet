@@ -2,6 +2,10 @@
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// RFC1319: The MD2 Message-Digest Algorithm
+    /// https://datatracker.ietf.org/doc/html/rfc1319
+    /// </summary>
     public sealed class MD2 : BlockHashAlgorithm
     {
         private static readonly uint[] Pi = new uint[]

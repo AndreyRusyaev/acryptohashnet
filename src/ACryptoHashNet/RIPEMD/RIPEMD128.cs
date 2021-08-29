@@ -2,6 +2,9 @@
 
 namespace Home.Andir.Cryptography
 {
+    /// <summary>
+    /// RIPEMD-128 is a plug-in substitute for RIPEMD (or MD4 and MD5, for that matter) with a 128-bit result. 
+    /// </summary>
     public sealed class RIPEMD128 : BlockHashAlgorithm
     {
         #region algorithm constant parameters

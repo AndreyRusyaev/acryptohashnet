@@ -1091,18 +1091,12 @@ namespace Home.Andir.Cryptography
 
         private static int GetBlockSize(SnefruOutputSize snefruOutputSize)
         {
-            int outputSize = 0;
-            switch (snefruOutputSize)
+            var outputSize = snefruOutputSize switch
             {
-                case SnefruOutputSize.Output4:
-                    outputSize = 4;
-                    break;
-                case SnefruOutputSize.Output8:
-                    outputSize = 8;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("snefruOutputSize");
-            }
+                SnefruOutputSize.Output4 => 4,
+                SnefruOutputSize.Output8 => 8,
+                _ => throw new ArgumentOutOfRangeException("snefruOutputSize"),
+            };
 
             return 64 - (outputSize << 2);
         }
