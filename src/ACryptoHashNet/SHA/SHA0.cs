@@ -10,13 +10,13 @@ namespace acryptohashnet
         private static readonly uint[] Constants = new uint[4]
         {
             // round 1
-            0x5a827999,
+            0x5a827999, // [2 ^ 30 * sqrt(2)]
             // round 2
-            0x6ed9eba1,
+            0x6ed9eba1, // [2 ^ 30 * sqrt(3)]
             // round 3
-            0x8f1bbcdc,
+            0x8f1bbcdc, // [2 ^ 30 * sqrt(5)]
             // round 4
-            0xca62c1d6
+            0xca62c1d6  // [2 ^ 30 * sqrt(10)]
         };
 
         private readonly BigCounter processedLength = new BigCounter(8);
