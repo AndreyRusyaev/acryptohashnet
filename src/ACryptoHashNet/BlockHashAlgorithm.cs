@@ -27,6 +27,15 @@ namespace acryptohashnet
         public int BlockSize { get; }
 
         /// <summary>
+        /// Initialization algorithm variables.
+        /// </summary>
+        public override void Initialize()
+        {
+            Array.Clear(lastBlock, 0, lastBlock.Length);
+            lastBlockLength = 0;
+        }
+
+        /// <summary>
         /// Processing block of bytes (size is @BlockSize), @array length must be >= than @offset + @BlockSize
         /// </summary>
         /// <param name="array">array of bytes</param>
@@ -48,15 +57,6 @@ namespace acryptohashnet
         protected abstract byte[] Result { get; }
 
         /// <summary>
-        /// Initialization algorithm variables.
-        /// </summary>
-        public override void Initialize()
-        {
-            Array.Clear(lastBlock, 0, lastBlock.Length);
-            lastBlockLength = 0;
-        }
-
-        /// <summary>
         /// Main hash procedure.
         /// </summary>
         /// <param name="array">byte array</param>
@@ -64,44 +64,32 @@ namespace acryptohashnet
         /// <param name="length">length of block for processing</param>
         protected override void HashCore(byte[] array, int offset, int length)
         {
-            int currentOffset = offset;
-            int currentLength = length;
-
-            int lastBlockRemaining = lastBlock.Length - lastBlockLength;
-            if (lastBlockLength > 0 && length >= lastBlockRemaining)
+            if (lastBlockLength > 0)
             {
-                // we were left with a partial block and we have enough data to fill it now
-                Buffer.BlockCopy(
-                    array,
-                    currentOffset,
-                    lastBlock,
-                    lastBlockLength,
-                    lastBlockRemaining);
+                int lastBlockRemaining = BlockSize - lastBlockLength;
+                if (length >= lastBlockRemaining)
+                {
+                    Buffer.BlockCopy(array, offset, lastBlock, lastBlockLength, lastBlockRemaining);
 
-                ProcessBlock(lastBlock, 0);
+                    ProcessBlock(lastBlock, 0);
+                    offset += lastBlockRemaining;
+                    length -= lastBlockRemaining;
 
-                currentOffset += lastBlockRemaining;
-                currentLength -= lastBlockRemaining;
-
-                lastBlockLength = 0;
+                    lastBlockLength = 0;
+                }
             }
 
-            int blockCount = currentLength / BlockSize;
-            for (int ii = 0; ii < blockCount; ii++, currentOffset += BlockSize)
+            while (length >= BlockSize)
             {
-                ProcessBlock(array, currentOffset);
+                ProcessBlock(array, offset);
+                offset += BlockSize;
+                length -= BlockSize;
             }
 
-            int blockBoundaryOffset = currentLength % BlockSize;
-            if (blockBoundaryOffset != 0) // current data length does not fall on a block boundary
+            if (length > 0)
             {
-                Buffer.BlockCopy(
-                    array,
-                    currentOffset,
-                    lastBlock,
-                    lastBlockLength,
-                    blockBoundaryOffset);
-                lastBlockLength += blockBoundaryOffset;
+                Buffer.BlockCopy(array, offset, lastBlock, lastBlockLength, length);
+                lastBlockLength += length;
             }
         }
 

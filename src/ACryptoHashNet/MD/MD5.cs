@@ -109,7 +109,7 @@ namespace acryptohashnet
                 d += a;
 
                 c += buffer[((ii + 2) * 5 + 1) & 0xf] + Constants[ii + 2];
-                c += ((d & b) | (a & ~b));
+                c += (d & b) | (a & ~b);
                 c = c << 14 | c >> 18;
                 c += d;
 
