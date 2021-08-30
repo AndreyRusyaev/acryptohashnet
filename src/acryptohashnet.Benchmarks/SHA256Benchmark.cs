@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 using BenchmarkDotNet.Attributes;
 
@@ -19,24 +16,7 @@ namespace acryptohashnet.Benchmarks
         [ParamsSource(nameof(InputSource))]
         public byte[] Input { get; set; }
 
-        public IEnumerable<byte[]> InputSource
-        {
-            get
-            {
-                string[] inputs = new string[]
-                {
-                    "",
-                    "a",
-                    "abc",
-                    "message digest",
-                    "abcdefghijklmnopqrstuvwxyz",
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-                    "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                };
-
-                return inputs.Select(x => Encoding.UTF8.GetBytes(x));
-            }
-        }
+        public IEnumerable<byte[]> InputSource { get; } = HashTestSet.BinaryMessages;
 
         [Benchmark]
         public byte[] CryptoProviderImpl() => cryptoProviderImpl.ComputeHash(Input);
