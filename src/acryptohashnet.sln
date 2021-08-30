@@ -4,7 +4,7 @@ VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "acryptohashnet", "ACryptoHashNet\acryptohashnet.csproj", "{78B89198-E7B9-44C1-AB71-C8ECDB0C7ECB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACryptoHashNet.UnitTests", "ACryptoHashNet.UnitTests\ACryptoHashNet.UnitTests.csproj", "{9E466492-CFB2-4E7C-A243-A397C2B920AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "acryptohashnet.UnitTests", "ACryptoHashNet.UnitTests\acryptohashnet.UnitTests.csproj", "{9E466492-CFB2-4E7C-A243-A397C2B920AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "acryptohashnet.Benchmarks", "acryptohashnet.Benchmarks\acryptohashnet.Benchmarks.csproj", "{AAF89274-C78A-443F-9EA9-B2AF103001E2}"
 EndProject

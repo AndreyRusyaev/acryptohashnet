@@ -37,15 +37,9 @@ namespace acryptohashnet.Benchmarks
         }
 
         [Benchmark]
-        public byte[] SystemCryptoProvider()
-        {
-            return cryptoProviderImpl.ComputeHash(Input);
-        }
+        public byte[] SystemCryptoProvider() => cryptoProviderImpl.ComputeHash(Input);
 
         [Benchmark]
-        public byte[] AcryptoHashNetImpl()
-        {
-            return acryptohashnetImpl.ComputeHash(Input);
-        }
+        public byte[] AcryptoHashNetImpl() => acryptohashnetImpl.ComputeHash(Input);
     }
 }
