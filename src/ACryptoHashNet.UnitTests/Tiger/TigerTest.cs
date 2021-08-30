@@ -106,13 +106,14 @@ namespace acryptohashnet.UnitTests
             byte[] testAr = new byte[65536];
 
             for (int ii = 0; ii < testAr.Length; ii++)
+            {
                 testAr[ii] = (byte)(ii & 0xff);
+            }
 
             Assert.AreEqual(
                 "fdf4f5b35139f48e710e421be5af411de1a8aac333f26204",
-                Utils.ByteArrayToHexString(Algorithm.ComputeHash(testAr)),
-                "test #10: tiger hash of 64kb string is wrong!"
-                );
+                StringUtils.ByteArrayToHexString(Algorithm.ComputeHash(testAr)),
+                "test #10: tiger hash of 64kb string is wrong!");
         }
     }
 }

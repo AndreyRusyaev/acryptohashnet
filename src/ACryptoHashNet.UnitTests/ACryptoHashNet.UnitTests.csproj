@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ACryptoHashNet\acryptohashnet.csproj" />
+      <ProjectReference Include="..\acryptohashnet\acryptohashnet.csproj" />
     </ItemGroup>
 
 </Project>

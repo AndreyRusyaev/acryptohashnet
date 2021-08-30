@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 using System.Text;
 
 using NUnit.Framework;
@@ -9,12 +10,13 @@ namespace acryptohashnet.UnitTests
     {
         public BaseHashTest(string hashName, HashAlgorithm algorithm)
         {
-            this.AlgorithmName = hashName;
-            this.Algorithm = algorithm;
+            AlgorithmName = hashName;
+            Algorithm = algorithm;
         }
 
-        public string AlgorithmName { get; private set; }
-        public HashAlgorithm Algorithm { get; private set; }
+        public string AlgorithmName { get; }
+
+        public HashAlgorithm Algorithm { get; }
 
         protected string HashString(string input)
         {
@@ -26,7 +28,7 @@ namespace acryptohashnet.UnitTests
             var result = Algorithm.ComputeHash(
                 encoding.GetBytes(input));
 
-            return Utils.ByteArrayToHexString(result);
+            return StringUtils.ByteArrayToHexString(result);
         }
 
         protected void HashStringTest(string testInfo,
@@ -36,8 +38,7 @@ namespace acryptohashnet.UnitTests
                 expected,
                 HashString(source),
                 string.Format("{1}: {0} hash of string = '{2}' is wrong!", 
-                    this.AlgorithmName, testInfo, source)
-                );
+                    this.AlgorithmName, testInfo, source));
         }
     }
 }
