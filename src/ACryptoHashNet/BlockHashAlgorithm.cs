@@ -24,6 +24,9 @@ namespace acryptohashnet
             lastBlockLength = 0;
         }
 
+        /// <summary>
+        /// Size of algorithm block in bits.
+        /// </summary>
         public int BlockSize { get; }
 
         /// <summary>
