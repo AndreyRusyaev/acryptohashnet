@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -75,6 +76,7 @@ namespace acryptohashnet
             // Fill buffer for transformations
             BigEndianBuffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
+            // Expand buffer
             for (int ii = 16; ii < 80; ii++)
             {
                 buffer[ii] = Ro1(buffer[ii - 2]) + buffer[ii - 7] + Ro0(buffer[ii - 15]) + buffer[ii - 16];
@@ -92,84 +94,44 @@ namespace acryptohashnet
             for (int ii = 0; ii < buffer.Length; ii += 8)
             {
                 // step 1
-                h += Constants[ii + 0] + buffer[ii + 0];
-                h += (e & f) ^ (~e & g);
-                h += Sig1(e);
-
+                h += buffer[ii + 0] + Constants[ii + 0] + SHAFunctions.Ch(e, f, g) + Sig1(e);
                 d += h;
-
-                h += (a & b) ^ (a & c) ^ (b & c);
-                h += Sig0(a);
+                h += SHAFunctions.Maj(a, b, c) + Sig0(a);
 
                 // step 2
-                g += Constants[ii + 1] + buffer[ii + 1];
-                g += (d & e) ^ (~d & f);
-                g += Sig1(d);
-
+                g += buffer[ii + 1] + Constants[ii + 1] + SHAFunctions.Ch(d, e, f) + Sig1(d);
                 c += g;
-
-                g += (h & a) ^ (h & b) ^ (a & b);
-                g += Sig0(h);
+                g += SHAFunctions.Maj(h, a, b) + Sig0(h);
 
                 // step 3
-                f += Constants[ii + 2] + buffer[ii + 2];
-                f += (c & d) ^ (~c & e);
-                f += Sig1(c);
-
+                f += buffer[ii + 2] + Constants[ii + 2] + SHAFunctions.Ch(c, d, e) + Sig1(c);
                 b += f;
-
-                f += (g & h) ^ (g & a) ^ (h & a);
-                f += Sig0(g);
+                f += SHAFunctions.Maj(g, h, a) + Sig0(g);
 
                 // step 4
-                e += Constants[ii + 3] + buffer[ii + 3];
-                e += (b & c) ^ (~b & d);
-                e += Sig1(b);
-
+                e += buffer[ii + 3] + Constants[ii + 3] + SHAFunctions.Ch(b, c, d) + Sig1(b);
                 a += e;
-
-                e += (f & g) ^ (f & h) ^ (g & h);
-                e += Sig0(f);
+                e += SHAFunctions.Maj(f, g, h) + Sig0(f);
 
                 // step 5
-                d += Constants[ii + 4] + buffer[ii + 4];
-                d += (a & b) ^ (~a & c);
-                d += Sig1(a);
-
+                d += buffer[ii + 4] + Constants[ii + 4] + SHAFunctions.Ch(a, b, c) + Sig1(a);
                 h += d;
-
-                d += (e & f) ^ (e & g) ^ (f & g);
-                d += Sig0(e);
+                d += SHAFunctions.Maj(e, f, g) + Sig0(e);
 
                 // step 6
-                c += Constants[ii + 5] + buffer[ii + 5];
-                c += (h & a) ^ (~h & b);
-                c += Sig1(h);
-
+                c += buffer[ii + 5] + Constants[ii + 5] + SHAFunctions.Ch(h, a, b) + Sig1(h);
                 g += c;
-
-                c += (d & e) ^ (d & f) ^ (e & f);
-                c += Sig0(d);
+                c += SHAFunctions.Maj(d, e, f) + Sig0(d);
 
                 // step 7
-                b += Constants[ii + 6] + buffer[ii + 6];
-                b += (g & h) ^ (~g & a);
-                b += Sig1(g);
-
+                b += buffer[ii + 6] + Constants[ii + 6] + SHAFunctions.Ch(g, h, a) + Sig1(g);
                 f += b;
-
-                b += (c & d) ^ (c & e) ^ (d & e);
-                b += Sig0(c);
+                b += SHAFunctions.Maj(c, d, e) + Sig0(c);
 
                 // step 8
-                a += Constants[ii + 7] + buffer[ii + 7];
-                a += (f & g) ^ (~f & h);
-                a += Sig1(f);
-
+                a += buffer[ii + 7] + Constants[ii + 7] + SHAFunctions.Ch(f, g, h) + Sig1(f);
                 e += a;
-
-                a += (b & c) ^ (b & d) ^ (c & d);
-                a += Sig0(b);
+                a += SHAFunctions.Maj(b, c, d) + Sig0(b);
             }
 
             state[0] += a;
@@ -222,6 +184,30 @@ namespace acryptohashnet
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ulong Ro0(ulong x)
+        {
+            return SHAFunctions.RotateRight(x, 1) ^ SHAFunctions.RotateRight(x, 8) ^ (x >> 7);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ulong Ro1(ulong x)
+        {
+            return SHAFunctions.RotateRight(x, 19) ^ SHAFunctions.RotateRight(x, 61) ^ (x >> 6);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ulong Sig0(ulong x)
+        {
+            return SHAFunctions.RotateRight(x, 28) ^ SHAFunctions.RotateRight(x, 34) ^ SHAFunctions.RotateRight(x, 39);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ulong Sig1(ulong x)
+        {
+            return SHAFunctions.RotateRight(x, 14) ^ SHAFunctions.RotateRight(x, 18 ) ^ SHAFunctions.RotateRight(x, 41);
+        }
+
         private void InitializeState()
         {
             state[0] = 0xcbbb9d5dc1059ed8;
@@ -232,26 +218,6 @@ namespace acryptohashnet
             state[5] = 0x8eb44a8768581511;
             state[6] = 0xdb0c2e0d64f98fa7;
             state[7] = 0x47b5481dbefa4fa4;
-        }
-
-        private ulong Ro0(ulong x)
-        {
-            return (x >> 1 | x << 63) ^ (x >> 8 | x << 56) ^ (x >> 7);
-        }
-
-        private ulong Ro1(ulong x)
-        {
-            return (x >> 19 | x << 45) ^ (x >> 61 | x << 3) ^ (x >> 6);
-        }
-
-        private ulong Sig0(ulong x)
-        {
-            return (x >> 28 | x << 36) ^ (x >> 34 | x << 30) ^ (x >> 39 | x << 25);
-        }
-
-        private ulong Sig1(ulong x)
-        {
-            return (x >> 14 | x << 50) ^ (x >> 18 | x << 46) ^ (x >> 41 | x << 23);
         }
     }
 }
