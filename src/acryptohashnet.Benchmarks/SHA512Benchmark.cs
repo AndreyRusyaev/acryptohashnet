@@ -16,7 +16,7 @@ namespace acryptohashnet.Benchmarks
         [ParamsSource(nameof(InputSource))]
         public byte[] Input { get; set; }
 
-        public IEnumerable<byte[]> InputSource { get; } = HashTestSet.BinaryMessages;
+        public IEnumerable<byte[]> InputSource { get; } = TestSuite.BinaryMessages;
 
         [Benchmark]
         public byte[] CryptoProviderImpl() => cryptoProviderImpl.ComputeHash(Input);

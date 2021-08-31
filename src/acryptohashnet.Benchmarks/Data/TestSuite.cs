@@ -4,7 +4,7 @@ using System.Text;
 
 namespace acryptohashnet.Benchmarks
 {
-    public static class HashTestSet
+    public static class TestSuite
     {
         public static string[] TextMessages
         {
