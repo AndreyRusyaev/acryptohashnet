@@ -15,7 +15,7 @@ namespace acryptohashnet
         /// <summary>
         /// Block hash algorithm ctor.
         /// </summary>
-        /// <param name="blockSize">size of the block for algorithm</param>
+        /// <param name="blockSize">size of the block for algorithm in bytes</param>
         public BlockHashAlgorithm(int blockSize)
         {
             BlockSize = blockSize;
@@ -25,7 +25,7 @@ namespace acryptohashnet
         }
 
         /// <summary>
-        /// Size of algorithm block in bits.
+        /// Size of algorithm block in bytes.
         /// </summary>
         public int BlockSize { get; }
 

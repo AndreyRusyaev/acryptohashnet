@@ -54,7 +54,7 @@ namespace acryptohashnet
             BigEndianBuffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
             // Expand buffer
-            for (int ii = 16; ii < 80 && ii < buffer.Length; ii++)
+            for (int ii = 16; ii < buffer.Length; ii++)
             {
                 uint x = buffer[ii - 3] ^ buffer[ii - 8] ^ buffer[ii - 14] ^ buffer[ii - 16];
                 // added in sha-1

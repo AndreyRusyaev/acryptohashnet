@@ -55,11 +55,6 @@ namespace acryptohashnet
                 throw new ArgumentOutOfRangeException(nameof(srcOffset));
             }
 
-            if (dstOffset > dst.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(dstOffset));
-            }
-
             if (srcOffset + bytesCount > src.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytesCount));
@@ -67,18 +62,13 @@ namespace acryptohashnet
 
             if (dstOffset > dst.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(srcOffset));
+                throw new ArgumentOutOfRangeException(nameof(dstOffset));
             }
 
             int uintsCount = bytesCount >> 2; // arg / 4
             int bytesRemaining = bytesCount & 0x3; // arg % 4
 
             if (dstOffset + uintsCount + (bytesRemaining > 0 ? 1 : 0) > dst.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(bytesCount));
-            }
-
-            if (bytesRemaining > 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
@@ -120,7 +110,7 @@ namespace acryptohashnet
 
             if (dstOffset + bytesCount > dst.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(dstOffset));
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
             int ulongsCount = bytesCount >> 3; // arg / 8
@@ -192,8 +182,8 @@ namespace acryptohashnet
                     | (ulong)src[srcIndex + 6] << 8
                     | (ulong)src[srcIndex + 7];
 
-                dstIndex += 1;
                 srcIndex += 8;
+                dstIndex += 1;
             }
 
             if (bytesRemaining > 0)

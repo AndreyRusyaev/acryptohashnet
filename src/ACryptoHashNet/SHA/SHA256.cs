@@ -63,7 +63,7 @@ namespace acryptohashnet
             // Fill buffer for transformations
             BigEndianBuffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
-            for (int ii = 16; ii < 64; ii++)
+            for (int ii = 16; ii < buffer.Length; ii++)
             {
                 buffer[ii] = Ro1(buffer[ii - 2]) + buffer[ii - 7] + Ro0(buffer[ii - 15]) + buffer[ii - 16];
             }
@@ -77,7 +77,7 @@ namespace acryptohashnet
             uint g = state[6];
             uint h = state[7];
 
-            for (int ii = 0; ii < buffer.Length; ii += 8)
+            for (int ii = 0; ii < buffer.Length - 7; ii += 8)
             {
                 // step 1
                 h += buffer[ii + 0] + Constants[ii + 0] + SHAFunctions.Ch(e, f, g) + Sig1(e);

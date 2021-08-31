@@ -53,7 +53,7 @@ namespace acryptohashnet
             // Fill buffer for transformations
             BigEndianBuffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
-            for (int ii = 16; ii < 80; ii++)
+            for (int ii = 16; ii < buffer.Length; ii++)
             {
                 buffer[ii] = buffer[ii - 3] ^ buffer[ii - 8] ^ buffer[ii - 14] ^ buffer[ii - 16];
             }
