@@ -173,25 +173,25 @@ namespace acryptohashnet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint Ro0(uint x)
         {
-            return SHAFunctions.RotateRight(x, 7) ^ SHAFunctions.RotateRight(x, 18) ^ (x >> 3);
+            return Bits.RotateRight(x, 7) ^ Bits.RotateRight(x, 18) ^ (x >> 3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint Ro1(uint x)
         {
-            return SHAFunctions.RotateRight(x, 17) ^ SHAFunctions.RotateRight(x, 19) ^ (x >> 10);
+            return Bits.RotateRight(x, 17) ^ Bits.RotateRight(x, 19) ^ (x >> 10);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint Sig0(uint x)
         {
-            return SHAFunctions.RotateRight(x, 2) ^ SHAFunctions.RotateRight(x, 13) ^ SHAFunctions.RotateRight(x, 22);
+            return Bits.RotateRight(x, 2) ^ Bits.RotateRight(x, 13) ^ Bits.RotateRight(x, 22);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint Sig1(uint x)
         {
-            return SHAFunctions.RotateRight(x, 6) ^ SHAFunctions.RotateRight(x, 11) ^ SHAFunctions.RotateRight(x, 25);
+            return Bits.RotateRight(x, 6) ^ Bits.RotateRight(x, 11) ^ Bits.RotateRight(x, 25);
         }
 
         private void InitializeState()

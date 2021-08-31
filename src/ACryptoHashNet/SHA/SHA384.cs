@@ -187,25 +187,25 @@ namespace acryptohashnet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong Ro0(ulong x)
         {
-            return SHAFunctions.RotateRight(x, 1) ^ SHAFunctions.RotateRight(x, 8) ^ (x >> 7);
+            return Bits.RotateRight(x, 1) ^ Bits.RotateRight(x, 8) ^ (x >> 7);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong Ro1(ulong x)
         {
-            return SHAFunctions.RotateRight(x, 19) ^ SHAFunctions.RotateRight(x, 61) ^ (x >> 6);
+            return Bits.RotateRight(x, 19) ^ Bits.RotateRight(x, 61) ^ (x >> 6);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong Sig0(ulong x)
         {
-            return SHAFunctions.RotateRight(x, 28) ^ SHAFunctions.RotateRight(x, 34) ^ SHAFunctions.RotateRight(x, 39);
+            return Bits.RotateRight(x, 28) ^ Bits.RotateRight(x, 34) ^ Bits.RotateRight(x, 39);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong Sig1(ulong x)
         {
-            return SHAFunctions.RotateRight(x, 14) ^ SHAFunctions.RotateRight(x, 18 ) ^ SHAFunctions.RotateRight(x, 41);
+            return Bits.RotateRight(x, 14) ^ Bits.RotateRight(x, 18 ) ^ Bits.RotateRight(x, 41);
         }
 
         private void InitializeState()

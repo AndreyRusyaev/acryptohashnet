@@ -59,19 +59,19 @@ namespace acryptohashnet
             {
                 a += buffer[ii + 0] + Constants[0];
                 a += (b & c) | (~b & d);
-                a = a << 3 | a >> 29;
+                a = Bits.RotateLeft(a, 3);
 
                 d += buffer[ii + 1] + Constants[0];
                 d += (a & b) | (~a & c);
-                d = d << 7 | d >> 25;
+                d = Bits.RotateLeft(d, 7);
 
                 c += buffer[ii + 2] + Constants[0];
                 c += (d & a) | (~d & b);
-                c = c << 11 | c >> 21;
+                c = Bits.RotateLeft(c, 11);
 
                 b += buffer[ii + 3] + Constants[0];
                 b += (c & d) | (~c & a);
-                b = b << 19 | b >> 13;
+                b = Bits.RotateLeft(b, 19);
             }
 
             // Round 2
@@ -79,19 +79,19 @@ namespace acryptohashnet
             {
                 a += buffer[jj + 00] + Constants[1];
                 a += (b & c) | (b & d) | (c & d);
-                a = a << 3 | a >> 29;
+                a = Bits.RotateLeft(a, 3);
 
                 d += buffer[jj + 04] + Constants[1];
                 d += (a & b) | (a & c) | (b & c);
-                d = d << 5 | d >> 27;
+                d = Bits.RotateLeft(d, 5);
 
                 c += buffer[jj + 08] + Constants[1];
                 c += (d & a) | (d & b) | (a & b);
-                c = c << 9 | c >> 23;
+                c = Bits.RotateLeft(c, 9);
 
                 b += buffer[jj + 12] + Constants[1];
                 b += (c & d) | (c & a) | (d & a);
-                b = b << 13 | b >> 19;
+                b = Bits.RotateLeft(b, 13);
             }
 
             // Round 3
@@ -101,19 +101,19 @@ namespace acryptohashnet
 
                 a += buffer[index + 00] + Constants[2];
                 a += b ^ c ^ d;
-                a = a << 3 | a >> 29;
+                a = Bits.RotateLeft(a, 3);
 
                 d += buffer[index + 08] + Constants[2];
                 d += a ^ b ^ c;
-                d = d << 9 | d >> 23;
+                d = Bits.RotateLeft(d, 9);
 
                 c += buffer[index + 04] + Constants[2];
                 c += d ^ a ^ b;
-                c = c << 11 | c >> 21;
+                c = Bits.RotateLeft(c, 11);
 
                 b += buffer[index + 12] + Constants[2];
                 b += c ^ d ^ a;
-                b = b << 15 | b >> 17;
+                b = Bits.RotateLeft(b, 15);
             }
 
             // The end

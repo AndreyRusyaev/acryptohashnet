@@ -76,77 +76,77 @@ namespace acryptohashnet
             // round 1
             for (; index < 20 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k0 + SHAFunctions.Ch(b, c, d) + SHAFunctions.RotateLeft(a, 5);
-                b = SHAFunctions.RotateLeft(b, 30);
+                e += buffer[index + 0] + k0 + SHAFunctions.Ch(b, c, d) + Bits.RotateLeft(a, 5);
+                b = Bits.RotateLeft(b, 30);
 
-                d += buffer[index + 1] + k0 + SHAFunctions.Ch(a, b, c) + SHAFunctions.RotateLeft(e, 5);
-                a = SHAFunctions.RotateLeft(a, 30);
+                d += buffer[index + 1] + k0 + SHAFunctions.Ch(a, b, c) + Bits.RotateLeft(e, 5);
+                a = Bits.RotateLeft(a, 30);
 
-                c += buffer[index + 2] + k0 + SHAFunctions.Ch(e, a, b) + SHAFunctions.RotateLeft(d, 5);
-                e = SHAFunctions.RotateLeft(e, 30);
+                c += buffer[index + 2] + k0 + SHAFunctions.Ch(e, a, b) + Bits.RotateLeft(d, 5);
+                e = Bits.RotateLeft(e, 30);
 
-                b += buffer[index + 3] + k0 + SHAFunctions.Ch(d, e, a) + SHAFunctions.RotateLeft(c, 5);
-                d = SHAFunctions.RotateLeft(d, 30);
+                b += buffer[index + 3] + k0 + SHAFunctions.Ch(d, e, a) + Bits.RotateLeft(c, 5);
+                d = Bits.RotateLeft(d, 30);
 
-                a += buffer[index + 4] + k0 + SHAFunctions.Ch(c, d, e) + SHAFunctions.RotateLeft(b, 5);
-                c = SHAFunctions.RotateLeft(c, 30);
+                a += buffer[index + 4] + k0 + SHAFunctions.Ch(c, d, e) + Bits.RotateLeft(b, 5);
+                c = Bits.RotateLeft(c, 30);
             }
 
             // round 2
             for (; index < 40 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k1 + SHAFunctions.Parity(b, c, d) + SHAFunctions.RotateLeft(a, 5);
-                b = SHAFunctions.RotateLeft(b, 30);
+                e += buffer[index + 0] + k1 + SHAFunctions.Parity(b, c, d) + Bits.RotateLeft(a, 5);
+                b = Bits.RotateLeft(b, 30);
 
-                d += buffer[index + 1] + k1 + SHAFunctions.Parity(a, b, c) + SHAFunctions.RotateLeft(e, 5);
-                a = SHAFunctions.RotateLeft(a, 30);
+                d += buffer[index + 1] + k1 + SHAFunctions.Parity(a, b, c) + Bits.RotateLeft(e, 5);
+                a = Bits.RotateLeft(a, 30);
 
-                c += buffer[index + 2] + k1 + SHAFunctions.Parity(e, a, b) + SHAFunctions.RotateLeft(d, 5);
-                e = SHAFunctions.RotateLeft(e, 30);
+                c += buffer[index + 2] + k1 + SHAFunctions.Parity(e, a, b) + Bits.RotateLeft(d, 5);
+                e = Bits.RotateLeft(e, 30);
 
-                b += buffer[index + 3] + k1 + SHAFunctions.Parity(d, e, a) + SHAFunctions.RotateLeft(c, 5);
-                d = SHAFunctions.RotateLeft(d, 30);
+                b += buffer[index + 3] + k1 + SHAFunctions.Parity(d, e, a) + Bits.RotateLeft(c, 5);
+                d = Bits.RotateLeft(d, 30);
 
-                a += buffer[index + 4] + k1 + SHAFunctions.Parity(c, d, e) + SHAFunctions.RotateLeft(b, 5);
-                c = SHAFunctions.RotateLeft(c, 30);
+                a += buffer[index + 4] + k1 + SHAFunctions.Parity(c, d, e) + Bits.RotateLeft(b, 5);
+                c = Bits.RotateLeft(c, 30);
             }
 
             // round 3
             for (; index < 60 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k2 + SHAFunctions.Maj(b, c, d) + SHAFunctions.RotateLeft(a, 5);
-                b = SHAFunctions.RotateLeft(b, 30);
+                e += buffer[index + 0] + k2 + SHAFunctions.Maj(b, c, d) + Bits.RotateLeft(a, 5);
+                b = Bits.RotateLeft(b, 30);
 
-                d += buffer[index + 1] + k2 + SHAFunctions.Maj(a, b, c) + SHAFunctions.RotateLeft(e, 5);
-                a = SHAFunctions.RotateLeft(a, 30);
+                d += buffer[index + 1] + k2 + SHAFunctions.Maj(a, b, c) + Bits.RotateLeft(e, 5);
+                a = Bits.RotateLeft(a, 30);
 
-                c += buffer[index + 2] + k2 + SHAFunctions.Maj(e, a, b) + SHAFunctions.RotateLeft(d, 5);
-                e = SHAFunctions.RotateLeft(e, 30);
+                c += buffer[index + 2] + k2 + SHAFunctions.Maj(e, a, b) + Bits.RotateLeft(d, 5);
+                e = Bits.RotateLeft(e, 30);
 
-                b += buffer[index + 3] + k2 + SHAFunctions.Maj(d, e, a) + SHAFunctions.RotateLeft(c, 5);
-                d = SHAFunctions.RotateLeft(d, 30);
+                b += buffer[index + 3] + k2 + SHAFunctions.Maj(d, e, a) + Bits.RotateLeft(c, 5);
+                d = Bits.RotateLeft(d, 30);
 
-                a += buffer[index + 4] + k2 + SHAFunctions.Maj(c, d, e) + SHAFunctions.RotateLeft(b, 5);
-                c = SHAFunctions.RotateLeft(c, 30);
+                a += buffer[index + 4] + k2 + SHAFunctions.Maj(c, d, e) + Bits.RotateLeft(b, 5);
+                c = Bits.RotateLeft(c, 30);
             }
 
             // round 4
             for (; index < 80 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k3 + SHAFunctions.Parity(b, c, d) + SHAFunctions.RotateLeft(a, 5);
-                b = SHAFunctions.RotateLeft(b, 30);
+                e += buffer[index + 0] + k3 + SHAFunctions.Parity(b, c, d) + Bits.RotateLeft(a, 5);
+                b = Bits.RotateLeft(b, 30);
 
-                d += buffer[index + 1] + k3 + SHAFunctions.Parity(a, b, c) + SHAFunctions.RotateLeft(e, 5);
-                a = SHAFunctions.RotateLeft(a, 30);
+                d += buffer[index + 1] + k3 + SHAFunctions.Parity(a, b, c) + Bits.RotateLeft(e, 5);
+                a = Bits.RotateLeft(a, 30);
 
-                c += buffer[index + 2] + k3 + SHAFunctions.Parity(e, a, b) + SHAFunctions.RotateLeft(d, 5);
-                e = SHAFunctions.RotateLeft(e, 30);
+                c += buffer[index + 2] + k3 + SHAFunctions.Parity(e, a, b) + Bits.RotateLeft(d, 5);
+                e = Bits.RotateLeft(e, 30);
 
-                b += buffer[index + 3] + k3 + SHAFunctions.Parity(d, e, a) + SHAFunctions.RotateLeft(c, 5);
-                d = SHAFunctions.RotateLeft(d, 30);
+                b += buffer[index + 3] + k3 + SHAFunctions.Parity(d, e, a) + Bits.RotateLeft(c, 5);
+                d = Bits.RotateLeft(d, 30);
 
-                a += buffer[index + 4] + k3 + SHAFunctions.Parity(c, d, e) + SHAFunctions.RotateLeft(b, 5);
-                c = SHAFunctions.RotateLeft(c, 30);
+                a += buffer[index + 4] + k3 + SHAFunctions.Parity(c, d, e) + Bits.RotateLeft(b, 5);
+                c = Bits.RotateLeft(c, 30);
             }
 
             state[0] += a;
