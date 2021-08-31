@@ -8,7 +8,7 @@ namespace acryptohashnet
     /// </summary>
     public sealed class MD2 : BlockHashAlgorithm
     {
-        private static readonly uint[] Pi = new uint[]
+        private static readonly byte[] Pi = new byte[]
         {
             041, 046, 067, 201,
             162, 216, 124, 001,
@@ -142,7 +142,8 @@ namespace acryptohashnet
             {
                 for (int jj = 0; jj < buffer.Length; jj++)
                 {
-                    t = buffer[jj] = (byte)(buffer[jj] ^ Pi[t]);
+                    buffer[jj] = (byte)(buffer[jj] ^ Pi[t]);
+                    t = buffer[jj];
                 }
 
                 t = (uint)((t + ii) & 0xff); // % 256

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -74,23 +75,19 @@ namespace acryptohashnet
             // Round 1
             for (int ii = 0; ii < 16; ii += 4)
             {
-                a += buffer[ii + 0] + Constants[ii + 0];
-                a += (b & c) | (~b & d);
+                a += buffer[ii + 0] + Constants[ii + 0] + F(b, c, d);
                 a = Bits.RotateLeft(a, 7);
                 a += b;
 
-                d += buffer[ii + 1] + Constants[ii + 1];
-                d += (a & b) | (~a & c);
+                d += buffer[ii + 1] + Constants[ii + 1] + F(a, b, c);
                 d = Bits.RotateLeft(d, 12);
                 d += a;
 
-                c += buffer[ii + 2] + Constants[ii + 2];
-                c += (d & a) | (~d & b);
+                c += buffer[ii + 2] + Constants[ii + 2] + F(d, a, b);
                 c = Bits.RotateLeft(c, 17);
                 c += d;
 
-                b += buffer[ii + 3] + Constants[ii + 3];
-                b += (c & d) | (~c & a);
+                b += buffer[ii + 3] + Constants[ii + 3] + F(c, d, a);
                 b = Bits.RotateLeft(b, 22);
                 b += c;
             }
@@ -98,23 +95,19 @@ namespace acryptohashnet
             // Round 2
             for (int ii = 16; ii < 32; ii += 4)
             {
-                a += buffer[((ii + 0) * 5 + 1) & 0xf] + Constants[ii + 0];
-                a += (b & d) | (c & ~d);
+                a += buffer[((ii + 0) * 5 + 1) & 0xf] + Constants[ii + 0] + G(b, c, d);
                 a = Bits.RotateLeft(a, 5);
                 a += b;
 
-                d += buffer[((ii + 1) * 5 + 1) & 0xf] + Constants[ii + 1];
-                d += (a & c) | (b & ~c);
+                d += buffer[((ii + 1) * 5 + 1) & 0xf] + Constants[ii + 1] + G(a, b, c);
                 d = Bits.RotateLeft(d, 9);
                 d += a;
 
-                c += buffer[((ii + 2) * 5 + 1) & 0xf] + Constants[ii + 2];
-                c += (d & b) | (a & ~b);
+                c += buffer[((ii + 2) * 5 + 1) & 0xf] + Constants[ii + 2] + G(d, a, b);
                 c = Bits.RotateLeft(c, 14);
                 c += d;
 
-                b += buffer[((ii + 3) * 5 + 1) & 0xf] + Constants[ii + 3];
-                b += (c & a) | (d & ~a);
+                b += buffer[((ii + 3) * 5 + 1) & 0xf] + Constants[ii + 3] + G(c, d, a);
                 b = Bits.RotateLeft(b, 20);
                 b += c;
             }
@@ -122,23 +115,19 @@ namespace acryptohashnet
             // Round 3
             for (int ii = 32; ii < 48; ii += 4)
             {
-                a += buffer[((ii + 0) * 3 + 5) & 0xf] + Constants[ii + 0];
-                a += b ^ c ^ d;
+                a += buffer[((ii + 0) * 3 + 5) & 0xf] + Constants[ii + 0] + H(b, c, d);
                 a = Bits.RotateLeft(a, 4);
                 a += b;
 
-                d += buffer[((ii + 1) * 3 + 5) & 0xf] + Constants[ii + 1];
-                d += a ^ b ^ c;
+                d += buffer[((ii + 1) * 3 + 5) & 0xf] + Constants[ii + 1] + H(a, b, c);
                 d = Bits.RotateLeft(d, 11);
                 d += a;
 
-                c += buffer[((ii + 2) * 3 + 5) & 0xf] + Constants[ii + 2];
-                c += d ^ a ^ b;
+                c += buffer[((ii + 2) * 3 + 5) & 0xf] + Constants[ii + 2] + H(d, a, b);
                 c = Bits.RotateLeft(c, 16);
                 c += d;
 
-                b += buffer[((ii + 3) * 3 + 5) & 0xf] + Constants[ii + 3];
-                b += c ^ d ^ a;
+                b += buffer[((ii + 3) * 3 + 5) & 0xf] + Constants[ii + 3] + H(c, d, a);
                 b = Bits.RotateLeft(b, 23);
                 b += c;
             }
@@ -146,23 +135,19 @@ namespace acryptohashnet
             // Round 4
             for (int ii = 48; ii < 64; ii += 4)
             {
-                a += buffer[((ii + 0) * 7 + 0) & 0xf] + Constants[ii + 0];
-                a += c ^ (b | ~d);
+                a += buffer[((ii + 0) * 7 + 0) & 0xf] + Constants[ii + 0] + I(b, c, d);
                 a = Bits.RotateLeft(a, 6);
                 a += b;
 
-                d += buffer[((ii + 1) * 7 + 0) & 0xf] + Constants[ii + 1];
-                d += b ^ (a | ~c);
+                d += buffer[((ii + 1) * 7 + 0) & 0xf] + Constants[ii + 1] + I(a, b, c);
                 d = Bits.RotateLeft(d, 10);
                 d += a;
 
-                c += buffer[((ii + 2) * 7 + 0) & 0xf] + Constants[ii + 2];
-                c += a ^ (d | ~b);
+                c += buffer[((ii + 2) * 7 + 0) & 0xf] + Constants[ii + 2] + I(d, a, b);
                 c = Bits.RotateLeft(c, 15);
                 c += d;
 
-                b += buffer[((ii + 3) * 7 + 0) & 0xf] + Constants[ii + 3];
-                b += d ^ (c | ~a);
+                b += buffer[((ii + 3) * 7 + 0) & 0xf] + Constants[ii + 3] + I(c, d, a);
                 b = Bits.RotateLeft(b, 21);
                 b += c;
             }
@@ -212,6 +197,30 @@ namespace acryptohashnet
 
                 return result;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint F(uint x, uint y, uint z)
+        {
+            return (x & y) | (~x & z);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint G(uint x, uint y, uint z)
+        {
+            return (x & z) | (y & ~z);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint H(uint x, uint y, uint z)
+        {
+            return x ^ y ^ z;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint I(uint x, uint y, uint z)
+        {
+            return y ^ (x | ~ z);
         }
 
         private void InitializeState()
