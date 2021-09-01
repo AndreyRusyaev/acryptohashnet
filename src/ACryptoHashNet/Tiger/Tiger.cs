@@ -1,42 +1,17 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
+    /// <summary>
+    /// Tiger: A Fast New Cryptographic Hash Function (Designed in 1995)
+    /// by Eli Biham & Ross Anderson
+    /// https://www.cs.technion.ac.il/~biham/Reports/Tiger/
+    /// </summary>
     public sealed class Tiger : BlockHashAlgorithm
     {
-        public Tiger() : base(64)
-        {
-            this.HashSizeValue = 192;
-
-            this.finalBlock = new byte[BlockSize];
-            this.Initialize();
-        }
-
-        private readonly IntCounter counter = new IntCounter(2);
-        private readonly ulong[] state = new ulong[3];
-        private readonly byte[] finalBlock;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            counter.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x0123456789abcdef;
-            state[1] = 0xfedcba9876543210;
-            state[2] = 0xf096a5b4c3b2e187;
-        }
-
         #region Constants (S-Boxes)
 
-        private static readonly ulong[] box1 = new ulong[256]
+        private static readonly ulong[] SBox1 = new ulong[256]
         {
             0x02aab17cf7e90c5e   /*    0 */,    0xac424b03e243a8ec   /*    1 */,
             0x72cd5be30dd5fcd3   /*    2 */,    0x6d019b93f6f97f3a   /*    3 */,
@@ -168,7 +143,7 @@ namespace Home.Andir.Cryptography
             0xa6300f170bdc4820   /*  254 */,    0xebc18760ed78a77a   /*  255 */
         };
 
-        private static readonly ulong[] box2 = new ulong[256]
+        private static readonly ulong[] SBox2 = new ulong[256]
         {
             0xe6a6be5a05a12138   /*  256 */,    0xb5a122a5b4f87c98   /*  257 */,
             0x563c6089140b6990   /*  258 */,    0x4c46cb2e391f5dd5   /*  259 */,
@@ -300,7 +275,7 @@ namespace Home.Andir.Cryptography
             0xd62a2eabc0977179   /*  510 */,    0x22fac097aa8d5c0e   /*  511 */
         };
 
-        private static readonly ulong[] box3 = new ulong[256]
+        private static readonly ulong[] SBox3 = new ulong[256]
         {
             0xf49fcc2ff1daf39b   /*  512 */,    0x487fd5c66ff29281   /*  513 */,
             0xe8a30667fcdca83f   /*  514 */,    0x2c9b4be3d2fcce63   /*  515 */,
@@ -432,7 +407,7 @@ namespace Home.Andir.Cryptography
             0xd3dc3bef265b0f70   /*  766 */,    0x6d0e60f5c3578a9e   /*  767 */
         };
 
-        private static readonly ulong[] box4 = new ulong[256]
+        private static readonly ulong[] SBox4 = new ulong[256]
         {
             0x5b0e608526323c55   /*  768 */,    0x1a46c1a9fa1b59f5   /*  769 */,
             0xa9e245a17c4c8ffa   /*  770 */,    0x65ca5159db2955d7   /*  771 */,
@@ -566,14 +541,36 @@ namespace Home.Andir.Cryptography
 
         #endregion
 
+        private readonly BigCounter processedLength = new BigCounter(8);
+
+        private readonly ulong[] state = new ulong[3];
+
         private readonly ulong[] buffer = new ulong[8];
+
+        private readonly byte[] finalBlock;
+
+        public Tiger() : base(64)
+        {
+            HashSizeValue = 192;
+
+            finalBlock = new byte[BlockSize];
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            processedLength.Clear();
+
+            Array.Clear(finalBlock, 0, finalBlock.Length);
+
+            InitializeState();
+        }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            if (array.Length < offset + BlockSize)
-                throw new ArgumentOutOfRangeException("offset");
-
-            counter.Add(BlockSize << 3);
+            processedLength.Add(BlockSize << 3);
 
             Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
@@ -585,29 +582,29 @@ namespace Home.Andir.Cryptography
             for (int ii = 0; ii < 6; ii += 3)
             {
                 c ^= buffer[ii];
-                a -= box1[(byte)(c >> 00)] ^ box2[(byte)(c >> 16)] ^ box3[(byte)(c >> 32)] ^ box4[(byte)(c >> 48)];
-                b += box4[(byte)(c >> 08)] ^ box3[(byte)(c >> 24)] ^ box2[(byte)(c >> 40)] ^ box1[(byte)(c >> 56)];
+                a -= SBox1[(byte)(c >> 00)] ^ SBox2[(byte)(c >> 16)] ^ SBox3[(byte)(c >> 32)] ^ SBox4[(byte)(c >> 48)];
+                b += SBox4[(byte)(c >> 08)] ^ SBox3[(byte)(c >> 24)] ^ SBox2[(byte)(c >> 40)] ^ SBox1[(byte)(c >> 56)];
                 b += (b << 2);
 
                 a ^= buffer[ii + 1];
-                b -= box1[(byte)(a >> 00)] ^ box2[(byte)(a >> 16)] ^ box3[(byte)(a >> 32)] ^ box4[(byte)(a >> 48)];
-                c += box4[(byte)(a >> 08)] ^ box3[(byte)(a >> 24)] ^ box2[(byte)(a >> 40)] ^ box1[(byte)(a >> 56)];
+                b -= SBox1[(byte)(a >> 00)] ^ SBox2[(byte)(a >> 16)] ^ SBox3[(byte)(a >> 32)] ^ SBox4[(byte)(a >> 48)];
+                c += SBox4[(byte)(a >> 08)] ^ SBox3[(byte)(a >> 24)] ^ SBox2[(byte)(a >> 40)] ^ SBox1[(byte)(a >> 56)];
                 c += (c << 2);
 
                 b ^= buffer[ii + 2];
-                c -= box1[(byte)(b >> 00)] ^ box2[(byte)(b >> 16)] ^ box3[(byte)(b >> 32)] ^ box4[(byte)(b >> 48)];
-                a += box4[(byte)(b >> 08)] ^ box3[(byte)(b >> 24)] ^ box2[(byte)(b >> 40)] ^ box1[(byte)(b >> 56)];
+                c -= SBox1[(byte)(b >> 00)] ^ SBox2[(byte)(b >> 16)] ^ SBox3[(byte)(b >> 32)] ^ SBox4[(byte)(b >> 48)];
+                a += SBox4[(byte)(b >> 08)] ^ SBox3[(byte)(b >> 24)] ^ SBox2[(byte)(b >> 40)] ^ SBox1[(byte)(b >> 56)];
                 a += (a << 2);
             }
 
             c ^= buffer[6];
-            a -= box1[(byte)(c >> 00)] ^ box2[(byte)(c >> 16)] ^ box3[(byte)(c >> 32)] ^ box4[(byte)(c >> 48)];
-            b += box4[(byte)(c >> 08)] ^ box3[(byte)(c >> 24)] ^ box2[(byte)(c >> 40)] ^ box1[(byte)(c >> 56)];
+            a -= SBox1[(byte)(c >> 00)] ^ SBox2[(byte)(c >> 16)] ^ SBox3[(byte)(c >> 32)] ^ SBox4[(byte)(c >> 48)];
+            b += SBox4[(byte)(c >> 08)] ^ SBox3[(byte)(c >> 24)] ^ SBox2[(byte)(c >> 40)] ^ SBox1[(byte)(c >> 56)];
             b += (b << 2);
 
             a ^= buffer[7];
-            b -= box1[(byte)(a >> 00)] ^ box2[(byte)(a >> 16)] ^ box3[(byte)(a >> 32)] ^ box4[(byte)(a >> 48)];
-            c += box4[(byte)(a >> 08)] ^ box3[(byte)(a >> 24)] ^ box2[(byte)(a >> 40)] ^ box1[(byte)(a >> 56)];
+            b -= SBox1[(byte)(a >> 00)] ^ SBox2[(byte)(a >> 16)] ^ SBox3[(byte)(a >> 32)] ^ SBox4[(byte)(a >> 48)];
+            c += SBox4[(byte)(a >> 08)] ^ SBox3[(byte)(a >> 24)] ^ SBox2[(byte)(a >> 40)] ^ SBox1[(byte)(a >> 56)];
             c += (c << 2);
 
             // key schedule
@@ -631,31 +628,31 @@ namespace Home.Andir.Cryptography
 
             // pass 2
             b ^= buffer[0];
-            c -= box1[(byte)(b >> 00)] ^ box2[(byte)(b >> 16)] ^ box3[(byte)(b >> 32)] ^ box4[(byte)(b >> 48)];
-            a += box4[(byte)(b >> 08)] ^ box3[(byte)(b >> 24)] ^ box2[(byte)(b >> 40)] ^ box1[(byte)(b >> 56)];
+            c -= SBox1[(byte)(b >> 00)] ^ SBox2[(byte)(b >> 16)] ^ SBox3[(byte)(b >> 32)] ^ SBox4[(byte)(b >> 48)];
+            a += SBox4[(byte)(b >> 08)] ^ SBox3[(byte)(b >> 24)] ^ SBox2[(byte)(b >> 40)] ^ SBox1[(byte)(b >> 56)];
             a = (a << 3) - a;
 
             for (int ii = 1; ii < 7; ii += 3)
             {
                 c ^= buffer[ii];
-                a -= box1[(byte)(c >> 00)] ^ box2[(byte)(c >> 16)] ^ box3[(byte)(c >> 32)] ^ box4[(byte)(c >> 48)];
-                b += box4[(byte)(c >> 08)] ^ box3[(byte)(c >> 24)] ^ box2[(byte)(c >> 40)] ^ box1[(byte)(c >> 56)];
+                a -= SBox1[(byte)(c >> 00)] ^ SBox2[(byte)(c >> 16)] ^ SBox3[(byte)(c >> 32)] ^ SBox4[(byte)(c >> 48)];
+                b += SBox4[(byte)(c >> 08)] ^ SBox3[(byte)(c >> 24)] ^ SBox2[(byte)(c >> 40)] ^ SBox1[(byte)(c >> 56)];
                 b = (b << 3) - b;
 
                 a ^= buffer[ii + 1];
-                b -= box1[(byte)(a >> 00)] ^ box2[(byte)(a >> 16)] ^ box3[(byte)(a >> 32)] ^ box4[(byte)(a >> 48)];
-                c += box4[(byte)(a >> 08)] ^ box3[(byte)(a >> 24)] ^ box2[(byte)(a >> 40)] ^ box1[(byte)(a >> 56)];
+                b -= SBox1[(byte)(a >> 00)] ^ SBox2[(byte)(a >> 16)] ^ SBox3[(byte)(a >> 32)] ^ SBox4[(byte)(a >> 48)];
+                c += SBox4[(byte)(a >> 08)] ^ SBox3[(byte)(a >> 24)] ^ SBox2[(byte)(a >> 40)] ^ SBox1[(byte)(a >> 56)];
                 c = (c << 3) - c;
 
                 b ^= buffer[ii + 2];
-                c -= box1[(byte)(b >> 00)] ^ box2[(byte)(b >> 16)] ^ box3[(byte)(b >> 32)] ^ box4[(byte)(b >> 48)];
-                a += box4[(byte)(b >> 08)] ^ box3[(byte)(b >> 24)] ^ box2[(byte)(b >> 40)] ^ box1[(byte)(b >> 56)];
+                c -= SBox1[(byte)(b >> 00)] ^ SBox2[(byte)(b >> 16)] ^ SBox3[(byte)(b >> 32)] ^ SBox4[(byte)(b >> 48)];
+                a += SBox4[(byte)(b >> 08)] ^ SBox3[(byte)(b >> 24)] ^ SBox2[(byte)(b >> 40)] ^ SBox1[(byte)(b >> 56)];
                 a = (a << 3) - a;
             }
 
             c ^= buffer[7];
-            a -= box1[(byte)(c >> 00)] ^ box2[(byte)(c >> 16)] ^ box3[(byte)(c >> 32)] ^ box4[(byte)(c >> 48)];
-            b += box4[(byte)(c >> 08)] ^ box3[(byte)(c >> 24)] ^ box2[(byte)(c >> 40)] ^ box1[(byte)(c >> 56)];
+            a -= SBox1[(byte)(c >> 00)] ^ SBox2[(byte)(c >> 16)] ^ SBox3[(byte)(c >> 32)] ^ SBox4[(byte)(c >> 48)];
+            b += SBox4[(byte)(c >> 08)] ^ SBox3[(byte)(c >> 24)] ^ SBox2[(byte)(c >> 40)] ^ SBox1[(byte)(c >> 56)];
             b = (b << 3) - b;
 
             // key schedule
@@ -679,30 +676,30 @@ namespace Home.Andir.Cryptography
 
             // pass 3
             a ^= buffer[0];
-            b -= box1[(byte)(a >> 00)] ^ box2[(byte)(a >> 16)] ^ box3[(byte)(a >> 32)] ^ box4[(byte)(a >> 48)];
-            c += box4[(byte)(a >> 08)] ^ box3[(byte)(a >> 24)] ^ box2[(byte)(a >> 40)] ^ box1[(byte)(a >> 56)];
+            b -= SBox1[(byte)(a >> 00)] ^ SBox2[(byte)(a >> 16)] ^ SBox3[(byte)(a >> 32)] ^ SBox4[(byte)(a >> 48)];
+            c += SBox4[(byte)(a >> 08)] ^ SBox3[(byte)(a >> 24)] ^ SBox2[(byte)(a >> 40)] ^ SBox1[(byte)(a >> 56)];
             c += (c << 3);
 
             b ^= buffer[1];
-            c -= box1[(byte)(b >> 00)] ^ box2[(byte)(b >> 16)] ^ box3[(byte)(b >> 32)] ^ box4[(byte)(b >> 48)];
-            a += box4[(byte)(b >> 08)] ^ box3[(byte)(b >> 24)] ^ box2[(byte)(b >> 40)] ^ box1[(byte)(b >> 56)];
+            c -= SBox1[(byte)(b >> 00)] ^ SBox2[(byte)(b >> 16)] ^ SBox3[(byte)(b >> 32)] ^ SBox4[(byte)(b >> 48)];
+            a += SBox4[(byte)(b >> 08)] ^ SBox3[(byte)(b >> 24)] ^ SBox2[(byte)(b >> 40)] ^ SBox1[(byte)(b >> 56)];
             a += (a << 3);
 
             for (int ii = 2; ii < 8; ii += 3)
             {
                 c ^= buffer[ii];
-                a -= box1[(byte)(c >> 00)] ^ box2[(byte)(c >> 16)] ^ box3[(byte)(c >> 32)] ^ box4[(byte)(c >> 48)];
-                b += box4[(byte)(c >> 08)] ^ box3[(byte)(c >> 24)] ^ box2[(byte)(c >> 40)] ^ box1[(byte)(c >> 56)];
+                a -= SBox1[(byte)(c >> 00)] ^ SBox2[(byte)(c >> 16)] ^ SBox3[(byte)(c >> 32)] ^ SBox4[(byte)(c >> 48)];
+                b += SBox4[(byte)(c >> 08)] ^ SBox3[(byte)(c >> 24)] ^ SBox2[(byte)(c >> 40)] ^ SBox1[(byte)(c >> 56)];
                 b += (b << 3);
 
                 a ^= buffer[ii + 1];
-                b -= box1[(byte)(a >> 00)] ^ box2[(byte)(a >> 16)] ^ box3[(byte)(a >> 32)] ^ box4[(byte)(a >> 48)];
-                c += box4[(byte)(a >> 08)] ^ box3[(byte)(a >> 24)] ^ box2[(byte)(a >> 40)] ^ box1[(byte)(a >> 56)];
+                b -= SBox1[(byte)(a >> 00)] ^ SBox2[(byte)(a >> 16)] ^ SBox3[(byte)(a >> 32)] ^ SBox4[(byte)(a >> 48)];
+                c += SBox4[(byte)(a >> 08)] ^ SBox3[(byte)(a >> 24)] ^ SBox2[(byte)(a >> 40)] ^ SBox1[(byte)(a >> 56)];
                 c += (c << 3);
 
                 b ^= buffer[ii + 2];
-                c -= box1[(byte)(b >> 00)] ^ box2[(byte)(b >> 16)] ^ box3[(byte)(b >> 32)] ^ box4[(byte)(b >> 48)];
-                a += box4[(byte)(b >> 08)] ^ box3[(byte)(b >> 24)] ^ box2[(byte)(b >> 40)] ^ box1[(byte)(b >> 56)];
+                c -= SBox1[(byte)(b >> 00)] ^ SBox2[(byte)(b >> 16)] ^ SBox3[(byte)(b >> 32)] ^ SBox4[(byte)(b >> 48)];
+                a += SBox4[(byte)(b >> 08)] ^ SBox3[(byte)(b >> 24)] ^ SBox2[(byte)(b >> 40)] ^ SBox1[(byte)(b >> 56)];
                 a += (a << 3);
             }
 
@@ -713,15 +710,9 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            if (length >= BlockSize
-                || length > array.Length - offset)
-                throw new ArgumentOutOfRangeException("length");
+            processedLength.Add(length << 3); // * 8
 
-            counter.Add(length << 3);
-
-            byte[] messageLength = counter.GetBytes();
-
-            counter.Clear();
+            byte[] messageLength = processedLength.GetBytes();
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
@@ -729,7 +720,6 @@ namespace Home.Andir.Cryptography
             finalBlock[length] = 0x01;
 
             int endOffset = BlockSize - 8;
-
             if (length >= endOffset)
             {
                 ProcessBlock(finalBlock, 0);
@@ -738,7 +728,9 @@ namespace Home.Andir.Cryptography
             }
 
             for (int ii = 0; ii < 8; ii++)
+            {
                 finalBlock[endOffset + ii] = messageLength[ii];
+            }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
@@ -754,6 +746,13 @@ namespace Home.Andir.Cryptography
 
                 return result;
             }
+        }
+
+        private void InitializeState()
+        {
+            state[0] = 0x0123456789abcdef;
+            state[1] = 0xfedcba9876543210;
+            state[2] = 0xf096a5b4c3b2e187;
         }
     }
 }

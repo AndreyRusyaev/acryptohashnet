@@ -1,11 +1,14 @@
 ﻿
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
+    /// <summary>
+    /// Ralph C. Merkle (1990). "A fast software one-way hash function"
+    /// </summary>
     public sealed class Snefru : SnefruBase
     {
         public Snefru() : base(SnefruOutputSize.Output4)
         {
-            this.HashSizeValue = 128;
+            HashSizeValue = 128;
         }
     }
 }

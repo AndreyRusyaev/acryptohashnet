@@ -1,67 +1,18 @@
 ﻿using System;
 
-namespace Home.Andir.Cryptography
+namespace acryptohashnet
 {
-    public class HavalBase : BlockHashAlgorithm
+    /// <summary>
+    /// HAVAL — A One-Way Hashing Algorithm with Variable Length of Output
+    /// Designed by Yuliang Zheng, Josef Pieprzyk and Jennifer Seberry.
+    /// </summary>
+    public abstract class HavalBase : BlockHashAlgorithm
     {
-        protected const uint havalVersion = 1;
-        
-        private readonly HavalHashSize havalHashSize;
-        private readonly HavalPassCount havalPassCount;
-
-        public HavalBase(HavalHashSize havalHashSize,
-            HavalPassCount havalPassCount)
-            : base(128)
-        {
-            this.havalHashSize = havalHashSize;
-            this.havalPassCount = havalPassCount;
-
-            uint hashSize = (uint)havalHashSize;
-            uint passCount = (uint)havalPassCount;
-
-            this.HashSizeValue = (int)havalHashSize;
-
-            this.signature[0] = (byte)(
-                      ((hashSize & 0x3) << 6)
-                    | ((passCount & 0x7) << 3)
-                    | (havalVersion & 0x7));
-            this.signature[1] = (byte)((hashSize >> 2) & 0xff);
-
-            this.finalBlock = new byte[BlockSize];
-            this.Initialize();
-        }
-
-        private readonly IntCounter counter = new IntCounter(2);
-        private readonly uint[] state = new uint[8];
-        private readonly byte[] signature = new byte[2];
-        private readonly byte[] finalBlock;
-
-        public override void Initialize()
-        {
-            base.Initialize();
-
-            counter.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x243f6a88;
-            state[1] = 0x85a308d3;
-            state[2] = 0x13198a2e;
-            state[3] = 0x03707344;
-            state[4] = 0xa4093822;
-            state[5] = 0x299f31d0;
-            state[6] = 0x082efa98;
-            state[7] = 0xec4e6c89;
-        }
+        private const uint HavalVersion = 1;
 
         #region algorithm constant parameters
 
-        private static readonly uint[] wordOrders = new uint[]
+        private static readonly uint[] WordOrders = new uint[]
         {
             // pass 2
             05, 14, 26, 18, 11, 28, 07, 16, 00, 23, 20, 22, 01, 10, 04, 08,
@@ -77,7 +28,7 @@ namespace Home.Andir.Cryptography
             05, 09, 14, 30, 18, 06, 28, 24, 02, 23, 16, 22, 04, 01, 25, 15
         };
 
-        private static readonly uint[] constants = new uint[]
+        private static readonly uint[] Constants = new uint[]
         {
             // pass 2
             0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c, 0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5, 0xb5470917,
@@ -103,17 +54,61 @@ namespace Home.Andir.Cryptography
 
         #endregion
 
+        private readonly HavalHashSize havalHashSize;
+
+        private readonly HavalPassCount havalPassCount;
+
+        private readonly byte[] signature = new byte[2];
+
+        private readonly BigCounter lengthCounter = new BigCounter(8);
+
+        private readonly uint[] state = new uint[8];
+
         private readonly uint[] buffer = new uint[160];
+
+        private readonly byte[] finalBlock;
+
+        public HavalBase(HavalHashSize havalHashSize, HavalPassCount havalPassCount)
+            : base(128)
+        {
+            this.havalHashSize = havalHashSize;
+            this.havalPassCount = havalPassCount;
+
+            uint hashSize = (uint)havalHashSize;
+            uint passCount = (uint)havalPassCount;
+
+            HashSizeValue = (int)havalHashSize;
+
+            signature[0] = (byte)(
+                      ((hashSize & 0x3) << 6)
+                    | ((passCount & 0x7) << 3)
+                    | (HavalVersion & 0x7));
+            signature[1] = (byte)((hashSize >> 2) & 0xff);
+
+            finalBlock = new byte[BlockSize];
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            lengthCounter.Clear();
+
+            Array.Clear(finalBlock, 0, finalBlock.Length);
+
+            InitializeState();
+        }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            counter.Add(BlockSize << 3);
+            lengthCounter.Add(BlockSize << 3);
 
             Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
             for (int ii = 32; ii < buffer.Length; ii++)
             {
-                buffer[ii] = buffer[wordOrders[ii - 32]];
+                buffer[ii] = buffer[WordOrders[ii - 32]];
             }
 
             switch (havalPassCount)
@@ -132,13 +127,9 @@ namespace Home.Andir.Cryptography
 
         protected override void ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            if (length >= BlockSize
-                || length > array.Length - offset)
-                throw new ArgumentOutOfRangeException("length");
+            lengthCounter.Add(length << 3); // arg * 8
 
-            counter.Add(length << 3); // arg * 8
-
-            byte[] messageLength = counter.GetBytes();
+            byte[] messageLength = lengthCounter.GetBytes();
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
@@ -146,7 +137,6 @@ namespace Home.Andir.Cryptography
             finalBlock[length] = 0x01;
 
             int endOffset = BlockSize - 10;
-
             if (length >= endOffset)
             {
                 ProcessBlock(finalBlock, 0);
@@ -160,7 +150,9 @@ namespace Home.Andir.Cryptography
             endOffset += 2;
 
             for (int ii = 0; ii < 8; ii++)
+            {
                 finalBlock[endOffset + ii] = messageLength[ii];
+            }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
@@ -196,6 +188,18 @@ namespace Home.Andir.Cryptography
             }
         }
 
+        private void InitializeState()
+        {
+            state[0] = 0x243f6a88;
+            state[1] = 0x85a308d3;
+            state[2] = 0x13198a2e;
+            state[3] = 0x03707344;
+            state[4] = 0xa4093822;
+            state[5] = 0x299f31d0;
+            state[6] = 0x082efa98;
+            state[7] = 0xec4e6c89;
+        }
+
         private void ProcessBlock3Pass()
         {
             uint t0 = state[0];
@@ -207,12 +211,10 @@ namespace Home.Andir.Cryptography
             uint t6 = state[6];
             uint t7 = state[7];
 
-            uint t = 0;
-
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
             {
-                t = F1phi3(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F1phi3(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -264,105 +266,105 @@ namespace Home.Andir.Cryptography
             // pass 2
             for (int ii = 32; ii < 64; ii += 8)
             {
-                t = F2phi3(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F2phi3(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F2phi3(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F2phi3(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F2phi3(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F2phi3(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F2phi3(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F2phi3(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F2phi3(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 3
             for (int ii = 64; ii < 96; ii += 8)
             {
-                t = F3phi3(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F3phi3(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F3phi3(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F3phi3(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F3phi3(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F3phi3(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F3phi3(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F3phi3(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F3phi3(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             state[0] += t0;
@@ -386,12 +388,10 @@ namespace Home.Andir.Cryptography
             uint t6 = state[6];
             uint t7 = state[7];
 
-            uint t = 0;
-
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
             {
-                t = F1phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F1phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -443,157 +443,157 @@ namespace Home.Andir.Cryptography
             // pass 2
             for (int ii = 32; ii < 64; ii += 8)
             {
-                t = F2phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F2phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F2phi4(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F2phi4(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F2phi4(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F2phi4(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F2phi4(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F2phi4(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F2phi4(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 3
             for (int ii = 64; ii < 96; ii += 8)
             {
-                t = F3phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F3phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F3phi4(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F3phi4(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F3phi4(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F3phi4(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F3phi4(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F3phi4(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F3phi4(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 4
             for (int ii = 96; ii < 128; ii += 8)
             {
-                t = F4phi4(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F4phi4(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F4phi4(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F4phi4(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F4phi4(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F4phi4(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F4phi4(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F4phi4(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F4phi4(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             state[0] += t0;
@@ -617,12 +617,10 @@ namespace Home.Andir.Cryptography
             uint t6 = state[6];
             uint t7 = state[7];
 
-            uint t = 0;
-
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
             {
-                t = F1phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F1phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
@@ -674,209 +672,209 @@ namespace Home.Andir.Cryptography
             // pass 2
             for (int ii = 32; ii < 64; ii += 8)
             {
-                t = F2phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F2phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F2phi5(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F2phi5(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F2phi5(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F2phi5(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F2phi5(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F2phi5(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F2phi5(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 3
             for (int ii = 64; ii < 96; ii += 8)
             {
-                t = F3phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F3phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F3phi5(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F3phi5(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F3phi5(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F3phi5(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F3phi5(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F3phi5(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F3phi5(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 4
             for (int ii = 96; ii < 128; ii += 8)
             {
-                t = F4phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F4phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F4phi5(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F4phi5(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F4phi5(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F4phi5(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F4phi5(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F4phi5(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F4phi5(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 5
             for (int ii = 128; ii < 160; ii += 8)
             {
-                t = F5phi5(t6, t5, t4, t3, t2, t1, t0);
+                uint t = F5phi5(t6, t5, t4, t3, t2, t1, t0);
 
                 t7 = (t7 >> 11 | t7 << 21);
                 t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + constants[(ii + 0) - 32];
+                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F5phi5(t5, t4, t3, t2, t1, t0, t7);
 
                 t6 = (t6 >> 11 | t6 << 21);
                 t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + constants[(ii + 1) - 32];
+                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F5phi5(t4, t3, t2, t1, t0, t7, t6);
 
                 t5 = (t5 >> 11 | t5 << 21);
                 t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + constants[(ii + 2) - 32];
+                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F5phi5(t3, t2, t1, t0, t7, t6, t5);
 
                 t4 = (t4 >> 11 | t4 << 21);
                 t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + constants[(ii + 3) - 32];
+                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F5phi5(t2, t1, t0, t7, t6, t5, t4);
 
                 t3 = (t3 >> 11 | t3 << 21);
                 t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + constants[(ii + 4) - 32];
+                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F5phi5(t1, t0, t7, t6, t5, t4, t3);
 
                 t2 = (t2 >> 11 | t2 << 21);
                 t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + constants[(ii + 5) - 32];
+                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F5phi5(t0, t7, t6, t5, t4, t3, t2);
 
                 t1 = (t1 >> 11 | t1 << 21);
                 t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + constants[(ii + 6) - 32];
+                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F5phi5(t7, t6, t5, t4, t3, t2, t1);
 
                 t0 = (t0 >> 11 | t0 << 21);
                 t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + constants[(ii + 7) - 32];
+                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             state[0] += t0;
@@ -992,93 +990,93 @@ namespace Home.Andir.Cryptography
             state[6] += (state[7] >> 00) & 0x0f;
         }
 
+        // common
+        protected uint F1(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x1 & (x0 ^ x4) ^ x2 & x5 ^ x3 & x6 ^ x0;
+        }
+
+        protected uint F2(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x2 & (x1 & ~x3 ^ x4 & x5 ^ x6 ^ x0) ^ x4 & (x1 ^ x5) ^ x3 & x5 ^ x0;
+        }
+
+        protected uint F3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x3 & (x1 & x2 ^ x6 ^ x0) ^ x1 & x4 ^ x2 & x5 ^ x0;
+        }
+
+        protected uint F4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x4 & (x5 & ~x2 ^ x3 & ~x6 ^ x1 ^ x6 ^ x0) ^ x3 & (x1 & x2 ^ x5 ^ x6) ^ x2 & x6 ^ x0;
+        }
+
+        protected uint F5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        {
+            return x0 & (x1 & x2 & x3 ^ ~x5) ^ x1 & x4 ^ x2 & x5 ^ x3 & x6;
+        }
+
         // pass 3
         private uint F1phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f1(x1, x0, x3, x5, x6, x2, x4);
+            return F1(x1, x0, x3, x5, x6, x2, x4);
         }
 
         private uint F2phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f2(x4, x2, x1, x0, x5, x3, x6);
+            return F2(x4, x2, x1, x0, x5, x3, x6);
         }
 
         private uint F3phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f3(x6, x1, x2, x3, x4, x5, x0);
+            return F3(x6, x1, x2, x3, x4, x5, x0);
         }
 
         // pass 4
         private uint F1phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f1(x2, x6, x1, x4, x5, x3, x0);
+            return F1(x2, x6, x1, x4, x5, x3, x0);
         }
 
         private uint F2phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f2(x3, x5, x2, x0, x1, x6, x4);
+            return F2(x3, x5, x2, x0, x1, x6, x4);
         }
 
         private uint F3phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f3(x1, x4, x3, x6, x0, x2, x5);
+            return F3(x1, x4, x3, x6, x0, x2, x5);
         }
 
         private uint F4phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f4(x6, x4, x0, x5, x2, x1, x3);
+            return F4(x6, x4, x0, x5, x2, x1, x3);
         }
 
         // pass 5
         private uint F1phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f1(x3, x4, x1, x0, x5, x2, x6);
+            return F1(x3, x4, x1, x0, x5, x2, x6);
         }
 
         private uint F2phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f2(x6, x2, x1, x0, x3, x4, x5);
+            return F2(x6, x2, x1, x0, x3, x4, x5);
         }
 
         private uint F3phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f3(x2, x6, x0, x4, x3, x1, x5);
+            return F3(x2, x6, x0, x4, x3, x1, x5);
         }
 
         private uint F4phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f4(x1, x5, x3, x2, x0, x4, x6);
+            return F4(x1, x5, x3, x2, x0, x4, x6);
         }
 
         private uint F5phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
-            return f5(x2, x5, x0, x6, x4, x3, x1);
-        }
-
-        // common
-        protected uint f1(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x1 & (x0 ^ x4) ^ x2 & x5 ^ x3 & x6 ^ x0;
-        }
-
-        protected uint f2(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x2 & (x1 & ~x3 ^ x4 & x5 ^ x6 ^ x0) ^ x4 & (x1 ^ x5) ^ x3 & x5 ^ x0;
-        }
-
-        protected uint f3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x3 & (x1 & x2 ^ x6 ^ x0) ^ x1 & x4 ^ x2 & x5 ^ x0;
-        }
-
-        protected uint f4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x4 & (x5 & ~x2 ^ x3 & ~x6 ^ x1 ^ x6 ^ x0) ^ x3 & (x1 & x2 ^ x5 ^ x6) ^ x2 & x6 ^ x0;
-        }
-
-        protected uint f5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
-        {
-            return x0 & (x1 & x2 & x3 ^ ~x5) ^ x1 & x4 ^ x2 & x5 ^ x3 & x6;
+            return F5(x2, x5, x0, x6, x4, x3, x1);
         }
     }
 }

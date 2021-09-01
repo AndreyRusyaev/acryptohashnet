@@ -1,46 +1,46 @@
 ﻿using NUnit.Framework;
 
-namespace Home.Andir.Cryptography.NUnitTests
+namespace acryptohashnet.UnitTests
 {
     [TestFixture]
-    public class IntCounterTest
+    public class BigCounterTests
     {
         [Test]
         public void Test_Add0()
         {
-            IntCounter testCounter = new IntCounter(1);
+            BigCounter testCounter = new BigCounter(4);
 
             testCounter.Add(100);
 
-            Assert.AreEqual(100, testCounter.ToInt32());
+            Assert.AreEqual(100, testCounter.ToUInt32());
         }
 
         [Test]
         public void Test_Add1()
         {
-            IntCounter testCounter = new IntCounter(1);
+            BigCounter testCounter = new BigCounter(4);
 
             testCounter.Add(100);
             testCounter.Add(200);
 
-            Assert.AreEqual(300, testCounter.ToInt32());
+            Assert.AreEqual(300, testCounter.ToUInt32());
         }
 
         [Test]
         public void Test_Add3()
         {
-            IntCounter testCounter = new IntCounter(1);
+            BigCounter testCounter = new BigCounter(4);
 
             testCounter.Add(0xffff);
             testCounter.Add(0x1);
 
-            Assert.AreEqual(0x010000, testCounter.ToInt32());
+            Assert.AreEqual(0x010000, testCounter.ToUInt32());
         }
 
         [Test]
         public void Test_Add4()
         {
-            IntCounter testCounter = new IntCounter(2);
+            BigCounter testCounter = new BigCounter(8);
 
             testCounter.Add(0xffffffff);
             testCounter.Add(0x1);
@@ -63,7 +63,7 @@ namespace Home.Andir.Cryptography.NUnitTests
         [Test]
         public void Test_Add5()
         {
-            IntCounter testCounter = new IntCounter(2);
+            BigCounter testCounter = new BigCounter(8);
 
             testCounter.Add(0xffffffff);
             testCounter.Add(0x1);

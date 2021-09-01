@@ -1,4 +1,7 @@
-set BinDir=../../bin
-set SourcesDir=../src
+msbuild "../src/acryptohashnet.sln" /p:Configuration=Release
 
-msbuild "%SourcesDir%/acryptohashnet.sln" /p:OutDir="%BinDir%/"
+SET OutDir=../src/acryptohashnet/bin/Release/
+SET TargetDir=../bin/
+
+xcopy /I /Y /F "%OutDir%netstandard2.1/" "%TargetDir%"
+xcopy /I /Y /F "%OutDir%*.nupkg" "%TargetDir%"
