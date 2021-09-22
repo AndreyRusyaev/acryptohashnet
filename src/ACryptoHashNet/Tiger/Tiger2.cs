@@ -6,10 +6,11 @@ namespace acryptohashnet
     /// Tiger: A Fast New Cryptographic Hash Function (Designed in 1995)
     /// by Eli Biham & Ross Anderson
     /// https://www.cs.technion.ac.il/~biham/Reports/Tiger/
+    /// Difference with Tiger only in padding method
     /// </summary>
-    public sealed class Tiger : TigerBase
+    public sealed class Tiger2 : TigerBase
     {
-        public Tiger() : base(TigerPaddingMethod.MD4)
+        public Tiger2() : base(TigerPaddingMethod.MD5)
         {
         }
     }

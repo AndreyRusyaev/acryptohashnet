@@ -4,9 +4,9 @@ namespace acryptohashnet.UnitTests
 {
     [TestFixture]
     [Category("TigerTests")]
-    public class TigerTest : BaseHashTest
+    public class TigerTests : BaseHashTest
     {
-        public TigerTest() :
+        public TigerTests() :
             base("tiger", new Tiger())
         { }
 
