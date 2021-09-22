@@ -120,7 +120,7 @@ namespace acryptohashnet.UnitTests
 
         protected void HashStringTest(string testInfo, string source, string expected)
         {
-            Assert.AreEqual(
+            StringAssert.AreEqualIgnoringCase(
                 expected,
                 HashString(source),
                 string.Format("{1}: {0} hash of string = '{2}' is wrong!", this.AlgorithmName, testInfo, source));
