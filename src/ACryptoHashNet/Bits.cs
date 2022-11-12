@@ -13,7 +13,7 @@ namespace acryptohashnet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong RotateLeft(this ulong x, int n)
         {
-            return x << n | x >> 32 - n;
+            return x << n | x >> 64 - n;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

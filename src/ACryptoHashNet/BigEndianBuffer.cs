@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -6,106 +7,118 @@ namespace acryptohashnet
     {
         public static void BlockCopy(uint[] src, int srcOffset, byte[] dst, int dstOffset, int bytesCount)
         {
-            if (srcOffset > src.Length)
+            if (srcOffset < 0 || srcOffset > src.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(srcOffset));
             }
 
-            if (dstOffset > dst.Length)
+            if (dstOffset < 0 || dstOffset > dst.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(dstOffset));
             }
 
-            if (dstOffset + bytesCount > dst.Length)
+            if (bytesCount < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(dstOffset));
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
             int uintsCount = bytesCount >> 2; // arg / 4
             int bytesRemaining = bytesCount & 0x3; // arg % 4
 
-            if (srcOffset + uintsCount + (bytesRemaining > 0 ? 1 : 0) > src.Length)
+            if (bytesRemaining > 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
-            var srcIndex = srcOffset;
-            var dstIndex = dstOffset;
-            while (dstIndex < dstOffset + bytesCount)
+            if (srcOffset + uintsCount > src.Length)
             {
-                dst[dstIndex] =     (byte)(src[srcIndex] >> 24);
-                dst[dstIndex + 1] = (byte)(src[srcIndex] >> 16);
-                dst[dstIndex + 2] = (byte)(src[srcIndex] >> 8);
-                dst[dstIndex + 3] = (byte)src[srcIndex];
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
+            }   
 
-                srcIndex += 1;
-                dstIndex += 4;
-            }
-
-            for (int ii = 0; ii < bytesRemaining; ii++)
+            if (dstOffset + bytesCount > dst.Length)
             {
-                dst[dstIndex + ii] = (byte)(src[srcIndex] >> (24 - (ii << 3)));
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
+            }  
+            
+            for (int srcIndex = srcOffset, dstIndex = dstOffset; 
+                dstIndex < dstOffset + bytesCount; 
+                srcIndex += 1, dstIndex += 4)
+            {
+                CopyBigEndianUInt32ToBytes(src[srcIndex], dst.AsSpan(dstIndex, 4));
             }
         }
 
         public static void BlockCopy(byte[] src, int srcOffset, uint[] dst, int dstOffset, int bytesCount)
         {
-            if (srcOffset > src.Length)
+            if (srcOffset < 0 || srcOffset > src.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(srcOffset));
             }
 
-            if (srcOffset + bytesCount > src.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(bytesCount));
-            }
-
-            if (dstOffset > dst.Length)
+            if (dstOffset < 0 || dstOffset > dst.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(dstOffset));
+            }
+
+            if (bytesCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
             int uintsCount = bytesCount >> 2; // arg / 4
             int bytesRemaining = bytesCount & 0x3; // arg % 4
 
-            if (dstOffset + uintsCount + (bytesRemaining > 0 ? 1 : 0) > dst.Length)
+            if (bytesRemaining > 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
-            var srcIndex = srcOffset;
-            var dstIndex = dstOffset;
-            while (srcIndex < srcOffset + bytesCount)
+            if (srcOffset + bytesCount > src.Length)
             {
-                dst[dstIndex] =  (uint)src[srcIndex + 0] << 24
-                    | (uint)src[srcIndex + 1] << 16
-                    | (uint)src[srcIndex + 2] << 8
-                    | (uint)src[srcIndex + 3];
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
+            }                                    
 
-                srcIndex += 4;
-                dstIndex += 1;
-            }
-
-            if (bytesRemaining > 0)
+            if (dstOffset + uintsCount > dst.Length)
             {
-                dst[dstIndex] = 0;
-                for (int ii = 0; ii < bytesRemaining; ii++)
-                {
-                    dst[dstIndex] |= (uint)(src[srcIndex + ii]) << (24 - (ii << 3));
-                }
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
+            }            
+
+            for (int srcIndex = srcOffset, dstIndex = dstOffset;
+                srcIndex < srcOffset + bytesCount;
+                srcIndex += 4, dstIndex += 1)
+            {
+                dst[dstIndex] = ToBigEndianUInt32(src.AsSpan(srcIndex, 4));
             }
         }
 
         public static void BlockCopy(ulong[] src, int srcOffset, byte[] dst, int dstOffset, int bytesCount)
         {
-            if (srcOffset > src.Length)
+            if (srcOffset < 0 || srcOffset > src.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(srcOffset));
             }
 
-            if (dstOffset > dst.Length)
+            if (dstOffset < 0 || dstOffset > dst.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(dstOffset));
+            }
+
+            if (bytesCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
+            }
+
+            int ulongsCount = bytesCount >> 3; // arg / 8
+            int bytesRemaining = bytesCount & 0x7; // arg % 8            
+
+            if (bytesRemaining > 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
+            }
+
+            if (srcOffset + ulongsCount > src.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
             if (dstOffset + bytesCount > dst.Length)
@@ -113,87 +126,111 @@ namespace acryptohashnet
                 throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
-            int ulongsCount = bytesCount >> 3; // arg / 8
-            int bytesRemaining = bytesCount & 0x7; // arg % 8
-
-            if (srcOffset + ulongsCount + (bytesRemaining > 0 ? 1 : 0) > src.Length)
+            for (int srcIndex = srcOffset, dstIndex = dstOffset; 
+                dstIndex < dstOffset + bytesCount;
+                srcIndex += 1, dstIndex += 8)
             {
-                throw new ArgumentOutOfRangeException(nameof(bytesCount));
-            }
-
-            var srcIndex = srcOffset;
-            var dstIndex = dstOffset;
-            while (dstIndex < dstOffset + bytesCount)
-            {
-                dst[dstIndex + 0] = (byte)(src[srcIndex] >> 56);
-                dst[dstIndex + 1] = (byte)(src[srcIndex] >> 48);
-                dst[dstIndex + 2] = (byte)(src[srcIndex] >> 40);
-                dst[dstIndex + 3] = (byte)(src[srcIndex] >> 32);
-                dst[dstIndex + 4] = (byte)(src[srcIndex] >> 24);
-                dst[dstIndex + 5] = (byte)(src[srcIndex] >> 16);
-                dst[dstIndex + 6] = (byte)(src[srcIndex] >> 8);
-                dst[dstIndex + 7] = (byte)src[srcIndex];
-
-                srcIndex += 1;
-                dstIndex += 8;
-            }
-
-            for (int ii = 0; ii < bytesRemaining; ii++)
-            {                
-                dst[dstIndex + ii] = (byte)(src[srcIndex] >> (56 - (ii << 3)));
+                CopyBigEndianUInt64ToBytes(src[srcIndex], dst.AsSpan(dstIndex, 8));
             }
         }
 
         public static void BlockCopy(byte[] src, int srcOffset, ulong[] dst, int dstOffset, int bytesCount)
         {
-            if (srcOffset > src.Length)
+            if (srcOffset < 0 || srcOffset > src.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(srcOffset));
             }
 
-            if (srcOffset + bytesCount > src.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(bytesCount));
-            }
-
-            if (dstOffset > dst.Length)
+            if (dstOffset < 0 || dstOffset > dst.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(dstOffset));
+            }
+
+            if (bytesCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
             int ulongsCount = bytesCount >> 3; // arg / 8
             int bytesRemaining = bytesCount & 0x7; // arg % 8
 
-            if (dstOffset + ulongsCount + (bytesRemaining > 0 ? 1 : 0) > dst.Length)
+            if (bytesRemaining > 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
-            var srcIndex = srcOffset;
-            var dstIndex = dstOffset;
-            while (srcIndex < srcOffset + bytesCount)
+            if (srcOffset + bytesCount > src.Length)
             {
-                dst[dstIndex] = (ulong)src[srcIndex + 0] << 56
-                    | (ulong)src[srcIndex + 1] << 48
-                    | (ulong)src[srcIndex + 2] << 40
-                    | (ulong)src[srcIndex + 3] << 32
-                    | (ulong)src[srcIndex + 4] << 24
-                    | (ulong)src[srcIndex + 5] << 16
-                    | (ulong)src[srcIndex + 6] << 8
-                    | (ulong)src[srcIndex + 7];
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
+            }                                    
 
-                srcIndex += 8;
-                dstIndex += 1;
+            if (dstOffset + ulongsCount > dst.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytesCount));
             }
 
-            if (bytesRemaining > 0)
+            for (int srcIndex = srcOffset, dstIndex = dstOffset;
+                srcIndex < srcOffset + bytesCount;
+                srcIndex += 8, dstIndex += 1)
             {
-                dst[dstIndex] = 0;
-                for (int ii = 0; ii < bytesRemaining; ii++)
-                {
-                    dst[dstIndex] |= (ulong)(src[srcIndex + ii]) << (56 - (ii << 3));
-                }
+                dst[dstIndex] = ToBigEndianUInt64(src.AsSpan(srcIndex, 8));
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CopyBigEndianUInt32ToBytes(uint input, Span<byte> bytes)
+        {
+            bytes[3] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[2] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[1] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[0] = unchecked((byte)(input & 0xff));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint ToBigEndianUInt32(ReadOnlySpan<byte> bytes)
+        {
+            uint result = bytes[0];
+            result = unchecked(result << 8 | bytes[1]);
+            result = unchecked(result << 8 | bytes[2]);
+            result = unchecked(result << 8 | bytes[3]);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CopyBigEndianUInt64ToBytes(ulong input, Span<byte> bytes)
+        {
+            bytes[7] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[6] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[5] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[4] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[3] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[2] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[1] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[0] = unchecked((byte)(input & 0xff));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ulong ToBigEndianUInt64(ReadOnlySpan<byte> bytes)
+        {
+            ulong result = bytes[0];
+            result = unchecked(result << 8 | bytes[1]);
+            result = unchecked(result << 8 | bytes[2]);
+            result = unchecked(result << 8 | bytes[3]);
+            result = unchecked(result << 8 | bytes[4]);
+            result = unchecked(result << 8 | bytes[5]);
+            result = unchecked(result << 8 | bytes[6]);
+            result = unchecked(result << 8 | bytes[7]);
+            return result;
         }
     }
 }
