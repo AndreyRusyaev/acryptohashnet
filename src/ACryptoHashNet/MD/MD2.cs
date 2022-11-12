@@ -8,7 +8,7 @@ namespace acryptohashnet
     /// </summary>
     public sealed class MD2 : BlockHashAlgorithm
     {
-        private static readonly byte[] Pi = new byte[]
+        private static readonly int[] Pi = new int[]
         {
             041, 046, 067, 201,
             162, 216, 124, 001,
@@ -93,11 +93,11 @@ namespace acryptohashnet
 
         private readonly byte[] state = new byte[16];
 
-        private readonly byte[] buffer = new byte[48];
+        private readonly int[] buffer = new int[48];
 
         private readonly byte[] finalBlock;
 
-        private readonly byte[] checkSum;
+        private readonly int[] checkSum = new int[16];
 
         private int processedLength = 0;
 
@@ -106,7 +106,6 @@ namespace acryptohashnet
             HashSizeValue = 128;
             
             finalBlock = new byte[BlockSize];
-            checkSum = new byte[BlockSize];
             Initialize();
         }
 
@@ -126,34 +125,42 @@ namespace acryptohashnet
             processedLength += BlockSize;
 
             // fill buffer
+            for (int ii = 0; ii < 16; ii++)
+            {
+                buffer[ii] = state[ii];
+            }
 
-            Array.Copy(state, 0, buffer, 0, 16);
-            Array.Copy(array, offset, buffer, 16, 16);
+            for (int ii = 16, jj = 0; ii < 32; ii++, jj++)
+            {
+                buffer[ii] = array[offset + jj];
+            }
+
             for (int ii = 32, jj = 0; ii < buffer.Length; ii++, jj++)
             {
-                buffer[ii] = Bits.Xor(state[jj], array[offset + jj]);
+                buffer[ii] = state[jj] ^ array[offset + jj];
             }
 
             // do 18 rounds
 
-            byte piIndex = 0;
-            for (int ii = 0; ii < 18; ii++)
+            for (int ii = 0, piIndex = 0; ii < 18; ii++)
             {
                 for (int jj = 0; jj < buffer.Length; jj++)
                 {
-                    piIndex = buffer[jj] = Bits.Xor(buffer[jj], Pi[piIndex]);
+                    piIndex = buffer[jj] ^= Pi[piIndex];
                 }
 
-                piIndex = unchecked((byte)((piIndex + ii) & 0xff)); // % 256
+                piIndex = (piIndex + ii) & 0xff; // % 256
             }
 
-            Array.Copy(buffer, 0, state, 0, 16);
-
-            piIndex = checkSum[15];
-            for (int ii = 0; ii < checkSum.Length; ii++)
+            for (int ii = 0; ii < state.Length; ii++)
             {
-                piIndex = Bits.Xor(array[offset + ii], piIndex);
-                piIndex = checkSum[ii] = Bits.Xor(checkSum[ii], Pi[piIndex]);
+                state[ii] = unchecked((byte)(buffer[ii] & 0xff));
+            }
+
+            for (int ii = 0, piIndex = checkSum[15]; ii < checkSum.Length; ii++)
+            {
+                piIndex = array[offset + ii] ^ piIndex;
+                piIndex = checkSum[ii] ^= Pi[piIndex];
             }
         }
 
@@ -164,13 +171,21 @@ namespace acryptohashnet
             Array.Copy(array, offset, finalBlock, 0, length);
 
             // padding message
+            byte padding = (byte)(16 - (messageLength & 0xf));
             for (int ii = offset + length; ii < BlockSize; ii++)
             {
-                finalBlock[ii] = (byte)(16 - (messageLength & 0xf));
+                finalBlock[ii] = padding;
             }
             
             ProcessBlock(finalBlock, 0);
-            ProcessBlock(checkSum, 0);
+
+            // Process checksum
+            for(int ii = 0; ii < checkSum.Length; ii++)
+            {
+                finalBlock[ii] = unchecked((byte)(checkSum[ii] & 0xff));
+            }
+
+            ProcessBlock(finalBlock, 0);
         }
 
         protected override byte[] Result
