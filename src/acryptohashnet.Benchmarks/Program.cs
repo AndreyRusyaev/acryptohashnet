@@ -1,10 +1,8 @@
-﻿using System;
-
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 
 namespace acryptohashnet.Benchmarks
 {
-    class Program
+    internal static class Program
     {
         static void Main(string[] args) => BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
     }
