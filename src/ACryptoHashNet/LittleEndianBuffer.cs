@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
-    public static class BigEndianBuffer
+    public static class LittleEndianBuffer
     {
         public static void BlockCopy(uint[] src, int srcOffset, byte[] dst, int dstOffset, int bytesCount)
         {
@@ -44,7 +44,7 @@ namespace acryptohashnet
                 dstIndex < dstOffset + bytesCount; 
                 srcIndex += 1, dstIndex += 4)
             {
-                CopyBigEndianUInt32ToBytes(src[srcIndex], dst.AsSpan(dstIndex, 4));
+                CopyLittleEndianUInt32ToBytes(src[srcIndex], dst.AsSpan(dstIndex, 4));
             }
         }
 
@@ -87,7 +87,7 @@ namespace acryptohashnet
                 srcIndex < srcOffset + bytesCount;
                 srcIndex += 4, dstIndex += 1)
             {
-                dst[dstIndex] = ToBigEndianUInt32(src.AsSpan(srcIndex, 4));
+                dst[dstIndex] = BytesToLittleEndianUInt32(src.AsSpan(srcIndex, 4));
             }
         }
 
@@ -130,7 +130,7 @@ namespace acryptohashnet
                 dstIndex < dstOffset + bytesCount;
                 srcIndex += 1, dstIndex += 8)
             {
-                CopyBigEndianUInt64ToBytes(src[srcIndex], dst.AsSpan(dstIndex, 8));
+                CopyLittleEndianUInt64ToBytes(src[srcIndex], dst.AsSpan(dstIndex, 8));
             }
         }
 
@@ -173,63 +173,63 @@ namespace acryptohashnet
                 srcIndex < srcOffset + bytesCount;
                 srcIndex += 8, dstIndex += 1)
             {
-                dst[dstIndex] = ToBigEndianUInt64(src.AsSpan(srcIndex, 8));
+                dst[dstIndex] = BytesToLittleEndianUInt64(src.AsSpan(srcIndex, 8));
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CopyBigEndianUInt32ToBytes(uint input, Span<byte> bytes)
+        private static void CopyLittleEndianUInt32ToBytes(uint input, Span<byte> bytes)
         {
-            bytes[3] = unchecked((byte)(input & 0xff));
-            input >>= 8;
-            bytes[2] = unchecked((byte)(input & 0xff));
+            bytes[0] = unchecked((byte)(input & 0xff));
             input >>= 8;
             bytes[1] = unchecked((byte)(input & 0xff));
             input >>= 8;
-            bytes[0] = unchecked((byte)(input & 0xff));
+            bytes[2] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[3] = unchecked((byte)(input & 0xff));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint ToBigEndianUInt32(ReadOnlySpan<byte> bytes)
+        private static uint BytesToLittleEndianUInt32(ReadOnlySpan<byte> bytes)
         {
-            uint result = bytes[0];
-            result = unchecked(result << 8 | bytes[1]);
+            uint result = bytes[3];
             result = unchecked(result << 8 | bytes[2]);
-            result = unchecked(result << 8 | bytes[3]);
+            result = unchecked(result << 8 | bytes[1]);
+            result = unchecked(result << 8 | bytes[0]);
             return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void CopyBigEndianUInt64ToBytes(ulong input, Span<byte> bytes)
+        private static void CopyLittleEndianUInt64ToBytes(ulong input, Span<byte> bytes)
         {
-            bytes[7] = unchecked((byte)(input & 0xff));
-            input >>= 8;
-            bytes[6] = unchecked((byte)(input & 0xff));
-            input >>= 8;
-            bytes[5] = unchecked((byte)(input & 0xff));
-            input >>= 8;
-            bytes[4] = unchecked((byte)(input & 0xff));
-            input >>= 8;
-            bytes[3] = unchecked((byte)(input & 0xff));
-            input >>= 8;
-            bytes[2] = unchecked((byte)(input & 0xff));
+            bytes[0] = unchecked((byte)(input & 0xff));
             input >>= 8;
             bytes[1] = unchecked((byte)(input & 0xff));
             input >>= 8;
-            bytes[0] = unchecked((byte)(input & 0xff));
+            bytes[2] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[3] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[4] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[5] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[6] = unchecked((byte)(input & 0xff));
+            input >>= 8;
+            bytes[7] = unchecked((byte)(input & 0xff));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ulong ToBigEndianUInt64(ReadOnlySpan<byte> bytes)
+        private static ulong BytesToLittleEndianUInt64(ReadOnlySpan<byte> bytes)
         {
-            ulong result = bytes[0];
-            result = unchecked(result << 8 | bytes[1]);
-            result = unchecked(result << 8 | bytes[2]);
-            result = unchecked(result << 8 | bytes[3]);
-            result = unchecked(result << 8 | bytes[4]);
-            result = unchecked(result << 8 | bytes[5]);
+            ulong result = bytes[7];
             result = unchecked(result << 8 | bytes[6]);
-            result = unchecked(result << 8 | bytes[7]);
+            result = unchecked(result << 8 | bytes[5]);
+            result = unchecked(result << 8 | bytes[4]);
+            result = unchecked(result << 8 | bytes[3]);
+            result = unchecked(result << 8 | bytes[2]);
+            result = unchecked(result << 8 | bytes[1]);
+            result = unchecked(result << 8 | bytes[0]);
             return result;
         }
     }

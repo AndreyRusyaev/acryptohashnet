@@ -8,7 +8,7 @@ namespace acryptohashnet
     /// </summary>
     public sealed class MD2 : BlockHashAlgorithm
     {
-        private static readonly byte[] Pi = new byte[]
+        private static readonly int[] Pi = new int[]
         {
             041, 046, 067, 201,
             162, 216, 124, 001,
@@ -93,11 +93,11 @@ namespace acryptohashnet
 
         private readonly byte[] state = new byte[16];
 
-        private readonly byte[] buffer = new byte[48];
+        private readonly int[] buffer = new int[48];
 
         private readonly byte[] finalBlock;
 
-        private readonly byte[] checkSum;
+        private readonly int[] checkSum = new int[16];
 
         private int processedLength = 0;
 
@@ -106,7 +106,6 @@ namespace acryptohashnet
             HashSizeValue = 128;
             
             finalBlock = new byte[BlockSize];
-            checkSum = new byte[BlockSize];
             Initialize();
         }
 
@@ -118,8 +117,7 @@ namespace acryptohashnet
 
             Array.Clear(finalBlock, 0, finalBlock.Length);
             Array.Clear(checkSum, 0, checkSum.Length);
-
-            InitializeState();
+            Array.Clear(state, 0, state.Length);
         }
 
         protected override void ProcessBlock(byte[] array, int offset)
@@ -127,35 +125,42 @@ namespace acryptohashnet
             processedLength += BlockSize;
 
             // fill buffer
-
-            Buffer.BlockCopy(state, 0, buffer, 0, 16);
-            Buffer.BlockCopy(array, offset, buffer, 16, 16);
             for (int ii = 0; ii < 16; ii++)
             {
-                buffer[ii + 32] = (byte)(state[ii] ^ array[offset + ii]);
+                buffer[ii] = state[ii];
+            }
+
+            for (int ii = 16, jj = 0; ii < 32; ii++, jj++)
+            {
+                buffer[ii] = array[offset + jj];
+            }
+
+            for (int ii = 32, jj = 0; ii < buffer.Length; ii++, jj++)
+            {
+                buffer[ii] = state[jj] ^ array[offset + jj];
             }
 
             // do 18 rounds
 
-            uint t = 0;
-            for (int ii = 0; ii < 18; ii++)
+            for (int ii = 0, piIndex = 0; ii < 18; ii++)
             {
                 for (int jj = 0; jj < buffer.Length; jj++)
                 {
-                    buffer[jj] = (byte)(buffer[jj] ^ Pi[t]);
-                    t = buffer[jj];
+                    piIndex = buffer[jj] ^= Pi[piIndex];
                 }
 
-                t = (uint)((t + ii) & 0xff); // % 256
+                piIndex = (piIndex + ii) & 0xff; // % 256
             }
 
-            Buffer.BlockCopy(buffer, 0, state, 0, 16);
-
-            t = checkSum[15];
-            for (int ii = 0; ii < checkSum.Length; ii++)
+            for (int ii = 0; ii < state.Length; ii++)
             {
-                checkSum[ii] = (byte)(checkSum[ii] ^ Pi[array[offset + ii] ^ t]);
-                t = checkSum[ii];
+                state[ii] = unchecked((byte)(buffer[ii] & 0xff));
+            }
+
+            for (int ii = 0, piIndex = checkSum[15]; ii < checkSum.Length; ii++)
+            {
+                piIndex = array[offset + ii] ^ piIndex;
+                piIndex = checkSum[ii] ^= Pi[piIndex];
             }
         }
 
@@ -163,16 +168,24 @@ namespace acryptohashnet
         {
             int messageLength = processedLength + length;
 
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
+            Array.Copy(array, offset, finalBlock, 0, length);
 
             // padding message
+            byte padding = (byte)(16 - (messageLength & 0xf));
             for (int ii = offset + length; ii < BlockSize; ii++)
             {
-                finalBlock[ii] = (byte)(16 - (messageLength & 0xf));
+                finalBlock[ii] = padding;
             }
             
             ProcessBlock(finalBlock, 0);
-            ProcessBlock(checkSum, 0);
+
+            // Process checksum
+            for(int ii = 0; ii < checkSum.Length; ii++)
+            {
+                finalBlock[ii] = unchecked((byte)(checkSum[ii] & 0xff));
+            }
+
+            ProcessBlock(finalBlock, 0);
         }
 
         protected override byte[] Result
@@ -181,15 +194,10 @@ namespace acryptohashnet
             {
                 byte[] result = new byte[16];
 
-                Buffer.BlockCopy(state, 0, result, 0, result.Length);
+                Array.Copy(state, 0, result, 0, result.Length);
 
                 return result;
             }
-        }
-
-        private void InitializeState()
-        {
-            Array.Clear(state, 0, state.Length);
         }
     }
 }
