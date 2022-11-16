@@ -8,7 +8,7 @@ namespace acryptohashnet
     /// </summary>
     public sealed class RIPEMD160 : BlockHashAlgorithm
     {
-        #region algorithm constant parameters 
+        #region Constants
 
         private static readonly uint[] Constants1 = new uint[]
         {
@@ -100,7 +100,7 @@ namespace acryptohashnet
             HashSizeValue = 160;
 
             finalBlock = new byte[BlockSize];
-            Initialize();
+            InitializeState();
         }
 
         public override void Initialize()
@@ -171,11 +171,7 @@ namespace acryptohashnet
         {
             get
             {
-                byte[] result = new byte[20];
-
-                Buffer.BlockCopy(state, 0, result, 0, result.Length);
-
-                return result;
+                return LittleEndian.ToByteArray(state);
             }
         }
 

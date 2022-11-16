@@ -558,7 +558,7 @@ namespace acryptohashnet
             HashSizeValue = 192;
 
             finalBlock = new byte[BlockSize];
-            Initialize();
+            InitializeState();
         }
 
         public override void Initialize()
@@ -755,11 +755,7 @@ namespace acryptohashnet
         {
             get
             {
-                byte[] result = new byte[24];
-
-                Buffer.BlockCopy(state, 0, result, 0, result.Length);
-
-                return result;
+                return LittleEndian.ToByteArray(state);
             }
         }
 

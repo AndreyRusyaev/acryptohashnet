@@ -63,32 +63,32 @@ namespace acryptohashnet
             for (int ii = 0; ii < 16; ii += 4)
             {
                 a += buffer[ii + 0] + k0 + F(b, c, d);
-                a = Bits.RotateLeft(a, 3);
+                a = a.RotateLeft(3);
 
                 d += buffer[ii + 1] + k0 + F(a, b, c);
-                d = Bits.RotateLeft(d, 7);
+                d = d.RotateLeft(7);
 
                 c += buffer[ii + 2] + k0 + F(d, a, b);
-                c = Bits.RotateLeft(c, 11);
+                c = c.RotateLeft(11);
 
                 b += buffer[ii + 3] + k0 + F(c, d, a);
-                b = Bits.RotateLeft(b, 19);
+                b = b.RotateLeft(19);
             }
 
             // Round 2
             for (int ii = 16, jj = 0; ii < 32; ii += 4, jj++)
             {
                 a += buffer[jj + 00] + k1 + G(b, c, d);
-                a = Bits.RotateLeft(a, 3);
+                a = a.RotateLeft(3);
 
                 d += buffer[jj + 04] + k1 + G(a, b, c);
-                d = Bits.RotateLeft(d, 5);
+                d = d.RotateLeft(5);
 
                 c += buffer[jj + 08] + k1 + G(d, a, b);
-                c = Bits.RotateLeft(c, 9);
+                c = c.RotateLeft(9);
 
                 b += buffer[jj + 12] + k1 + G(c, d, a);
-                b = Bits.RotateLeft(b, 13);
+                b = b.RotateLeft(13);
             }
 
             // Round 3
@@ -97,16 +97,16 @@ namespace acryptohashnet
                 int index = (jj << 1) + -3 * (jj >> 1); // jj * 2 + (jj / 2) * (-3);
 
                 a += buffer[index + 00] + k2 + H(b, c, d);
-                a = Bits.RotateLeft(a, 3);
+                a = a.RotateLeft(3);
 
                 d += buffer[index + 08] + k2 + H(a, b, c);
-                d = Bits.RotateLeft(d, 9);
+                d = d.RotateLeft(9);
 
                 c += buffer[index + 04] + k2 + H(d, a, b);
-                c = Bits.RotateLeft(c, 11);
+                c = c.RotateLeft(11);
 
                 b += buffer[index + 12] + k2 + H(c, d, a);
-                b = Bits.RotateLeft(b, 15);
+                b = b.RotateLeft(15);
             }
 
             // The end

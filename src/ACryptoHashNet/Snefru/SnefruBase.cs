@@ -994,7 +994,7 @@ namespace acryptohashnet
 
             state = new uint[outputSize];
             finalBlock = new byte[BlockSize];
-            Initialize();
+            InitializeState();
         }
 
         public override void Initialize()
@@ -1017,7 +1017,7 @@ namespace acryptohashnet
                 buffer[ii] = state[ii];
             }
 
-            BigEndianBuffer.BlockCopy(array, offset, buffer, state.Length, BlockSize);
+            BigEndian.Copy(array.AsSpan(offset, BlockSize), buffer.AsSpan(state.Length));
 
             for (int ii = 0; ii < 8 /* TODO: SECURITY_LEVEL */; ii++)
             {
@@ -1075,11 +1075,7 @@ namespace acryptohashnet
         {
             get
             {
-                byte[] result = new byte[state.Length << 2];
-
-                BigEndianBuffer.BlockCopy(state, 0, result, 0, result.Length);
-
-                return result;
+                return BigEndian.ToByteArray(state);
             }
         }
 

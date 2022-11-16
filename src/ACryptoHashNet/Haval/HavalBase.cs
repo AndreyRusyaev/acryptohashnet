@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -10,7 +11,7 @@ namespace acryptohashnet
     {
         private const uint HavalVersion = 1;
 
-        #region algorithm constant parameters
+        #region Constants
 
         private static readonly uint[] WordOrders = new uint[]
         {
@@ -180,11 +181,7 @@ namespace acryptohashnet
                         break;
                 }
 
-                byte[] result = new byte[(int)havalHashSize >> 3];
-
-                Buffer.BlockCopy(state, 0, result, 0, result.Length);
-
-                return result;
+                return LittleEndian.ToByteArray(state.AsSpan(0, (int)havalHashSize >> 5)); // size `div` 32 
             }
         }
 
@@ -216,51 +213,43 @@ namespace acryptohashnet
             {
                 uint t = F1phi3(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0];
 
                 t = F1phi3(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1];
 
                 t = F1phi3(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2];
 
                 t = F1phi3(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3];
 
                 t = F1phi3(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4];
 
                 t = F1phi3(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5];
 
                 t = F1phi3(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6];
 
                 t = F1phi3(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7];
             }
 
             // pass 2
@@ -268,51 +257,43 @@ namespace acryptohashnet
             {
                 uint t = F2phi3(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F2phi3(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F2phi3(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F2phi3(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F2phi3(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F2phi3(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F2phi3(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F2phi3(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 3
@@ -320,51 +301,43 @@ namespace acryptohashnet
             {
                 uint t = F3phi3(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F3phi3(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F3phi3(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F3phi3(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F3phi3(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F3phi3(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F3phi3(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F3phi3(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             state[0] += t0;
@@ -393,51 +366,43 @@ namespace acryptohashnet
             {
                 uint t = F1phi4(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0];
 
                 t = F1phi4(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1];
 
                 t = F1phi4(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2];
 
                 t = F1phi4(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3];
 
                 t = F1phi4(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4];
 
                 t = F1phi4(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5];
 
                 t = F1phi4(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6];
 
                 t = F1phi4(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7];
             }
 
             // pass 2
@@ -445,51 +410,43 @@ namespace acryptohashnet
             {
                 uint t = F2phi4(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F2phi4(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F2phi4(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F2phi4(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F2phi4(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F2phi4(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F2phi4(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F2phi4(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 3
@@ -497,51 +454,43 @@ namespace acryptohashnet
             {
                 uint t = F3phi4(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F3phi4(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F3phi4(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F3phi4(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F3phi4(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F3phi4(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F3phi4(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F3phi4(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 4
@@ -549,51 +498,43 @@ namespace acryptohashnet
             {
                 uint t = F4phi4(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F4phi4(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F4phi4(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F4phi4(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F4phi4(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F4phi4(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F4phi4(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F4phi4(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             state[0] += t0;
@@ -622,51 +563,43 @@ namespace acryptohashnet
             {
                 uint t = F1phi5(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0];
 
                 t = F1phi5(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1];
 
                 t = F1phi5(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2];
 
                 t = F1phi5(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3];
 
                 t = F1phi5(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4];
 
                 t = F1phi5(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5];
 
                 t = F1phi5(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6];
 
                 t = F1phi5(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7];
             }
 
             // pass 2
@@ -674,51 +607,44 @@ namespace acryptohashnet
             {
                 uint t = F2phi5(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F2phi5(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F2phi5(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F2phi5(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7);
                 t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F2phi5(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F2phi5(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F2phi5(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F2phi5(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 3
@@ -726,51 +652,43 @@ namespace acryptohashnet
             {
                 uint t = F3phi5(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F3phi5(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F3phi5(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F3phi5(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F3phi5(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F3phi5(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F3phi5(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F3phi5(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 4
@@ -778,51 +696,43 @@ namespace acryptohashnet
             {
                 uint t = F4phi5(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F4phi5(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F4phi5(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F4phi5(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F4phi5(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F4phi5(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F4phi5(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F4phi5(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             // pass 5
@@ -830,51 +740,43 @@ namespace acryptohashnet
             {
                 uint t = F5phi5(t6, t5, t4, t3, t2, t1, t0);
 
-                t7 = (t7 >> 11 | t7 << 21);
-                t7 += (t >> 7 | t << 25);
-                t7 += buffer[ii + 0] + Constants[(ii + 0) - 32];
+                t7 = t7.RotateRight(11);
+                t7 += t.RotateRight(7) + buffer[ii + 0] + Constants[(ii + 0) - 32];
 
                 t = F5phi5(t5, t4, t3, t2, t1, t0, t7);
 
-                t6 = (t6 >> 11 | t6 << 21);
-                t6 += (t >> 7 | t << 25);
-                t6 += buffer[ii + 1] + Constants[(ii + 1) - 32];
+                t6 = t6.RotateRight(11);
+                t6 += t.RotateRight(7) + buffer[ii + 1] + Constants[(ii + 1) - 32];
 
                 t = F5phi5(t4, t3, t2, t1, t0, t7, t6);
 
-                t5 = (t5 >> 11 | t5 << 21);
-                t5 += (t >> 7 | t << 25);
-                t5 += buffer[ii + 2] + Constants[(ii + 2) - 32];
+                t5 = t5.RotateRight(11);
+                t5 += t.RotateRight(7) + buffer[ii + 2] + Constants[(ii + 2) - 32];
 
                 t = F5phi5(t3, t2, t1, t0, t7, t6, t5);
 
-                t4 = (t4 >> 11 | t4 << 21);
-                t4 += (t >> 7 | t << 25);
-                t4 += buffer[ii + 3] + Constants[(ii + 3) - 32];
+                t4 = t4.RotateRight(11);
+                t4 += t.RotateRight(7) + buffer[ii + 3] + Constants[(ii + 3) - 32];
 
                 t = F5phi5(t2, t1, t0, t7, t6, t5, t4);
 
-                t3 = (t3 >> 11 | t3 << 21);
-                t3 += (t >> 7 | t << 25);
-                t3 += buffer[ii + 4] + Constants[(ii + 4) - 32];
+                t3 = t3.RotateRight(11);
+                t3 += t.RotateRight(7) + buffer[ii + 4] + Constants[(ii + 4) - 32];
 
                 t = F5phi5(t1, t0, t7, t6, t5, t4, t3);
 
-                t2 = (t2 >> 11 | t2 << 21);
-                t2 += (t >> 7 | t << 25);
-                t2 += buffer[ii + 5] + Constants[(ii + 5) - 32];
+                t2 = t2.RotateRight(11);
+                t2 += t.RotateRight(7) + buffer[ii + 5] + Constants[(ii + 5) - 32];
 
                 t = F5phi5(t0, t7, t6, t5, t4, t3, t2);
 
-                t1 = (t1 >> 11 | t1 << 21);
-                t1 += (t >> 7 | t << 25);
-                t1 += buffer[ii + 6] + Constants[(ii + 6) - 32];
+                t1 = t1.RotateRight(11);
+                t1 += t.RotateRight(7) + buffer[ii + 6] + Constants[(ii + 6) - 32];
 
                 t = F5phi5(t7, t6, t5, t4, t3, t2, t1);
 
-                t0 = (t0 >> 11 | t0 << 21);
-                t0 += (t >> 7 | t << 25);
-                t0 += buffer[ii + 7] + Constants[(ii + 7) - 32];
+                t0 = t0.RotateRight(11);
+                t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
             state[0] += t0;
@@ -891,32 +793,16 @@ namespace acryptohashnet
         {
             uint temp;
 
-            temp = (state[7] & 0x000000ff) |
-                    (state[6] & 0xff000000) |
-                    (state[5] & 0x00ff0000) |
-                    (state[4] & 0x0000ff00);
+            temp = (state[7] & 0x000000ff) | (state[6] & 0xff000000) | (state[5] & 0x00ff0000) | (state[4] & 0x0000ff00);
+            state[0] += temp.RotateRight(8);
 
-            state[0] += temp >> 8 | temp << 24;
+            temp = (state[7] & 0x0000ff00) | (state[6] & 0x000000ff) | (state[5] & 0xff000000) | (state[4] & 0x00ff0000);
+            state[1] += temp.RotateRight(16);
 
-            temp = (state[7] & 0x0000ff00) |
-                    (state[6] & 0x000000ff) |
-                    (state[5] & 0xff000000) |
-                    (state[4] & 0x00ff0000);
+            temp = (state[7] & 0x00ff0000) | (state[6] & 0x0000ff00) | (state[5] & 0x000000ff) | (state[4] & 0xff000000);
+            state[2] += temp.RotateRight(24);
 
-            state[1] += temp >> 16 | temp << 16;
-
-            temp = (state[7] & 0x00ff0000) |
-                    (state[6] & 0x0000ff00) |
-                    (state[5] & 0x000000ff) |
-                    (state[4] & 0xff000000);
-
-            state[2] += temp >> 24 | temp << 8;
-
-            temp = (state[7] & 0xff000000) |
-                    (state[6] & 0x00ff0000) |
-                    (state[5] & 0x0000ff00) |
-                    (state[4] & 0x000000ff);
-
+            temp = (state[7] & 0xff000000) | (state[6] & 0x00ff0000) | (state[5] & 0x0000ff00) | (state[4] & 0x000000ff);
             state[3] += temp;
         }
 
@@ -924,29 +810,19 @@ namespace acryptohashnet
         {
             uint temp;
 
-            temp = (state[7] & (0x0000003fU << 00)) |
-                    (state[6] & (0x0000007fU << 25)) |
-                    (state[5] & (0x0000003fU << 19));
-            state[0] += temp >> 19 | temp << 13;
+            temp = (state[7] & (0x0000003fU << 00)) | (state[6] & (0x0000007fU << 25)) | (state[5] & (0x0000003fU << 19));
+            state[0] += temp.RotateRight(19);
 
-            temp = (state[7] & (0x0000003fU << 06)) |
-                    (state[6] & (0x0000003fU << 00)) |
-                    (state[5] & (0x0000007fU << 25));
-            state[1] += temp >> 25 | temp << 7;
+            temp = (state[7] & (0x0000003fU << 06)) | (state[6] & (0x0000003fU << 00)) | (state[5] & (0x0000007fU << 25));
+            state[1] += temp.RotateRight(25);
 
-            temp = (state[7] & (0x0000007fU << 12)) |
-                    (state[6] & (0x0000003fU << 06)) |
-                    (state[5] & (0x0000003fU << 00));
+            temp = (state[7] & (0x0000007fU << 12)) | (state[6] & (0x0000003fU << 06)) | (state[5] & (0x0000003fU << 00));
             state[2] += temp;
 
-            temp = (state[7] & (0x0000003fU << 19)) |
-                    (state[6] & (0x0000007fU << 12)) |
-                    (state[5] & (0x0000003fU << 06));
+            temp = (state[7] & (0x0000003fU << 19)) | (state[6] & (0x0000007fU << 12)) | (state[5] & (0x0000003fU << 06));
             state[3] += temp >> 6;
 
-            temp = (state[7] & (0x0000007fU << 25)) |
-                    (state[6] & (0x0000003fU << 19)) |
-                    (state[5] & (0x0000007fU << 12));
+            temp = (state[7] & (0x0000007fU << 25)) | (state[6] & (0x0000003fU << 19)) | (state[5] & (0x0000007fU << 12));
             state[4] += temp >> 12;
         }
 
@@ -954,28 +830,22 @@ namespace acryptohashnet
         {
             uint temp;
 
-            temp = (state[7] & (0x0000001fU << 00)) |
-                    (state[6] & (0x0000003fU << 26));
-            state[0] += temp >> 26 | temp << 6;
+            temp = (state[7] & (0x0000001fU << 00)) | (state[6] & (0x0000003fU << 26));
+            state[0] += temp.RotateRight(26);
 
-            temp = (state[7] & (0x0000001fU << 05)) |
-                    (state[6] & (0x0000001fU << 00));
+            temp = (state[7] & (0x0000001fU << 05)) | (state[6] & (0x0000001fU << 00));
             state[1] += temp;
 
-            temp = (state[7] & (0x0000003fU << 10)) |
-                    (state[6] & (0x0000001fU << 05));
+            temp = (state[7] & (0x0000003fU << 10)) | (state[6] & (0x0000001fU << 05));
             state[2] += temp >> 5;
 
-            temp = (state[7] & (0x0000001fU << 16)) |
-                    (state[6] & (0x0000003fU << 10));
+            temp = (state[7] & (0x0000001fU << 16)) | (state[6] & (0x0000003fU << 10));
             state[3] += temp >> 10;
 
-            temp = (state[7] & (0x0000001fU << 21)) |
-                    (state[6] & (0x0000001fU << 16));
+            temp = (state[7] & (0x0000001fU << 21)) | (state[6] & (0x0000001fU << 16));
             state[4] += temp >> 16;
 
-            temp = (state[7] & (0x0000003fU << 26)) |
-                    (state[6] & (0x0000001fU << 21));
+            temp = (state[7] & (0x0000003fU << 26)) | (state[6] & (0x0000001fU << 21));
             state[5] += temp >> 21;
         }
 
@@ -991,89 +861,107 @@ namespace acryptohashnet
         }
 
         // common
-        protected uint F1(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private uint F1(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return x1 & (x0 ^ x4) ^ x2 & x5 ^ x3 & x6 ^ x0;
         }
 
-        protected uint F2(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private uint F2(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return x2 & (x1 & ~x3 ^ x4 & x5 ^ x6 ^ x0) ^ x4 & (x1 ^ x5) ^ x3 & x5 ^ x0;
         }
 
-        protected uint F3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private uint F3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return x3 & (x1 & x2 ^ x6 ^ x0) ^ x1 & x4 ^ x2 & x5 ^ x0;
         }
 
-        protected uint F4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private uint F4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return x4 & (x5 & ~x2 ^ x3 & ~x6 ^ x1 ^ x6 ^ x0) ^ x3 & (x1 & x2 ^ x5 ^ x6) ^ x2 & x6 ^ x0;
         }
 
-        protected uint F5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private uint F5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return x0 & (x1 & x2 & x3 ^ ~x5) ^ x1 & x4 ^ x2 & x5 ^ x3 & x6;
         }
 
         // pass 3
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F1phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F1(x1, x0, x3, x5, x6, x2, x4);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F2phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F2(x4, x2, x1, x0, x5, x3, x6);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F3phi3(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F3(x6, x1, x2, x3, x4, x5, x0);
         }
 
         // pass 4
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F1phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F1(x2, x6, x1, x4, x5, x3, x0);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F2phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F2(x3, x5, x2, x0, x1, x6, x4);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F3phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F3(x1, x4, x3, x6, x0, x2, x5);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F4phi4(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F4(x6, x4, x0, x5, x2, x1, x3);
         }
 
         // pass 5
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F1phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F1(x3, x4, x1, x0, x5, x2, x6);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F2phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F2(x6, x2, x1, x0, x3, x4, x5);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F3phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F3(x2, x6, x0, x4, x3, x1, x5);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F4phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F4(x1, x5, x3, x2, x0, x4, x6);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint F5phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F5(x2, x5, x0, x6, x4, x3, x1);
