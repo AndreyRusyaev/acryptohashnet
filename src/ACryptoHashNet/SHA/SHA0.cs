@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace acryptohashnet
 {
@@ -19,13 +20,13 @@ namespace acryptohashnet
             0xca62c1d6  // [2 ^ 30 * sqrt(10)]
         };
 
-        private readonly BigCounter processedLength = new BigCounter(8);
-
         private readonly uint[] state = new uint[5];
 
         private readonly uint[] buffer = new uint[80];
 
         private readonly byte[] finalBlock;
+
+        private BigInteger processedLength = 0;
 
         public SHA0() : base(64)
         {
@@ -39,16 +40,14 @@ namespace acryptohashnet
         {
             base.Initialize();
 
-            processedLength.Clear();
-
             Array.Clear(finalBlock, 0, finalBlock.Length);
-
+            processedLength = 0;
             InitializeState();
         }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            processedLength.Add(BlockSize << 3); // * 8
+            processedLength += BlockSize;
 
             // Fill buffer for transformations
             BigEndian.Copy(array.AsSpan(offset, BlockSize), buffer.AsSpan(0, 16));
@@ -152,11 +151,9 @@ namespace acryptohashnet
             state[4] += e;
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            processedLength.Add(length << 3); // * 8
-
-            byte[] messageLength = processedLength.GetBytes();
+            var messageLength = processedLength + length;
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
@@ -171,21 +168,16 @@ namespace acryptohashnet
                 Array.Clear(finalBlock, 0, finalBlock.Length);
             }
 
-            for (int ii = 0; ii < 8; ii++)
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            for (int ii = 8 - messageLengthInBits.Length; ii < 8; ii++)
             {
-                finalBlock[endOffset + ii] = messageLength[7 - ii];
+                finalBlock[endOffset + ii] = messageLengthInBits[7 - ii];
             }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
-        }
 
-        protected override byte[] Result
-        {
-            get
-            {
-                return BigEndian.ToByteArray(state);
-            }
+            return BigEndian.ToByteArray(state);
         }
 
         private void InitializeState()

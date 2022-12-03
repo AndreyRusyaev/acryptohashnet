@@ -8,6 +8,8 @@ namespace acryptohashnet
     /// </summary>
     public abstract class BlockHashAlgorithm : HashAlgorithm
     {
+        protected readonly int BlockSizeValue;
+
         private readonly byte[] lastBlock;
 
         private int lastBlockLength;
@@ -18,23 +20,24 @@ namespace acryptohashnet
         /// <param name="blockSize">size of the block for algorithm in bytes</param>
         public BlockHashAlgorithm(int blockSize)
         {
-            BlockSize = blockSize;
+            BlockSizeValue = blockSize;
+            HashSizeValue = blockSize << 3;
 
-            lastBlock = new byte[BlockSize];
+            lastBlock = new byte[BlockSizeValue];
             lastBlockLength = 0;
         }
 
         /// <summary>
         /// Size of algorithm block in bytes.
         /// </summary>
-        public int BlockSize { get; }
+        public int BlockSize { get { return BlockSizeValue; } }
 
         /// <summary>
         /// Initialization algorithm variables.
         /// </summary>
         public override void Initialize()
         {
-            Array.Clear(lastBlock, 0, lastBlock.Length);
+            lastBlock.AsSpan().Clear();
             lastBlockLength = 0;
         }
 
@@ -51,13 +54,7 @@ namespace acryptohashnet
         /// <param name="array">array of bytes</param>
         /// <param name="offset">offset from begin of block in @array</param>
         /// <param name="length">length of final block</param>
-        protected abstract void ProcessFinalBlock(byte[] array, int offset, int length);
-
-        /// <summary>
-        /// Resulting value of algorithm
-        /// </summary>
-        /// <value>byte array with hash value</value>
-        protected abstract byte[] Result { get; }
+        protected abstract byte[] ProcessFinalBlock(byte[] array, int offset, int length);
 
         /// <summary>
         /// Main hash procedure.
@@ -65,14 +62,19 @@ namespace acryptohashnet
         /// <param name="array">byte array</param>
         /// <param name="offset">offset in array</param>
         /// <param name="length">length of block for processing</param>
-        protected override void HashCore(byte[] array, int offset, int length)
+        protected sealed override void HashCore(byte[] array, int offset, int length)
         {
+            if (length == 0)
+            {
+                return;
+            }
+
             if (lastBlockLength > 0)
             {
-                int lastBlockRemaining = BlockSize - lastBlockLength;
+                int lastBlockRemaining = BlockSizeValue - lastBlockLength;
                 if (length >= lastBlockRemaining)
                 {
-                    Buffer.BlockCopy(array, offset, lastBlock, lastBlockLength, lastBlockRemaining);
+                    array.AsSpan(offset, lastBlockRemaining).CopyTo(lastBlock.AsSpan(lastBlockLength));
 
                     ProcessBlock(lastBlock, 0);
                     offset += lastBlockRemaining;
@@ -82,16 +84,16 @@ namespace acryptohashnet
                 }
             }
 
-            while (length >= BlockSize)
+            while (length >= BlockSizeValue)
             {
                 ProcessBlock(array, offset);
-                offset += BlockSize;
-                length -= BlockSize;
+                offset += BlockSizeValue;
+                length -= BlockSizeValue;
             }
 
             if (length > 0)
             {
-                Buffer.BlockCopy(array, offset, lastBlock, lastBlockLength, length);
+                array.AsSpan(offset, length).CopyTo(lastBlock.AsSpan(lastBlockLength));
                 lastBlockLength += length;
             }
         }
@@ -100,15 +102,14 @@ namespace acryptohashnet
         /// Hash final block.
         /// </summary>
         /// <returns>hash value</returns>
-        protected override byte[] HashFinal()
+        protected sealed override byte[] HashFinal()
         {
             if (lastBlockLength > lastBlock.Length)
             {
                 throw new InvalidOperationException("lastBlockLength > lastBlock.Length");
             }
-
-            ProcessFinalBlock(lastBlock, 0, lastBlockLength);
-            return Result;
+            
+            return ProcessFinalBlock(lastBlock, 0, lastBlockLength);
         }
     }
 }

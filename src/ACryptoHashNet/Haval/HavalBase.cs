@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
@@ -61,13 +62,13 @@ namespace acryptohashnet
 
         private readonly byte[] signature = new byte[2];
 
-        private readonly BigCounter lengthCounter = new BigCounter(8);
-
         private readonly uint[] state = new uint[8];
 
         private readonly uint[] buffer = new uint[160];
 
         private readonly byte[] finalBlock;
+
+        private BigInteger lengthCounter = 0;
 
         public HavalBase(HavalHashSize havalHashSize, HavalPassCount havalPassCount)
             : base(128)
@@ -87,23 +88,21 @@ namespace acryptohashnet
             signature[1] = (byte)((hashSize >> 2) & 0xff);
 
             finalBlock = new byte[BlockSize];
-            Initialize();
+            InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
 
-            lengthCounter.Clear();
-
             Array.Clear(finalBlock, 0, finalBlock.Length);
-
+            lengthCounter = 0;
             InitializeState();
         }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            lengthCounter.Add(BlockSize << 3);
+            lengthCounter += BlockSize;
 
             Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
@@ -126,11 +125,9 @@ namespace acryptohashnet
             }
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            lengthCounter.Add(length << 3); // arg * 8
-
-            byte[] messageLength = lengthCounter.GetBytes();
+            var messageLength = lengthCounter + length;
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
@@ -150,39 +147,40 @@ namespace acryptohashnet
 
             endOffset += 2;
 
-            for (int ii = 0; ii < 8; ii++)
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
             {
-                finalBlock[endOffset + ii] = messageLength[ii];
+                finalBlock[endOffset + ii] = messageLengthInBits[ii];
             }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
+
+            // result
+            return TailorResult();
         }
 
-        protected override byte[] Result
+        private byte[] TailorResult()
         {
-            get
+            switch (havalHashSize)
             {
-                switch (havalHashSize)
-                {
-                    case HavalHashSize.HashSize128:
-                        TailorResult128();
-                        break;
-                    case HavalHashSize.HashSize160:
-                        TailorResult160();
-                        break;
-                    case HavalHashSize.HashSize192:
-                        TailorResult192();
-                        break;
-                    case HavalHashSize.HashSize224:
-                        TailorResult224();
-                        break;
-                    case HavalHashSize.HashSize256:
-                        break;
-                }
-
-                return LittleEndian.ToByteArray(state.AsSpan(0, (int)havalHashSize >> 5)); // size `div` 32 
+                case HavalHashSize.HashSize128:
+                    TailorResult128();
+                    break;
+                case HavalHashSize.HashSize160:
+                    TailorResult160();
+                    break;
+                case HavalHashSize.HashSize192:
+                    TailorResult192();
+                    break;
+                case HavalHashSize.HashSize224:
+                    TailorResult224();
+                    break;
+                case HavalHashSize.HashSize256:
+                    break;
             }
+
+            return LittleEndian.ToByteArray(state.AsSpan(0, (int)havalHashSize >> 5)); // size `div` 32 
         }
 
         private void InitializeState()

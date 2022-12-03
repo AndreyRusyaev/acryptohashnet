@@ -106,7 +106,6 @@ namespace acryptohashnet
             HashSizeValue = 128;
             
             finalBlock = new byte[BlockSize];
-            Initialize();
         }
 
         public override void Initialize()
@@ -164,11 +163,11 @@ namespace acryptohashnet
             }
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
         {
             int messageLength = processedLength + length;
 
-            Array.Copy(array, offset, finalBlock, 0, length);
+            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
             // padding message
             byte padding = (byte)(16 - (messageLength & 0xf));
@@ -186,18 +185,12 @@ namespace acryptohashnet
             }
 
             ProcessBlock(finalBlock, 0);
-        }
 
-        protected override byte[] Result
-        {
-            get
-            {
-                byte[] result = new byte[16];
+            byte[] result = new byte[16];
 
-                Array.Copy(state, 0, result, 0, result.Length);
+            Buffer.BlockCopy(state, 0, result, 0, result.Length);
 
-                return result;
-            }
+            return state;
         }
     }
 }

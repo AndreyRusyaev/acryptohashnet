@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
@@ -33,36 +34,35 @@ namespace acryptohashnet
             0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
         };
 
-        private readonly BigCounter processedLength = new BigCounter(8);
-
         private readonly uint[] state = new uint[4];
 
         private readonly uint[] buffer = new uint[16];
 
         private readonly byte[] finalBlock;
 
+        private BigInteger processedLength;
+
         public MD5() : base(64)
         {
             HashSizeValue = 128;
 
             finalBlock = new byte[BlockSize];
-            Initialize();
+            processedLength = 0;
+            InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
 
-            processedLength.Clear();
-
             Array.Clear(finalBlock, 0, finalBlock.Length);
-
+            processedLength = 0;
             InitializeState();
         }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            processedLength.Add(BlockSize << 3); // * 8
+            processedLength += BlockSize;
 
             // Fill buffer for transformations
             Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
@@ -72,9 +72,8 @@ namespace acryptohashnet
             uint c = state[2];
             uint d = state[3];
 
-            int index;
             // Round 1
-            for (index = 0; index < 16; index += 4)
+            for (int index = 0; index < 16; index += 4)
             {
                 a += buffer[index + 0] + Constants[index + 0] + F(b, c, d);
                 a = a.RotateLeft(7);
@@ -94,7 +93,7 @@ namespace acryptohashnet
             }
 
             // Round 2
-            for (index = 16; index < 32; index += 4)
+            for (int index = 16; index < 32; index += 4)
             {
                 a += buffer[((index + 0) * 5 + 1) & 0xf] + Constants[index + 0] + G(b, c, d);
                 a = a.RotateLeft(5);
@@ -114,7 +113,7 @@ namespace acryptohashnet
             }
 
             // Round 3
-            for (index = 32; index < 48; index += 4)
+            for (int index = 32; index < 48; index += 4)
             {
                 a += buffer[((index + 0) * 3 + 5) & 0xf] + Constants[index + 0] + H(b, c, d);
                 a = a.RotateLeft(4);
@@ -134,7 +133,7 @@ namespace acryptohashnet
             }
 
             // Round 4
-            for (index = 48; index < 64; index += 4)
+            for (int index = 48; index < 64; index += 4)
             {
                 a += buffer[((index + 0) * 7 + 0) & 0xf] + Constants[index + 0] + I(b, c, d);
                 a = a.RotateLeft(6);
@@ -160,11 +159,9 @@ namespace acryptohashnet
             state[3] += d;
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            processedLength.Add(length << 3); // * 8
-
-            byte[] messageLength = processedLength.GetBytes();
+            var messageLength = processedLength + length;
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
@@ -179,50 +176,29 @@ namespace acryptohashnet
                 Array.Clear(finalBlock, 0, finalBlock.Length);
             }
 
-            for (int ii = 0; ii < 8; ii++)
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
             {
-                finalBlock[endOffset + ii] = messageLength[ii];
+                finalBlock[endOffset + ii] = messageLengthInBits[ii];
             }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
-        }
 
-        protected override byte[] Result
-        {
-            get
-            {
-                byte[] result = new byte[16];
-
-                Buffer.BlockCopy(state, 0, result, 0, result.Length);
-
-                return result;
-            }
+            return LittleEndian.ToByteArray(state);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint F(uint x, uint y, uint z)
-        {
-            return (x & y) | (~x & z);
-        }
+        private static uint F(uint x, uint y, uint z) => (x & y) | (~x & z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint G(uint x, uint y, uint z)
-        {
-            return (x & z) | (y & ~z);
-        }
+        private static uint G(uint x, uint y, uint z) => (x & z) | (y & ~z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint H(uint x, uint y, uint z)
-        {
-            return x ^ y ^ z;
-        }
+        private static uint H(uint x, uint y, uint z) => x ^ y ^ z;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint I(uint x, uint y, uint z)
-        {
-            return y ^ (x | ~ z);
-        }
+        private static uint I(uint x, uint y, uint z) => y ^ (x | ~z);
 
         private void InitializeState()
         {

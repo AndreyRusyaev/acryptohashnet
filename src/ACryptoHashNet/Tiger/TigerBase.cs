@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace acryptohashnet
 {
@@ -541,8 +542,6 @@ namespace acryptohashnet
 
         #endregion
 
-        private readonly BigCounter processedLength = new BigCounter(8);
-
         private readonly ulong[] state = new ulong[3];
 
         private readonly ulong[] buffer = new ulong[8];
@@ -550,6 +549,8 @@ namespace acryptohashnet
         private readonly byte[] finalBlock;
 
         private readonly TigerPaddingMethod paddingMethod;
+
+        private BigInteger processedLength = 0;
 
         protected TigerBase(TigerPaddingMethod paddingMethod) : base(64)
         {
@@ -565,16 +566,14 @@ namespace acryptohashnet
         {
             base.Initialize();
 
-            processedLength.Clear();
-
             Array.Clear(finalBlock, 0, finalBlock.Length);
-
+            processedLength = 0;
             InitializeState();
         }
 
         protected override void ProcessBlock(byte[] array, int offset)
         {
-            processedLength.Add(BlockSize << 3);
+            processedLength += BlockSize;
 
             Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
 
@@ -712,11 +711,9 @@ namespace acryptohashnet
             state[2] = c + state[2];
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
         {
-            processedLength.Add(length << 3); // * 8
-
-            byte[] messageLength = processedLength.GetBytes();
+            var messageLength = processedLength + length;
 
             Buffer.BlockCopy(array, offset, finalBlock, 0, length);
 
@@ -742,21 +739,16 @@ namespace acryptohashnet
                 Array.Clear(finalBlock, 0, finalBlock.Length);
             }
 
-            for (int ii = 0; ii < 8; ii++)
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
             {
-                finalBlock[endOffset + ii] = messageLength[ii];
+                finalBlock[endOffset + ii] = messageLengthInBits[ii];
             }
 
             // Processing of last block
             ProcessBlock(finalBlock, 0);
-        }
 
-        protected override byte[] Result
-        {
-            get
-            {
-                return LittleEndian.ToByteArray(state);
-            }
+            return LittleEndian.ToByteArray(state);
         }
 
         private void InitializeState()
