@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -77,80 +78,70 @@ namespace acryptohashnet
 
         #endregion
 
-        private readonly uint[] state = new uint[4];
+        private readonly HashState state = new HashState();
 
         private readonly uint[] buffer = new uint[16];
-
-        private readonly byte[] finalBlock;
-
-        private BigInteger processedLength = 0;
 
         public RIPEMD128() : base(64)
         {
             HashSizeValue = 128;
-
-            finalBlock = new byte[BlockSize];
-            InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-            processedLength = 0;
-            InitializeState();
+            state.Initialize();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            processedLength += BlockSize;
-
             // Fill buffer for transformations
-            Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
+            LittleEndian.Copy(block, buffer);
 
-            uint a1 = state[0], a2 = state[0];
-            uint b1 = state[1], b2 = state[1];
-            uint c1 = state[2], c2 = state[2];
-            uint d1 = state[3], d2 = state[3];
+            uint a1 = state.A, a2 = state.A;
+            uint b1 = state.B, b2 = state.B;
+            uint c1 = state.C, c2 = state.C;
+            uint d1 = state.D, d2 = state.D;
 
             MDTransform1(ref a1, ref b1, ref c1, ref d1);
             MDTransform2(ref a2, ref b2, ref c2, ref d2);
 
-            uint t = state[1] + c1 + d2;
-            state[1] = state[2] + d1 + a2;
-            state[2] = state[3] + a1 + b2;
-            state[3] = state[0] + b1 + c2;
-            state[0] = t;
+            uint t = state.B + c1 + d2;
+            state.B = state.C + d1 + a2;
+            state.C = state.D + a1 + b2;
+            state.D = state.A + b1 + c2;
+            state.A = t;
         }
 
-        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
         {
-            var messageLength = processedLength + length;
+            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
 
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
+            lastBlock.CopyTo(padding);
 
-            // padding message with 100..000 bits
-            finalBlock[length] = 0x80;
-
-            int endOffset = BlockSize - 8;
-            if (length >= endOffset)
-            {
-                ProcessBlock(finalBlock, 0);
-
-                Array.Clear(finalBlock, 0, finalBlock.Length);
-            }
+            padding[lastBlock.Length] = 0x80;
 
             byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
-            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
+            if (messageLengthInBits.Length > 8)
             {
-                finalBlock[endOffset + ii] = messageLengthInBits[ii];
+                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
             }
 
-            // Processing of last block
-            ProcessBlock(finalBlock, 0);
+            var endOffset = padding.Length - 8;
+            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[ii];
+            }
 
-            return LittleEndian.ToByteArray(state);
+            return padding;
+        }
+
+        protected override byte[] ProcessFinalBlock()
+        {
+            return state.ToByteArray();
         }
 
         private void MDTransform1(ref uint a, ref uint b, ref uint c, ref uint d)
@@ -319,12 +310,39 @@ namespace acryptohashnet
             }
         }
 
-        private void InitializeState()
+        private sealed class HashState
         {
-            state[0] = 0x67452301;
-            state[1] = 0xefcdab89;
-            state[2] = 0x98badcfe;
-            state[3] = 0x10325476;
+            public uint A;
+            public uint B;
+            public uint C;
+            public uint D;
+
+            public HashState()
+            {
+                Initialize();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Initialize()
+            {
+                A = 0x67452301;
+                B = 0xefcdab89;
+                C = 0x98badcfe;
+                D = 0x10325476;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public byte[] ToByteArray()
+            {
+                var result = new byte[16];
+
+                LittleEndian.Copy(A, result);
+                LittleEndian.Copy(B, result.AsSpan(4));
+                LittleEndian.Copy(C, result.AsSpan(8));
+                LittleEndian.Copy(D, result.AsSpan(12));
+
+                return result;
+            }
         }
     }
 }

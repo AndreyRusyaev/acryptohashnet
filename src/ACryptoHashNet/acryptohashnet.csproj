@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.1; net6.0</TargetFrameworks>
         <Nullable>enable</Nullable>
+        <Version>1.1.0</Version>
         <Description>Pure managed C# implementation of well-known cryptographic hash functions such as SHA-family (SHA0, SHA1, SHA2), MD-family (MD2, MD4, MD5), RIPEMD, Tiger, Haval, Snefru and others.</Description>
         <Copyright>Andrey Rusyaev</Copyright>
         <Authors>Andrey Rusyaev</Authors>

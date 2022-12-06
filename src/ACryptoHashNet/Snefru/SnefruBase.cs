@@ -979,10 +979,6 @@ namespace acryptohashnet
 
         private readonly uint[] state;
 
-        private readonly byte[] finalBlock;
-
-        private BigInteger processedLength = 0;
-
         public SnefruBase(SnefruOutputSize snefruOutputSize)
             : base(GetBlockSize(snefruOutputSize))
         {
@@ -994,29 +990,20 @@ namespace acryptohashnet
             };
 
             state = new uint[outputSize];
-            finalBlock = new byte[BlockSize];
             InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-            processedLength = 0;
             InitializeState();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            processedLength += BlockSize;
+            state.CopyTo(buffer.AsSpan());
 
-            for (int ii = 0; ii < state.Length; ii++)
-            {
-                buffer[ii] = state[ii];
-            }
-
-            BigEndian.Copy(array.AsSpan(offset, BlockSize), buffer.AsSpan(state.Length));
+            BigEndian.Copy(block, buffer.AsSpan(state.Length));
 
             for (int ii = 0; ii < 8 /* TODO: SECURITY_LEVEL */; ii++)
             {
@@ -1048,27 +1035,32 @@ namespace acryptohashnet
             }
         }
 
-        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
         {
-            var messageLength = processedLength + length;
+            var padding = new byte[2 * BlockSizeValue];
 
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
+            lastBlock.CopyTo(padding);
 
-            ProcessBlock(finalBlock, 0);
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            int endOffset = BlockSize - 8;
+            int endOffset = padding.Length - 8;
 
             byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
-            for (int ii = 8 - messageLengthInBits.Length; ii < 8; ii++)
+            if (messageLengthInBits.Length > 8)
             {
-                finalBlock[endOffset + ii] = messageLengthInBits[7 - ii];
+                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
             }
 
-            // Processing of last block
-            ProcessBlock(finalBlock, 0);
+            for (int ii = 8 - messageLengthInBits.Length; ii < 8; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[7 - ii];
+            }
 
+            return padding;
+        }
+
+        protected override byte[] ProcessFinalBlock()
+        {
             return BigEndian.ToByteArray(state);
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace acryptohashnet
 {
@@ -91,52 +92,75 @@ namespace acryptohashnet
             159, 017, 131, 020
         };
 
-        private readonly byte[] state = new byte[16];
+        private readonly HashState state = new HashState();
+
+        public readonly int[] checkSum = new int[16];
 
         private readonly int[] buffer = new int[48];
-
-        private readonly byte[] finalBlock;
-
-        private readonly int[] checkSum = new int[16];
-
-        private int processedLength = 0;
 
         public MD2() : base(16)
         {
             HashSizeValue = 128;
-            
-            finalBlock = new byte[BlockSize];
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            processedLength = 0;
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-            Array.Clear(checkSum, 0, checkSum.Length);
-            Array.Clear(state, 0, state.Length);
+            state.Initialize();
+            checkSum.AsSpan().Clear();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            processedLength += BlockSize;
+            ProcessBlockInternal(block);
+            UpdateCheckSum(block);
+        }
 
+        protected override byte[] ProcessFinalBlock()
+        {
+            var finalBlock = new byte[BlockSizeValue];
+            for (int ii = 0; ii < checkSum.Length; ii++)
+            {
+                finalBlock[ii] = unchecked((byte)(checkSum[ii] & 0xff));
+            }
+
+            ProcessBlockInternal(finalBlock);
+
+            return state.ToByteArray();
+        }
+
+        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var padding = new byte[BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            byte paddingByte = (byte)(16 - (messageLength & 0xf));
+            for (int ii = lastBlock.Length; ii < BlockSize; ii++)
+            {
+                padding[ii] = paddingByte;
+            }
+
+            return padding;
+        }
+
+        private void ProcessBlockInternal(ReadOnlySpan<byte> block)
+        {
             // fill buffer
             for (int ii = 0; ii < 16; ii++)
             {
-                buffer[ii] = state[ii];
+                buffer[ii] = state.state[ii];
             }
 
+            // Expand buffer
             for (int ii = 16, jj = 0; ii < 32; ii++, jj++)
             {
-                buffer[ii] = array[offset + jj];
+                buffer[ii] = block[jj];
             }
 
             for (int ii = 32, jj = 0; ii < buffer.Length; ii++, jj++)
             {
-                buffer[ii] = state[jj] ^ array[offset + jj];
+                buffer[ii] = buffer[jj] ^ block[jj];
             }
 
             // do 18 rounds
@@ -151,46 +175,43 @@ namespace acryptohashnet
                 piIndex = (piIndex + ii) & 0xff; // % 256
             }
 
-            for (int ii = 0; ii < state.Length; ii++)
+            // Copy to state
+            for (int ii = 0; ii < state.state.Length; ii++)
             {
-                state[ii] = unchecked((byte)(buffer[ii] & 0xff));
+                state.state[ii] = (byte)(buffer[ii] & 0xff);
             }
+        }
 
+        private void UpdateCheckSum(ReadOnlySpan<byte> block)
+        {
             for (int ii = 0, piIndex = checkSum[15]; ii < checkSum.Length; ii++)
             {
-                piIndex = array[offset + ii] ^ piIndex;
+                piIndex = block[ii] ^ piIndex;
                 piIndex = checkSum[ii] ^= Pi[piIndex];
             }
         }
 
-        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
+        private sealed class HashState
         {
-            int messageLength = processedLength + length;
+            public readonly byte[] state = new byte[16];
 
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
-
-            // padding message
-            byte padding = (byte)(16 - (messageLength & 0xf));
-            for (int ii = offset + length; ii < BlockSize; ii++)
+            public HashState()
             {
-                finalBlock[ii] = padding;
-            }
-            
-            ProcessBlock(finalBlock, 0);
-
-            // Process checksum
-            for(int ii = 0; ii < checkSum.Length; ii++)
-            {
-                finalBlock[ii] = unchecked((byte)(checkSum[ii] & 0xff));
             }
 
-            ProcessBlock(finalBlock, 0);
+            public void Initialize() 
+            {
+                state.AsSpan().Clear();
+            }
 
-            byte[] result = new byte[16];
+            public byte[] ToByteArray()
+            {
+                byte[] result = new byte[16];
 
-            Buffer.BlockCopy(state, 0, result, 0, result.Length);
+                Buffer.BlockCopy(state, 0, result, 0, result.Length);
 
-            return state;
+                return state;
+            }
         }
     }
 }

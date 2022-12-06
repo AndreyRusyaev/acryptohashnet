@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -42,42 +43,25 @@ namespace acryptohashnet
             0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
         };
         
-        private readonly ulong[] state = new ulong[8];
+        private readonly HashState state = new HashState();
 
         private readonly ulong[] buffer = new ulong[80];
-
-        private readonly byte[] finalBlock;
-
-        private BigInteger processedLength;
 
         public SHA384() : base(128)
         {
             HashSizeValue = 384;
-
-            finalBlock = new byte[BlockSize];
-
-            processedLength = 0;
-            
-            InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            processedLength = 0;
-
-            InitializeState();
+            state.Initialize();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            processedLength += BlockSize;
-
             // Fill buffer for transformation
-            BigEndian.Copy(array.AsSpan(offset, BlockSize), buffer.AsSpan(0, 16));
+            BigEndian.Copy(block, buffer.AsSpan(0, 16));
 
             // Expand buffer
             for (int ii = 16; ii < buffer.Length; ii++)
@@ -85,14 +69,14 @@ namespace acryptohashnet
                 buffer[ii] = SHAFunctions64.Ro1(buffer[ii - 2]) + buffer[ii - 7] + SHAFunctions64.Ro0(buffer[ii - 15]) + buffer[ii - 16];
             }
 
-            ulong a = state[0];
-            ulong b = state[1];
-            ulong c = state[2];
-            ulong d = state[3];
-            ulong e = state[4];
-            ulong f = state[5];
-            ulong g = state[6];
-            ulong h = state[7];
+            ulong a = state.A;
+            ulong b = state.B;
+            ulong c = state.C;
+            ulong d = state.D;
+            ulong e = state.E;
+            ulong f = state.F;
+            ulong g = state.G;
+            ulong h = state.H;
 
             for (int ii = 0; ii < buffer.Length - 7 && ii < Constants.Length - 7; ii += 8)
             {
@@ -137,55 +121,92 @@ namespace acryptohashnet
                 a += SHAFunctions64.Maj(b, c, d) + SHAFunctions64.Sig0(b);
             }
 
-            state[0] += a;
-            state[1] += b;
-            state[2] += c;
-            state[3] += d;
-            state[4] += e;
-            state[5] += f;
-            state[6] += g;
-            state[7] += h;
+            state.A += a;
+            state.B += b;
+            state.C += c;
+            state.D += d;
+            state.E += e;
+            state.F += f;
+            state.G += g;
+            state.H += h;
         }
 
-        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock()
         {
-            var messageLength = processedLength + length;
+            return state.ToByteArray();
+        }
 
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
+        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 16 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
 
-            // padding message with 100..000 bits
-            finalBlock[length] = 0x80;
+            lastBlock.CopyTo(padding);
 
-            int endOffset = BlockSize - 16;
-            if (length >= endOffset)
-            {
-                ProcessBlock(finalBlock, 0);
-
-                Array.Clear(finalBlock, 0, finalBlock.Length);
-            }
+            padding[lastBlock.Length] = 0x80;
 
             byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
-            for (int ii = 16 - messageLengthInBits.Length; ii < 16; ii++)
+            if (messageLengthInBits.Length > 16)
             {
-                finalBlock[endOffset + ii] = messageLengthInBits[15 - ii];
+                var supportedLength = BigInteger.Pow(2, 16 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
             }
 
-            // Processing of last block
-            ProcessBlock(finalBlock, 0);
+            var endOffset = padding.Length - 16;
+            for (int ii = 16 - messageLengthInBits.Length; ii < 16; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[15 - ii];
+            }
 
-            return BigEndian.ToByteArray(state.AsSpan(0, 6));
+            return padding;
         }
 
-        private void InitializeState()
+        private sealed class HashState
         {
-            state[0] = 0xcbbb9d5dc1059ed8;
-            state[1] = 0x629a292a367cd507;
-            state[2] = 0x9159015a3070dd17;
-            state[3] = 0x152fecd8f70e5939;
-            state[4] = 0x67332667ffc00b31;
-            state[5] = 0x8eb44a8768581511;
-            state[6] = 0xdb0c2e0d64f98fa7;
-            state[7] = 0x47b5481dbefa4fa4;
+            public ulong A;
+            public ulong B;
+            public ulong C;
+            public ulong D;
+            public ulong E;
+            public ulong F;
+            public ulong G;
+            public ulong H;
+
+            public HashState()
+            {
+                Initialize();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Initialize()
+            {
+                A = 0xcbbb9d5dc1059ed8;
+                B = 0x629a292a367cd507;
+                C = 0x9159015a3070dd17;
+                D = 0x152fecd8f70e5939;
+                E = 0x67332667ffc00b31;
+                F = 0x8eb44a8768581511;
+                G = 0xdb0c2e0d64f98fa7;
+                H = 0x47b5481dbefa4fa4;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public byte[] ToByteArray()
+            {
+                var result = new byte[48];
+
+                BigEndian.Copy(A, result);
+                BigEndian.Copy(B, result.AsSpan(8));
+                BigEndian.Copy(C, result.AsSpan(16));
+                BigEndian.Copy(D, result.AsSpan(24));
+                BigEndian.Copy(E, result.AsSpan(32));
+                BigEndian.Copy(F, result.AsSpan(40));
+                // BigEndian.Copy(G, result.AsSpan(48));
+                // BigEndian.Copy(H, result.AsSpan(56));
+
+                return result;
+            }
         }
     }
 }

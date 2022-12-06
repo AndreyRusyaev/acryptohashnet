@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Security.Cryptography;
 
 namespace acryptohashnet
@@ -13,6 +14,8 @@ namespace acryptohashnet
         private readonly byte[] lastBlock;
 
         private int lastBlockLength;
+
+        private BigInteger messageLength;
 
         /// <summary>
         /// Block hash algorithm ctor.
@@ -30,13 +33,14 @@ namespace acryptohashnet
         /// <summary>
         /// Size of algorithm block in bytes.
         /// </summary>
-        public int BlockSize { get { return BlockSizeValue; } }
+        public int BlockSize => BlockSizeValue;
 
         /// <summary>
         /// Initialization algorithm variables.
         /// </summary>
         public override void Initialize()
         {
+            messageLength = 0;
             lastBlock.AsSpan().Clear();
             lastBlockLength = 0;
         }
@@ -44,17 +48,17 @@ namespace acryptohashnet
         /// <summary>
         /// Processing block of bytes (size is @BlockSize), @array length must be >= than @offset + @BlockSize
         /// </summary>
-        /// <param name="array">array of bytes</param>
-        /// <param name="offset">offset from begin of block in @array</param>
-        protected abstract void ProcessBlock(byte[] array, int offset);
+        /// <param name="block">block of bytes</param>
+        protected abstract void ProcessBlock(ReadOnlySpan<byte> block);
 
         /// <summary>
-        /// Processing final block of bytes (size is @length), @array length must be >= than @offset + @length
+        /// Generate padding blocks for hash algorithm
         /// </summary>
-        /// <param name="array">array of bytes</param>
-        /// <param name="offset">offset from begin of block in @array</param>
-        /// <param name="length">length of final block</param>
-        protected abstract byte[] ProcessFinalBlock(byte[] array, int offset, int length);
+        /// <param name="lastBlock"></param>
+        /// <returns></returns>
+        protected abstract byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength);
+
+        protected abstract byte[] ProcessFinalBlock();
 
         /// <summary>
         /// Main hash procedure.
@@ -69,6 +73,8 @@ namespace acryptohashnet
                 return;
             }
 
+            messageLength += length;
+
             if (lastBlockLength > 0)
             {
                 int lastBlockRemaining = BlockSizeValue - lastBlockLength;
@@ -76,7 +82,7 @@ namespace acryptohashnet
                 {
                     array.AsSpan(offset, lastBlockRemaining).CopyTo(lastBlock.AsSpan(lastBlockLength));
 
-                    ProcessBlock(lastBlock, 0);
+                    ProcessBlock(lastBlock);
                     offset += lastBlockRemaining;
                     length -= lastBlockRemaining;
 
@@ -86,7 +92,7 @@ namespace acryptohashnet
 
             while (length >= BlockSizeValue)
             {
-                ProcessBlock(array, offset);
+                ProcessBlock(array.AsSpan(offset, BlockSizeValue));
                 offset += BlockSizeValue;
                 length -= BlockSizeValue;
             }
@@ -108,8 +114,15 @@ namespace acryptohashnet
             {
                 throw new InvalidOperationException("lastBlockLength > lastBlock.Length");
             }
-            
-            return ProcessFinalBlock(lastBlock, 0, lastBlockLength);
+
+            var padding = GeneratePaddingBlocks(lastBlock.AsSpan(0, lastBlockLength), messageLength);
+
+            for (int ii = 0; ii < padding.Length; ii += BlockSizeValue)
+            {
+                ProcessBlock(padding.AsSpan(ii, BlockSizeValue));
+            }
+
+            return ProcessFinalBlock();
         }
     }
 }

@@ -12,8 +12,6 @@ namespace acryptohashnet
     {
         private const uint HavalVersion = 1;
 
-        #region Constants
-
         private static readonly uint[] WordOrders = new uint[]
         {
             // pass 2
@@ -54,21 +52,15 @@ namespace acryptohashnet
             0x25d479d8, 0xf6e8def7, 0xe3fe501a, 0xb6794c3b, 0x976ce0bd, 0x04c006ba, 0xc1a94fb6, 0x409f60c4
         };
 
-        #endregion
-
         private readonly HavalHashSize havalHashSize;
 
         private readonly HavalPassCount havalPassCount;
 
         private readonly byte[] signature = new byte[2];
 
-        private readonly uint[] state = new uint[8];
+        private readonly HashState state = new HashState();
 
         private readonly uint[] buffer = new uint[160];
-
-        private readonly byte[] finalBlock;
-
-        private BigInteger lengthCounter = 0;
 
         public HavalBase(HavalHashSize havalHashSize, HavalPassCount havalPassCount)
             : base(128)
@@ -86,25 +78,17 @@ namespace acryptohashnet
                     | ((passCount & 0x7) << 3)
                     | (HavalVersion & 0x7));
             signature[1] = (byte)((hashSize >> 2) & 0xff);
-
-            finalBlock = new byte[BlockSize];
-            InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-            lengthCounter = 0;
-            InitializeState();
+            state.Initialize();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            lengthCounter += BlockSize;
-
-            Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
+            LittleEndian.Copy(block, buffer.AsSpan(0, BlockSizeValue));
 
             for (int ii = 32; ii < buffer.Length; ii++)
             {
@@ -125,86 +109,54 @@ namespace acryptohashnet
             }
         }
 
-        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
         {
-            var messageLength = lengthCounter + length;
+            var paddingBlocks = lastBlock.Length + 10 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
 
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
+            lastBlock.CopyTo(padding);
 
             // padding message with 100..000 bits
-            finalBlock[length] = 0x01;
+            padding[lastBlock.Length] = 0x01;
 
-            int endOffset = BlockSize - 10;
-            if (length >= endOffset)
-            {
-                ProcessBlock(finalBlock, 0);
+            int endOffset = padding.Length - 10;
 
-                Array.Clear(finalBlock, 0, finalBlock.Length);
-            }
-
-            finalBlock[endOffset + 0] = signature[0];
-            finalBlock[endOffset + 1] = signature[1];
+            padding[endOffset + 0] = signature[0];
+            padding[endOffset + 1] = signature[1];
 
             endOffset += 2;
 
             byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 8)
+            {
+                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
             for (int ii = 0; ii < messageLengthInBits.Length; ii++)
             {
-                finalBlock[endOffset + ii] = messageLengthInBits[ii];
+                padding[endOffset + ii] = messageLengthInBits[ii];
             }
 
-            // Processing of last block
-            ProcessBlock(finalBlock, 0);
-
-            // result
-            return TailorResult();
+            return padding;
         }
 
-        private byte[] TailorResult()
+        protected override byte[] ProcessFinalBlock()
         {
-            switch (havalHashSize)
-            {
-                case HavalHashSize.HashSize128:
-                    TailorResult128();
-                    break;
-                case HavalHashSize.HashSize160:
-                    TailorResult160();
-                    break;
-                case HavalHashSize.HashSize192:
-                    TailorResult192();
-                    break;
-                case HavalHashSize.HashSize224:
-                    TailorResult224();
-                    break;
-                case HavalHashSize.HashSize256:
-                    break;
-            }
-
-            return LittleEndian.ToByteArray(state.AsSpan(0, (int)havalHashSize >> 5)); // size `div` 32 
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x243f6a88;
-            state[1] = 0x85a308d3;
-            state[2] = 0x13198a2e;
-            state[3] = 0x03707344;
-            state[4] = 0xa4093822;
-            state[5] = 0x299f31d0;
-            state[6] = 0x082efa98;
-            state[7] = 0xec4e6c89;
+            return state.ToByteArray(havalHashSize);
         }
 
         private void ProcessBlock3Pass()
         {
-            uint t0 = state[0];
-            uint t1 = state[1];
-            uint t2 = state[2];
-            uint t3 = state[3];
-            uint t4 = state[4];
-            uint t5 = state[5];
-            uint t6 = state[6];
-            uint t7 = state[7];
+            uint t0 = state.T0;
+            uint t1 = state.T1;
+            uint t2 = state.T2;
+            uint t3 = state.T3;
+            uint t4 = state.T4;
+            uint t5 = state.T5;
+            uint t6 = state.T6;
+            uint t7 = state.T7;
 
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
@@ -338,26 +290,26 @@ namespace acryptohashnet
                 t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
-            state[0] += t0;
-            state[1] += t1;
-            state[2] += t2;
-            state[3] += t3;
-            state[4] += t4;
-            state[5] += t5;
-            state[6] += t6;
-            state[7] += t7;
+            state.T0 += t0;
+            state.T1 += t1;
+            state.T2 += t2;
+            state.T3 += t3;
+            state.T4 += t4;
+            state.T5 += t5;
+            state.T6 += t6;
+            state.T7 += t7;
         }
 
         private void ProcessBlock4Pass()
         {
-            uint t0 = state[0];
-            uint t1 = state[1];
-            uint t2 = state[2];
-            uint t3 = state[3];
-            uint t4 = state[4];
-            uint t5 = state[5];
-            uint t6 = state[6];
-            uint t7 = state[7];
+            uint t0 = state.T0;
+            uint t1 = state.T1;
+            uint t2 = state.T2;
+            uint t3 = state.T3;
+            uint t4 = state.T4;
+            uint t5 = state.T5;
+            uint t6 = state.T6;
+            uint t7 = state.T7;
 
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
@@ -535,26 +487,26 @@ namespace acryptohashnet
                 t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
-            state[0] += t0;
-            state[1] += t1;
-            state[2] += t2;
-            state[3] += t3;
-            state[4] += t4;
-            state[5] += t5;
-            state[6] += t6;
-            state[7] += t7;
+            state.T0 += t0;
+            state.T1 += t1;
+            state.T2 += t2;
+            state.T3 += t3;
+            state.T4 += t4;
+            state.T5 += t5;
+            state.T6 += t6;
+            state.T7 += t7;
         }
 
         private void ProcessBlock5Pass()
         {
-            uint t0 = state[0];
-            uint t1 = state[1];
-            uint t2 = state[2];
-            uint t3 = state[3];
-            uint t4 = state[4];
-            uint t5 = state[5];
-            uint t6 = state[6];
-            uint t7 = state[7];
+            uint t0 = state.T0;
+            uint t1 = state.T1;
+            uint t2 = state.T2;
+            uint t3 = state.T3;
+            uint t4 = state.T4;
+            uint t5 = state.T5;
+            uint t6 = state.T6;
+            uint t7 = state.T7;
 
             // pass 1
             for (int ii = 0; ii < 32; ii += 8)
@@ -777,85 +729,14 @@ namespace acryptohashnet
                 t0 += t.RotateRight(7) + buffer[ii + 7] + Constants[(ii + 7) - 32];
             }
 
-            state[0] += t0;
-            state[1] += t1;
-            state[2] += t2;
-            state[3] += t3;
-            state[4] += t4;
-            state[5] += t5;
-            state[6] += t6;
-            state[7] += t7;
-        }
-
-        private void TailorResult128()
-        {
-            uint temp;
-
-            temp = (state[7] & 0x000000ff) | (state[6] & 0xff000000) | (state[5] & 0x00ff0000) | (state[4] & 0x0000ff00);
-            state[0] += temp.RotateRight(8);
-
-            temp = (state[7] & 0x0000ff00) | (state[6] & 0x000000ff) | (state[5] & 0xff000000) | (state[4] & 0x00ff0000);
-            state[1] += temp.RotateRight(16);
-
-            temp = (state[7] & 0x00ff0000) | (state[6] & 0x0000ff00) | (state[5] & 0x000000ff) | (state[4] & 0xff000000);
-            state[2] += temp.RotateRight(24);
-
-            temp = (state[7] & 0xff000000) | (state[6] & 0x00ff0000) | (state[5] & 0x0000ff00) | (state[4] & 0x000000ff);
-            state[3] += temp;
-        }
-
-        private void TailorResult160()
-        {
-            uint temp;
-
-            temp = (state[7] & (0x0000003fU << 00)) | (state[6] & (0x0000007fU << 25)) | (state[5] & (0x0000003fU << 19));
-            state[0] += temp.RotateRight(19);
-
-            temp = (state[7] & (0x0000003fU << 06)) | (state[6] & (0x0000003fU << 00)) | (state[5] & (0x0000007fU << 25));
-            state[1] += temp.RotateRight(25);
-
-            temp = (state[7] & (0x0000007fU << 12)) | (state[6] & (0x0000003fU << 06)) | (state[5] & (0x0000003fU << 00));
-            state[2] += temp;
-
-            temp = (state[7] & (0x0000003fU << 19)) | (state[6] & (0x0000007fU << 12)) | (state[5] & (0x0000003fU << 06));
-            state[3] += temp >> 6;
-
-            temp = (state[7] & (0x0000007fU << 25)) | (state[6] & (0x0000003fU << 19)) | (state[5] & (0x0000007fU << 12));
-            state[4] += temp >> 12;
-        }
-
-        private void TailorResult192()
-        {
-            uint temp;
-
-            temp = (state[7] & (0x0000001fU << 00)) | (state[6] & (0x0000003fU << 26));
-            state[0] += temp.RotateRight(26);
-
-            temp = (state[7] & (0x0000001fU << 05)) | (state[6] & (0x0000001fU << 00));
-            state[1] += temp;
-
-            temp = (state[7] & (0x0000003fU << 10)) | (state[6] & (0x0000001fU << 05));
-            state[2] += temp >> 5;
-
-            temp = (state[7] & (0x0000001fU << 16)) | (state[6] & (0x0000003fU << 10));
-            state[3] += temp >> 10;
-
-            temp = (state[7] & (0x0000001fU << 21)) | (state[6] & (0x0000001fU << 16));
-            state[4] += temp >> 16;
-
-            temp = (state[7] & (0x0000003fU << 26)) | (state[6] & (0x0000001fU << 21));
-            state[5] += temp >> 21;
-        }
-
-        private void TailorResult224()
-        {
-            state[0] += (state[7] >> 27) & 0x1f;
-            state[1] += (state[7] >> 22) & 0x1f;
-            state[2] += (state[7] >> 18) & 0x0f;
-            state[3] += (state[7] >> 13) & 0x1f;
-            state[4] += (state[7] >> 09) & 0x0f;
-            state[5] += (state[7] >> 04) & 0x1f;
-            state[6] += (state[7] >> 00) & 0x0f;
+            state.T0 += t0;
+            state.T1 += t1;
+            state.T2 += t2;
+            state.T3 += t3;
+            state.T4 += t4;
+            state.T5 += t5;
+            state.T6 += t6;
+            state.T7 += t7;
         }
 
         // common
@@ -963,6 +844,177 @@ namespace acryptohashnet
         private uint F5phi5(uint x6, uint x5, uint x4, uint x3, uint x2, uint x1, uint x0)
         {
             return F5(x2, x5, x0, x6, x4, x3, x1);
+        }
+
+        private sealed class HashState
+        {
+            public uint T0;
+            public uint T1;
+            public uint T2;
+            public uint T3;
+            public uint T4;
+            public uint T5;
+            public uint T6;
+            public uint T7;
+
+            public HashState()
+            {
+                Initialize();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Initialize()
+            {
+                T0 = 0x243f6a88;
+                T1 = 0x85a308d3;
+                T2 = 0x13198a2e;
+                T3 = 0x03707344;
+                T4 = 0xa4093822;
+                T5 = 0x299f31d0;
+                T6 = 0x082efa98;
+                T7 = 0xec4e6c89;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public byte[] ToByteArray(HavalHashSize havalHashSize)
+            {
+                switch (havalHashSize)
+                {
+                    case HavalHashSize.HashSize128:
+                        return TailorResult128();
+                    case HavalHashSize.HashSize160:
+                        return TailorResult160();
+                    case HavalHashSize.HashSize192:
+                        return TailorResult192();
+                    case HavalHashSize.HashSize224:
+                        return TailorResult224();
+                    case HavalHashSize.HashSize256:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(havalHashSize));
+                }
+
+                byte[] result = new byte[32];
+                LittleEndian.Copy(T0, result.AsSpan(0, 4));
+                LittleEndian.Copy(T1, result.AsSpan(4, 4));
+                LittleEndian.Copy(T2, result.AsSpan(8, 4));
+                LittleEndian.Copy(T3, result.AsSpan(12, 4));
+                LittleEndian.Copy(T4, result.AsSpan(16, 4));
+                LittleEndian.Copy(T5, result.AsSpan(20, 4));
+                LittleEndian.Copy(T6, result.AsSpan(24, 4));
+                LittleEndian.Copy(T7, result.AsSpan(28, 4));
+
+                return result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private byte[] TailorResult128()
+            {
+                uint temp;
+
+                temp = (T7 & 0x000000ff) | (T6 & 0xff000000) | (T5 & 0x00ff0000) | (T4 & 0x0000ff00);
+                T0 += temp.RotateRight(8);
+
+                temp = (T7 & 0x0000ff00) | (T6 & 0x000000ff) | (T5 & 0xff000000) | (T4 & 0x00ff0000);
+                T1 += temp.RotateRight(16);
+
+                temp = (T7 & 0x00ff0000) | (T6 & 0x0000ff00) | (T5 & 0x000000ff) | (T4 & 0xff000000);
+                T2 += temp.RotateRight(24);
+
+                temp = (T7 & 0xff000000) | (T6 & 0x00ff0000) | (T5 & 0x0000ff00) | (T4 & 0x000000ff);
+                T3 += temp;
+
+                byte[] result = new byte[16];
+                LittleEndian.Copy(T0, result.AsSpan(0, 4));
+                LittleEndian.Copy(T1, result.AsSpan(4, 4));
+                LittleEndian.Copy(T2, result.AsSpan(8, 4));
+                LittleEndian.Copy(T3, result.AsSpan(12, 4));
+                return result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private byte[] TailorResult160()
+            {
+                uint temp;
+
+                temp = (T7 & (0x0000003fU << 00)) | (T6 & (0x0000007fU << 25)) | (T5 & (0x0000003fU << 19));
+                T0 += temp.RotateRight(19);
+
+                temp = (T7 & (0x0000003fU << 06)) | (T6 & (0x0000003fU << 00)) | (T5 & (0x0000007fU << 25));
+                T1 += temp.RotateRight(25);
+
+                temp = (T7 & (0x0000007fU << 12)) | (T6 & (0x0000003fU << 06)) | (T5 & (0x0000003fU << 00));
+                T2 += temp;
+
+                temp = (T7 & (0x0000003fU << 19)) | (T6 & (0x0000007fU << 12)) | (T5 & (0x0000003fU << 06));
+                T3 += temp >> 6;
+
+                temp = (T7 & (0x0000007fU << 25)) | (T6 & (0x0000003fU << 19)) | (T5 & (0x0000007fU << 12));
+                T4 += temp >> 12;
+
+                byte[] result = new byte[20];
+                LittleEndian.Copy(T0, result.AsSpan(0, 4));
+                LittleEndian.Copy(T1, result.AsSpan(4, 4));
+                LittleEndian.Copy(T2, result.AsSpan(8, 4));
+                LittleEndian.Copy(T3, result.AsSpan(12, 4));
+                LittleEndian.Copy(T4, result.AsSpan(16, 4));
+                return result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private byte[] TailorResult192()
+            {
+                uint temp;
+
+                temp = (T7 & (0x0000001fU << 00)) | (T6 & (0x0000003fU << 26));
+                T0 += temp.RotateRight(26);
+
+                temp = (T7 & (0x0000001fU << 05)) | (T6 & (0x0000001fU << 00));
+                T1 += temp;
+
+                temp = (T7 & (0x0000003fU << 10)) | (T6 & (0x0000001fU << 05));
+                T2 += temp >> 5;
+
+                temp = (T7 & (0x0000001fU << 16)) | (T6 & (0x0000003fU << 10));
+                T3 += temp >> 10;
+
+                temp = (T7 & (0x0000001fU << 21)) | (T6 & (0x0000001fU << 16));
+                T4 += temp >> 16;
+
+                temp = (T7 & (0x0000003fU << 26)) | (T6 & (0x0000001fU << 21));
+                T5 += temp >> 21;
+
+                byte[] result = new byte[24];
+                LittleEndian.Copy(T0, result.AsSpan(0, 4));
+                LittleEndian.Copy(T1, result.AsSpan(4, 4));
+                LittleEndian.Copy(T2, result.AsSpan(8, 4));
+                LittleEndian.Copy(T3, result.AsSpan(12, 4));
+                LittleEndian.Copy(T4, result.AsSpan(16, 4));
+                LittleEndian.Copy(T5, result.AsSpan(20, 4));
+                return result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private byte[] TailorResult224()
+            {
+                T0 += (T7 >> 27) & 0x1f;
+                T1 += (T7 >> 22) & 0x1f;
+                T2 += (T7 >> 18) & 0x0f;
+                T3 += (T7 >> 13) & 0x1f;
+                T4 += (T7 >> 09) & 0x0f;
+                T5 += (T7 >> 04) & 0x1f;
+                T6 += (T7 >> 00) & 0x0f;
+
+                byte[] result = new byte[28];
+                LittleEndian.Copy(T0, result.AsSpan(0, 4));
+                LittleEndian.Copy(T1, result.AsSpan(4, 4));
+                LittleEndian.Copy(T2, result.AsSpan(8, 4));
+                LittleEndian.Copy(T3, result.AsSpan(12, 4));
+                LittleEndian.Copy(T4, result.AsSpan(16, 4));
+                LittleEndian.Copy(T5, result.AsSpan(20, 4));
+                LittleEndian.Copy(T6, result.AsSpan(24, 4));
+                return result;
+            }
         }
     }
 }

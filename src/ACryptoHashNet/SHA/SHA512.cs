@@ -43,64 +43,22 @@ namespace acryptohashnet
             0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
         };
 
-        private readonly Sha512State state = new Sha512State();
+        private readonly HashState state = new HashState();
 
         private readonly ulong[] buffer = new ulong[80];
 
-        private readonly byte[] finalBlock;
-
-        private BigInteger processedLength = 0;
-
         public SHA512() : base(128)
         {
-            finalBlock = new byte[BlockSizeValue];
-            InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            processedLength = 0;
-            finalBlock.AsSpan().Clear();
-            InitializeState();
+            
+            state.Initialize();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
-        {
-            processedLength += BlockSizeValue;
-
-            ProcessBlockInternal(array.AsSpan(offset, BlockSizeValue));
-        }
-
-        protected override byte[] ProcessFinalBlock(byte[] array, int offset, int length)
-        {
-            var messageLength = processedLength + length;
-
-            array.AsSpan(offset, length).CopyTo(finalBlock);
-
-            // padding message with 100..000 bits
-            finalBlock[length] = 0x80;
-
-            int endOffset = BlockSize - 16;
-            if (length >= endOffset)
-            {
-                ProcessBlockInternal(finalBlock);
-                finalBlock.AsSpan().Clear();
-            }
-
-            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
-            for (int ii = 16 - messageLengthInBits.Length; ii < 16; ii++)
-            {
-                finalBlock[endOffset + ii] = messageLengthInBits[15 - ii];
-            }
-
-            ProcessBlockInternal(finalBlock);
-
-            return state.ToByteArray();
-        }
-
-        private void ProcessBlockInternal(ReadOnlySpan<byte> block)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
             BigEndian.Copy(block, buffer.AsSpan(0, 16));
 
@@ -126,7 +84,7 @@ namespace acryptohashnet
             ulong g = state.G;
             ulong h = state.H;
 
-            for (int ii = 0; ii < buffer.Length - 7 && ii < Constants.Length - 7; ii += 8)
+            for (int ii = 0; ii < buffer.Length - 7; ii += 8)
             {
                 // step 1
                 h += buffer[ii + 0] + Constants[ii + 0] + SHAFunctions64.Ch(e, f, g) + SHAFunctions64.Sig1(e);
@@ -179,20 +137,38 @@ namespace acryptohashnet
             state.H += h;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitializeState()
+        protected override byte[] ProcessFinalBlock()
         {
-            state.A = 0x6a09e667f3bcc908;
-            state.B = 0xbb67ae8584caa73b;
-            state.C = 0x3c6ef372fe94f82b;
-            state.D = 0xa54ff53a5f1d36f1;
-            state.E = 0x510e527fade682d1;
-            state.F = 0x9b05688c2b3e6c1f;
-            state.G = 0x1f83d9abfb41bd6b;
-            state.H = 0x5be0cd19137e2179;
+            return state.ToByteArray();
         }
 
-        private class Sha512State
+        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 16 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x80;
+
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 16)
+            {
+                var supportedLength = BigInteger.Pow(2, 16 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
+            var endOffset = padding.Length - 16;
+            for (int ii = 16 - messageLengthInBits.Length; ii < 16; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[15 - ii];
+            }
+
+            return padding;
+        }
+
+        private sealed class HashState
         {
             public ulong A;
             public ulong B;
@@ -203,6 +179,25 @@ namespace acryptohashnet
             public ulong G;
             public ulong H;
 
+            public HashState()
+            {
+                Initialize();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Initialize()
+            {
+                A = 0x6a09e667f3bcc908;
+                B = 0xbb67ae8584caa73b;
+                C = 0x3c6ef372fe94f82b;
+                D = 0xa54ff53a5f1d36f1;
+                E = 0x510e527fade682d1;
+                F = 0x9b05688c2b3e6c1f;
+                G = 0x1f83d9abfb41bd6b;
+                H = 0x5be0cd19137e2179;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public byte[] ToByteArray()
             {
                 var result = new byte[64];
