@@ -11,6 +11,8 @@ namespace acryptohashnet
     {
         protected readonly int BlockSizeValue;
 
+        protected PaddingType PaddingType = PaddingType.Custom;
+
         private readonly byte[] lastBlock;
 
         private int lastBlockLength;
@@ -24,10 +26,9 @@ namespace acryptohashnet
         public BlockHashAlgorithm(int blockSize)
         {
             BlockSizeValue = blockSize;
-            HashSizeValue = blockSize << 3;
+            HashSizeValue = blockSize << 3; // * 8
 
             lastBlock = new byte[BlockSizeValue];
-            lastBlockLength = 0;
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace acryptohashnet
         }
 
         /// <summary>
-        /// Processing block of bytes (size is @BlockSize), @array length must be >= than @offset + @BlockSize
+        /// Processing block of bytes (size is @BlockSize).
         /// </summary>
         /// <param name="block">block of bytes</param>
         protected abstract void ProcessBlock(ReadOnlySpan<byte> block);
@@ -54,9 +55,20 @@ namespace acryptohashnet
         /// <summary>
         /// Generate padding blocks for hash algorithm
         /// </summary>
-        /// <param name="lastBlock"></param>
+        /// <param name="lastBlock">last unaligned block that should be padded</param>
+        /// <param name="messageLength">message length in bytes</param>
         /// <returns></returns>
-        protected abstract byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength);
+        protected virtual byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            return PaddingType switch
+            {
+                PaddingType.Custom => throw new InvalidOperationException("Custom padding type should override GeneratePaddingBlocks method."),
+                PaddingType.OneZeroFillAnd8BytesMessageLengthLittleEndian => GenerateOneZeroFillAnd8BytesMessageLengthLittleEndianPadding(lastBlock, messageLength),
+                PaddingType.OneZeroFillAnd8BytesMessageLengthBigEndian => GenerateOneZeroFillAnd8BytesMessageLengthBigEndianPadding(lastBlock, messageLength),
+                PaddingType.OneZeroFillAnd16BytesMessageLengthBigEndian => GenerateOneZeroFillAnd16BytesMessageLengthBigEndianPadding(lastBlock, messageLength),
+                _ => throw new InvalidOperationException($"Unsupported padding type '{PaddingType}'."),
+            };
+        }
 
         protected abstract byte[] ProcessFinalBlock();
 
@@ -116,13 +128,90 @@ namespace acryptohashnet
             }
 
             var padding = GeneratePaddingBlocks(lastBlock.AsSpan(0, lastBlockLength), messageLength);
-
             for (int ii = 0; ii < padding.Length; ii += BlockSizeValue)
             {
                 ProcessBlock(padding.AsSpan(ii, BlockSizeValue));
             }
 
             return ProcessFinalBlock();
+        }
+
+        private byte[] GenerateOneZeroFillAnd8BytesMessageLengthLittleEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x80;
+
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 8)
+            {
+                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
+            var endOffset = padding.Length - 8;
+            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[ii];
+            }
+
+            return padding;
+        }
+
+        private byte[] GenerateOneZeroFillAnd8BytesMessageLengthBigEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x80;
+
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 8)
+            {
+                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
+            var endOffset = padding.Length - 8;
+            for (int ii = 8 - messageLengthInBits.Length; ii < 8; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[7 - ii];
+            }
+
+            return padding;
+        }
+
+        private byte[] GenerateOneZeroFillAnd16BytesMessageLengthBigEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 16 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x80;
+
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 16)
+            {
+                var supportedLength = BigInteger.Pow(2, 16 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
+            var endOffset = padding.Length - 16;
+            for (int ii = 16 - messageLengthInBits.Length; ii < 16; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[15 - ii];
+            }
+
+            return padding;
         }
     }
 }

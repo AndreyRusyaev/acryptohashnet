@@ -1001,7 +1001,7 @@ namespace acryptohashnet
 
         protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            state.CopyTo(buffer.AsSpan());
+            state.AsSpan().CopyTo(buffer);
 
             BigEndian.Copy(block, buffer.AsSpan(state.Length));
 

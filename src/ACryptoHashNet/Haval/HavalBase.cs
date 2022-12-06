@@ -116,7 +116,7 @@ namespace acryptohashnet
 
             lastBlock.CopyTo(padding);
 
-            // padding message with 100..000 bits
+            // padding message with 00000001_00..000 bits
             padding[lastBlock.Length] = 0x01;
 
             int endOffset = padding.Length - 10;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
@@ -24,6 +23,7 @@ namespace acryptohashnet
         public MD4() : base(64)
         {
             HashSizeValue = 128;
+            PaddingType = PaddingType.OneZeroFillAnd8BytesMessageLengthLittleEndian;
         }
 
         public override void Initialize()
@@ -103,31 +103,6 @@ namespace acryptohashnet
             return state.ToByteArray();
         }
 
-        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
-        {
-            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
-            var padding = new byte[paddingBlocks * BlockSizeValue];
-
-            lastBlock.CopyTo(padding);
-
-            padding[lastBlock.Length] = 0x80;
-
-            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
-            if (messageLengthInBits.Length > 8)
-            {
-                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
-                throw new InvalidOperationException(
-                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
-            }
-
-            var endOffset = padding.Length - 8;
-            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
-            {
-                padding[endOffset + ii] = messageLengthInBits[ii];
-            }
-
-            return padding;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint F(uint x, uint y, uint z) => (x & y) | (~x & z);

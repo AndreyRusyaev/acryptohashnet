@@ -47,7 +47,7 @@ namespace acryptohashnet
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Copy(ReadOnlySpan<uint> src, Span<byte> dst)
-        {            
+        {
             for (int srcIndex = 0, dstIndex = 0; srcIndex < src.Length && dstIndex <= dst.Length - 4; srcIndex += 1, dstIndex += 4)
             {
                 Copy(src[srcIndex], dst.Slice(dstIndex, 4));
@@ -93,7 +93,7 @@ namespace acryptohashnet
             bytes[2] = (byte)(input >> 16);
             bytes[1] = (byte)(input >> 8);
             bytes[0] = (byte)input;
-        }        
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Copy(ulong input, Span<byte> bytes)

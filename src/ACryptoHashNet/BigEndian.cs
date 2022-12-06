@@ -88,12 +88,12 @@ namespace acryptohashnet
             {
                 throw new ArgumentOutOfRangeException(nameof(bytes));
             }
-            
+
             bytes[0] = (byte)(input >> 24);
             bytes[1] = (byte)(input >> 16);
             bytes[2] = (byte)(input >> 8);
             bytes[3] = (byte)input;
-        }        
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Copy(ulong input, Span<byte> bytes)
@@ -135,7 +135,7 @@ namespace acryptohashnet
                 throw new ArgumentOutOfRangeException(nameof(bytes));
             }
 
-            return bytes[7]                
+            return bytes[7]
                 | ((ulong)bytes[6] << 8)
                 | ((ulong)bytes[5] << 16)
                 | ((ulong)bytes[4] << 24)

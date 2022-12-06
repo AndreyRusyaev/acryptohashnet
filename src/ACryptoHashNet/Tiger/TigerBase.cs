@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 
 namespace acryptohashnet
 {
@@ -542,33 +541,28 @@ namespace acryptohashnet
 
         #endregion
 
-        private readonly ulong[] state = new ulong[3];
+        private readonly HashState state = new HashState();
 
         private readonly ulong[] buffer = new ulong[8];
 
-        private readonly TigerPaddingMethod paddingMethod;
-
-        protected TigerBase(TigerPaddingMethod paddingMethod) : base(64)
+        protected TigerBase() : base(64)
         {
             HashSizeValue = 192;
-
-            this.paddingMethod = paddingMethod;
-            InitializeState();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-            InitializeState();
+            state.Initialize();
         }
 
         protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
             LittleEndian.Copy(block, buffer);
 
-            ulong a = state[0];
-            ulong b = state[1];
-            ulong c = state[2];
+            ulong a = state.A;
+            ulong b = state.B;
+            ulong c = state.C;
 
             // pass 1
             for (int ii = 0; ii < 6; ii += 3)
@@ -695,65 +689,44 @@ namespace acryptohashnet
                 a += (a << 3);
             }
 
-            state[0] = a ^ state[0];
-            state[1] = b - state[1];
-            state[2] = c + state[2];
-        }
-
-        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
-        {
-            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
-            var padding = new byte[paddingBlocks * BlockSizeValue];
-
-            lastBlock.CopyTo(padding);
-
-            switch (paddingMethod)
-            {
-                case TigerPaddingMethod.MD4:
-                    // padding message with 000100..000 bits
-                    padding[lastBlock.Length] = 0x01;
-                    break;
-                case TigerPaddingMethod.MD5:
-                    // padding message with 100..000 bits
-                    padding[lastBlock.Length] = 0x80;
-                    break;
-                default:
-                    throw new NotSupportedException($"Padding method '{paddingMethod}' is not supported");
-            }
-
-            int endOffset = padding.Length - 8;
-
-            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
-            if (messageLengthInBits.Length > 8)
-            {
-                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
-                throw new InvalidOperationException(
-                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
-            }
-
-            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
-            {
-                padding[endOffset + ii] = messageLengthInBits[ii];
-            }
-
-            return padding;
+            state.A = a ^ state.A;
+            state.B = b - state.B;
+            state.C = c + state.C;
         }
 
         protected override byte[] ProcessFinalBlock()
         {
-            return LittleEndian.ToByteArray(state);
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x0123456789abcdef;
-            state[1] = 0xfedcba9876543210;
-            state[2] = 0xf096a5b4c3b2e187;
+            return state.ToByteArray();
         }
 
         private sealed class HashState
         {
+            public ulong A;
+            public ulong B;
+            public ulong C;
 
+            public HashState()
+            {
+                Initialize();
+            }
+
+            public void Initialize()
+            {
+                A = 0x0123456789abcdef;
+                B = 0xfedcba9876543210;
+                C = 0xf096a5b4c3b2e187;
+            }
+
+            public byte[] ToByteArray()
+            {
+                var result = new byte[24];
+
+                LittleEndian.Copy(A, result);
+                LittleEndian.Copy(B, result.AsSpan(8));
+                LittleEndian.Copy(C, result.AsSpan(16));
+
+                return result;
+            }
         }
     }
 }

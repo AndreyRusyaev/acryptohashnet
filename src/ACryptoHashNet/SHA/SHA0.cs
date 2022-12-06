@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
@@ -28,6 +27,7 @@ namespace acryptohashnet
         public SHA0() : base(64)
         {
             HashSizeValue = 160;
+            PaddingType = PaddingType.OneZeroFillAnd8BytesMessageLengthBigEndian;
         }
 
         public override void Initialize()
@@ -138,32 +138,6 @@ namespace acryptohashnet
         protected override byte[] ProcessFinalBlock()
         {
             return state.ToByteArray();
-        }
-
-        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
-        {
-            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
-            var padding = new byte[paddingBlocks * BlockSizeValue];
-
-            lastBlock.CopyTo(padding);
-
-            padding[lastBlock.Length] = 0x80;
-
-            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
-            if (messageLengthInBits.Length > 8)
-            {
-                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
-                throw new InvalidOperationException(
-                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
-            }
-
-            var endOffset = padding.Length - 8;
-            for (int ii = 8 - messageLengthInBits.Length; ii < 8; ii++)
-            {
-                padding[endOffset + ii] = messageLengthInBits[7 - ii];
-            }
-
-            return padding;
         }
 
         private sealed class HashState
