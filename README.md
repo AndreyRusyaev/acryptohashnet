@@ -1,7 +1,22 @@
 # acryptohashnet
-Implementation of well-known cryptographic hash functions for .Net Framework.
+A pure c# implementation of well-known cryptographic hash functions for .Net Framework, .Net Core, Mono and other .Net Standard 2.1 compatible platforms.
 
 Originally project was developed between 2006-2009 as an open source project and was hosted on SourceForge: https://sourceforge.net/projects/acryptohashnet/.
+
+# Features
+  * Pure managed implementations,
+  * Implements System.Security.Cryptography.HashAlgorithm,
+  * Fast and low memory footprints (less GC)
+
+# Sample
+
+``` csharp
+var hashAlgorithm = new acryptohashnet.SHA512();
+var hashBytes = hashAlgorithm.ComputeHash(
+  File.ReadAllBytes("file.txt")
+);
+Console.WriteLine("Hash: {0}", string.Join("", hashBytes.Select(x => x.ToString("x2"))))
+```
 
 # MD Family
 All functions designed and specified by  [Ron Rivest](https://en.wikipedia.org/wiki/Ron_Rivest).
