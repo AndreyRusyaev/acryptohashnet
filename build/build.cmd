@@ -1,7 +1,5 @@
-msbuild "../src/acryptohashnet.sln" /p:Configuration=Release
+@echo off
+setlocal
 
-SET OutDir=../src/acryptohashnet/bin/Release/
-SET TargetDir=../bin/
-
-xcopy /I /Y /F "%OutDir%netstandard2.1/" "%TargetDir%"
-xcopy /I /Y /F "%OutDir%*.nupkg" "%TargetDir%"
+powershell -ExecutionPolicy ByPass -NoProfile -file ./build.ps1
+exit /b %ERRORLEVEL%
