@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -19,39 +20,26 @@ namespace acryptohashnet
             0xca62c1d6  // [2 ^ 30 * sqrt(10)]
         };
 
-        private readonly BigCounter processedLength = new BigCounter(8);
-        
-        private readonly uint[] state = new uint[5];
+        private readonly HashState state = new HashState();
 
         private readonly uint[] buffer = new uint[80];
-
-        private readonly byte[] finalBlock;
 
         public SHA1() : base(64)
         {
             HashSizeValue = 160;
-
-            finalBlock = new byte[BlockSize];
-            Initialize();
+            PaddingType = PaddingType.OneZeroFillAnd8BytesMessageLengthBigEndian;
         }
-
+        
         public override void Initialize()
         {
             base.Initialize();
-
-            processedLength.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
+            state.Initialize();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            processedLength.Add(BlockSize << 3);
-
-            // Fill buffer for transformations
-            BigEndianBuffer.BlockCopy(array, offset, buffer, 0, BlockSize);
+            // Fill buffer for transformation
+            BigEndian.Copy(block, buffer.AsSpan(0, 16));
 
             // Expand buffer
             for (int ii = 16; ii < buffer.Length; ii++)
@@ -61,148 +49,136 @@ namespace acryptohashnet
                 buffer[ii] = x << 1 | x >> 31;
             }
 
-            uint k0 = Constants[0];
-            uint k1 = Constants[1];
-            uint k2 = Constants[2];
-            uint k3 = Constants[3];
-
-            uint a = state[0];
-            uint b = state[1];
-            uint c = state[2];
-            uint d = state[3];
-            uint e = state[4];
+            uint a = state.A;
+            uint b = state.B;
+            uint c = state.C;
+            uint d = state.D;
+            uint e = state.E;
 
             int index = 0;
             // round 1
             for (; index < 20 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k0 + SHAFunctions.Ch(b, c, d) + Bits.RotateLeft(a, 5);
-                b = Bits.RotateLeft(b, 30);
+                e += buffer[index + 0] + Constants[0] + SHAFunctions32.Ch(b, c, d) + a.RotateLeft(5);
+                b = b.RotateLeft(30);
 
-                d += buffer[index + 1] + k0 + SHAFunctions.Ch(a, b, c) + Bits.RotateLeft(e, 5);
-                a = Bits.RotateLeft(a, 30);
+                d += buffer[index + 1] + Constants[0] + SHAFunctions32.Ch(a, b, c) + e.RotateLeft(5);
+                a = a.RotateLeft(30);
 
-                c += buffer[index + 2] + k0 + SHAFunctions.Ch(e, a, b) + Bits.RotateLeft(d, 5);
-                e = Bits.RotateLeft(e, 30);
+                c += buffer[index + 2] + Constants[0] + SHAFunctions32.Ch(e, a, b) + d.RotateLeft(5);
+                e = e.RotateLeft(30);
 
-                b += buffer[index + 3] + k0 + SHAFunctions.Ch(d, e, a) + Bits.RotateLeft(c, 5);
-                d = Bits.RotateLeft(d, 30);
+                b += buffer[index + 3] + Constants[0] + SHAFunctions32.Ch(d, e, a) + c.RotateLeft(5);
+                d = d.RotateLeft(30);
 
-                a += buffer[index + 4] + k0 + SHAFunctions.Ch(c, d, e) + Bits.RotateLeft(b, 5);
-                c = Bits.RotateLeft(c, 30);
+                a += buffer[index + 4] + Constants[0] + SHAFunctions32.Ch(c, d, e) + b.RotateLeft(5);
+                c = c.RotateLeft(30);
             }
 
             // round 2
             for (; index < 40 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k1 + SHAFunctions.Parity(b, c, d) + Bits.RotateLeft(a, 5);
-                b = Bits.RotateLeft(b, 30);
+                e += buffer[index + 0] + Constants[1] + SHAFunctions32.Parity(b, c, d) + a.RotateLeft(5);
+                b = b.RotateLeft(30);
 
-                d += buffer[index + 1] + k1 + SHAFunctions.Parity(a, b, c) + Bits.RotateLeft(e, 5);
-                a = Bits.RotateLeft(a, 30);
+                d += buffer[index + 1] + Constants[1] + SHAFunctions32.Parity(a, b, c) + e.RotateLeft(5);
+                a = a.RotateLeft(30);
 
-                c += buffer[index + 2] + k1 + SHAFunctions.Parity(e, a, b) + Bits.RotateLeft(d, 5);
-                e = Bits.RotateLeft(e, 30);
+                c += buffer[index + 2] + Constants[1] + SHAFunctions32.Parity(e, a, b) + d.RotateLeft(5);
+                e = e.RotateLeft(30);
 
-                b += buffer[index + 3] + k1 + SHAFunctions.Parity(d, e, a) + Bits.RotateLeft(c, 5);
-                d = Bits.RotateLeft(d, 30);
+                b += buffer[index + 3] + Constants[1] + SHAFunctions32.Parity(d, e, a) + c.RotateLeft(5);
+                d = d.RotateLeft(30);
 
-                a += buffer[index + 4] + k1 + SHAFunctions.Parity(c, d, e) + Bits.RotateLeft(b, 5);
-                c = Bits.RotateLeft(c, 30);
+                a += buffer[index + 4] + Constants[1] + SHAFunctions32.Parity(c, d, e) + b.RotateLeft(5);
+                c = c.RotateLeft(30);
             }
 
             // round 3
             for (; index < 60 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k2 + SHAFunctions.Maj(b, c, d) + Bits.RotateLeft(a, 5);
-                b = Bits.RotateLeft(b, 30);
+                e += buffer[index + 0] + Constants[2] + SHAFunctions32.Maj(b, c, d) + a.RotateLeft(5);
+                b = b.RotateLeft(30);
 
-                d += buffer[index + 1] + k2 + SHAFunctions.Maj(a, b, c) + Bits.RotateLeft(e, 5);
-                a = Bits.RotateLeft(a, 30);
+                d += buffer[index + 1] + Constants[2] + SHAFunctions32.Maj(a, b, c) + e.RotateLeft(5);
+                a = a.RotateLeft(30);
 
-                c += buffer[index + 2] + k2 + SHAFunctions.Maj(e, a, b) + Bits.RotateLeft(d, 5);
-                e = Bits.RotateLeft(e, 30);
+                c += buffer[index + 2] + Constants[2] + SHAFunctions32.Maj(e, a, b) + d.RotateLeft(5);
+                e = e.RotateLeft(30);
 
-                b += buffer[index + 3] + k2 + SHAFunctions.Maj(d, e, a) + Bits.RotateLeft(c, 5);
-                d = Bits.RotateLeft(d, 30);
+                b += buffer[index + 3] + Constants[2] + SHAFunctions32.Maj(d, e, a) + c.RotateLeft(5);
+                d = d.RotateLeft(30);
 
-                a += buffer[index + 4] + k2 + SHAFunctions.Maj(c, d, e) + Bits.RotateLeft(b, 5);
-                c = Bits.RotateLeft(c, 30);
+                a += buffer[index + 4] + Constants[2] + SHAFunctions32.Maj(c, d, e) + b.RotateLeft(5);
+                c = c.RotateLeft(30);
             }
 
             // round 4
             for (; index < 80 && index < buffer.Length - 4; index += 5)
             {
-                e += buffer[index + 0] + k3 + SHAFunctions.Parity(b, c, d) + Bits.RotateLeft(a, 5);
-                b = Bits.RotateLeft(b, 30);
+                e += buffer[index + 0] + Constants[3] + SHAFunctions32.Parity(b, c, d) + a.RotateLeft(5);
+                b = b.RotateLeft(30);
 
-                d += buffer[index + 1] + k3 + SHAFunctions.Parity(a, b, c) + Bits.RotateLeft(e, 5);
-                a = Bits.RotateLeft(a, 30);
+                d += buffer[index + 1] + Constants[3] + SHAFunctions32.Parity(a, b, c) + e.RotateLeft(5);
+                a = a.RotateLeft(30);
 
-                c += buffer[index + 2] + k3 + SHAFunctions.Parity(e, a, b) + Bits.RotateLeft(d, 5);
-                e = Bits.RotateLeft(e, 30);
+                c += buffer[index + 2] + Constants[3] + SHAFunctions32.Parity(e, a, b) + d.RotateLeft(5);
+                e = e.RotateLeft(30);
 
-                b += buffer[index + 3] + k3 + SHAFunctions.Parity(d, e, a) + Bits.RotateLeft(c, 5);
-                d = Bits.RotateLeft(d, 30);
+                b += buffer[index + 3] + Constants[3] + SHAFunctions32.Parity(d, e, a) + c.RotateLeft(5);
+                d = d.RotateLeft(30);
 
-                a += buffer[index + 4] + k3 + SHAFunctions.Parity(c, d, e) + Bits.RotateLeft(b, 5);
-                c = Bits.RotateLeft(c, 30);
+                a += buffer[index + 4] + Constants[3] + SHAFunctions32.Parity(c, d, e) + b.RotateLeft(5);
+                c = c.RotateLeft(30);
             }
 
-            state[0] += a;
-            state[1] += b;
-            state[2] += c;
-            state[3] += d;
-            state[4] += e;
+            state.A += a;
+            state.B += b;
+            state.C += c;
+            state.D += d;
+            state.E += e;
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock()
         {
-            processedLength.Add(length << 3); // arg * 8
-
-            byte[] messageLength = processedLength.GetBytes();
-
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
-
-            // padding message with 100..000 bits
-            finalBlock[length] = 0x80;
-
-            int endOffset = BlockSize - 8;
-            if (length >= endOffset)
-            {
-                ProcessBlock(finalBlock, 0);
-
-                Array.Clear(finalBlock, 0, finalBlock.Length);
-            }
-
-            for (int ii = 0; ii < 8; ii++)
-            {
-                finalBlock[endOffset + ii] = messageLength[7 - ii];
-            }
-
-            // Processing of last block
-            ProcessBlock(finalBlock, 0);
+            return state.ToByteArray();
         }
 
-        protected override byte[] Result
+        private sealed class HashState
         {
-            get
+            public uint A;
+            public uint B;
+            public uint C;
+            public uint D;
+            public uint E;
+            public HashState()
             {
-                byte[] result = new byte[20];
+                Initialize();
+            }
 
-                BigEndianBuffer.BlockCopy(state, 0, result, 0, result.Length);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Initialize()
+            {
+                A = 0x67452301;
+                B = 0xefcdab89;
+                C = 0x98badcfe;
+                D = 0x10325476;
+                E = 0xc3d2e1f0;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public byte[] ToByteArray()
+            {
+                var result = new byte[20];
+
+                BigEndian.Copy(A, result);
+                BigEndian.Copy(B, result.AsSpan(4));
+                BigEndian.Copy(C, result.AsSpan(8));
+                BigEndian.Copy(D, result.AsSpan(12));
+                BigEndian.Copy(E, result.AsSpan(16));
 
                 return result;
             }
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x67452301;
-            state[1] = 0xefcdab89;
-            state[2] = 0x98badcfe;
-            state[3] = 0x10325476;
-            state[4] = 0xc3d2e1f0;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Security.Cryptography;
 
 namespace acryptohashnet
@@ -8,9 +9,15 @@ namespace acryptohashnet
     /// </summary>
     public abstract class BlockHashAlgorithm : HashAlgorithm
     {
+        protected readonly int BlockSizeValue;
+
+        protected PaddingType PaddingType = PaddingType.Custom;
+
         private readonly byte[] lastBlock;
 
         private int lastBlockLength;
+
+        private BigInteger messageLength;
 
         /// <summary>
         /// Block hash algorithm ctor.
@@ -18,46 +25,52 @@ namespace acryptohashnet
         /// <param name="blockSize">size of the block for algorithm in bytes</param>
         public BlockHashAlgorithm(int blockSize)
         {
-            BlockSize = blockSize;
+            BlockSizeValue = blockSize;
+            HashSizeValue = blockSize << 3; // * 8
 
-            lastBlock = new byte[BlockSize];
-            lastBlockLength = 0;
+            lastBlock = new byte[BlockSizeValue];
         }
 
         /// <summary>
         /// Size of algorithm block in bytes.
         /// </summary>
-        public int BlockSize { get; }
+        public int BlockSize => BlockSizeValue;
 
         /// <summary>
         /// Initialization algorithm variables.
         /// </summary>
         public override void Initialize()
         {
-            Array.Clear(lastBlock, 0, lastBlock.Length);
+            messageLength = 0;
+            lastBlock.AsSpan().Clear();
             lastBlockLength = 0;
         }
 
         /// <summary>
-        /// Processing block of bytes (size is @BlockSize), @array length must be >= than @offset + @BlockSize
+        /// Processing block of bytes (size is @BlockSize).
         /// </summary>
-        /// <param name="array">array of bytes</param>
-        /// <param name="offset">offset from begin of block in @array</param>
-        protected abstract void ProcessBlock(byte[] array, int offset);
+        /// <param name="block">block of bytes</param>
+        protected abstract void ProcessBlock(ReadOnlySpan<byte> block);
 
         /// <summary>
-        /// Processing final block of bytes (size is @length), @array length must be >= than @offset + @length
+        /// Generate padding blocks for hash algorithm
         /// </summary>
-        /// <param name="array">array of bytes</param>
-        /// <param name="offset">offset from begin of block in @array</param>
-        /// <param name="length">length of final block</param>
-        protected abstract void ProcessFinalBlock(byte[] array, int offset, int length);
+        /// <param name="lastBlock">last unaligned block that should be padded</param>
+        /// <param name="messageLength">message length in bytes</param>
+        /// <returns></returns>
+        protected virtual byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            return PaddingType switch
+            {
+                PaddingType.Custom => throw new InvalidOperationException("Custom padding type should override GeneratePaddingBlocks method."),
+                PaddingType.OneZeroFillAnd8BytesMessageLengthLittleEndian => GenerateOneZeroFillAnd8BytesMessageLengthLittleEndianPadding(lastBlock, messageLength),
+                PaddingType.OneZeroFillAnd8BytesMessageLengthBigEndian => GenerateOneZeroFillAnd8BytesMessageLengthBigEndianPadding(lastBlock, messageLength),
+                PaddingType.OneZeroFillAnd16BytesMessageLengthBigEndian => GenerateOneZeroFillAnd16BytesMessageLengthBigEndianPadding(lastBlock, messageLength),
+                _ => throw new InvalidOperationException($"Unsupported padding type '{PaddingType}'."),
+            };
+        }
 
-        /// <summary>
-        /// Resulting value of algorithm
-        /// </summary>
-        /// <value>byte array with hash value</value>
-        protected abstract byte[] Result { get; }
+        protected abstract byte[] ProcessFinalBlock();
 
         /// <summary>
         /// Main hash procedure.
@@ -65,16 +78,23 @@ namespace acryptohashnet
         /// <param name="array">byte array</param>
         /// <param name="offset">offset in array</param>
         /// <param name="length">length of block for processing</param>
-        protected override void HashCore(byte[] array, int offset, int length)
+        protected sealed override void HashCore(byte[] array, int offset, int length)
         {
+            if (length == 0)
+            {
+                return;
+            }
+
+            messageLength += length;
+
             if (lastBlockLength > 0)
             {
-                int lastBlockRemaining = BlockSize - lastBlockLength;
+                int lastBlockRemaining = BlockSizeValue - lastBlockLength;
                 if (length >= lastBlockRemaining)
                 {
-                    Buffer.BlockCopy(array, offset, lastBlock, lastBlockLength, lastBlockRemaining);
+                    array.AsSpan(offset, lastBlockRemaining).CopyTo(lastBlock.AsSpan(lastBlockLength));
 
-                    ProcessBlock(lastBlock, 0);
+                    ProcessBlock(lastBlock);
                     offset += lastBlockRemaining;
                     length -= lastBlockRemaining;
 
@@ -82,16 +102,16 @@ namespace acryptohashnet
                 }
             }
 
-            while (length >= BlockSize)
+            while (length >= BlockSizeValue)
             {
-                ProcessBlock(array, offset);
-                offset += BlockSize;
-                length -= BlockSize;
+                ProcessBlock(array.AsSpan(offset, BlockSizeValue));
+                offset += BlockSizeValue;
+                length -= BlockSizeValue;
             }
 
             if (length > 0)
             {
-                Buffer.BlockCopy(array, offset, lastBlock, lastBlockLength, length);
+                array.AsSpan(offset, length).CopyTo(lastBlock.AsSpan(lastBlockLength));
                 lastBlockLength += length;
             }
         }
@@ -100,15 +120,98 @@ namespace acryptohashnet
         /// Hash final block.
         /// </summary>
         /// <returns>hash value</returns>
-        protected override byte[] HashFinal()
+        protected sealed override byte[] HashFinal()
         {
             if (lastBlockLength > lastBlock.Length)
             {
                 throw new InvalidOperationException("lastBlockLength > lastBlock.Length");
             }
 
-            ProcessFinalBlock(lastBlock, 0, lastBlockLength);
-            return Result;
+            var padding = GeneratePaddingBlocks(lastBlock.AsSpan(0, lastBlockLength), messageLength);
+            for (int ii = 0; ii < padding.Length; ii += BlockSizeValue)
+            {
+                ProcessBlock(padding.AsSpan(ii, BlockSizeValue));
+            }
+
+            return ProcessFinalBlock();
+        }
+
+        private byte[] GenerateOneZeroFillAnd8BytesMessageLengthLittleEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x80;
+
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 8)
+            {
+                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
+            var endOffset = padding.Length - 8;
+            for (int ii = 0; ii < messageLengthInBits.Length; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[ii];
+            }
+
+            return padding;
+        }
+
+        private byte[] GenerateOneZeroFillAnd8BytesMessageLengthBigEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x80;
+
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 8)
+            {
+                var supportedLength = BigInteger.Pow(2, 8 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
+            var endOffset = padding.Length - 8;
+            for (int ii = 8 - messageLengthInBits.Length; ii < 8; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[7 - ii];
+            }
+
+            return padding;
+        }
+
+        private byte[] GenerateOneZeroFillAnd16BytesMessageLengthBigEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var paddingBlocks = lastBlock.Length + 16 > BlockSizeValue ? 2 : 1;
+            var padding = new byte[paddingBlocks * BlockSizeValue];
+
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x80;
+
+            byte[] messageLengthInBits = (messageLength << 3).ToByteArray();
+            if (messageLengthInBits.Length > 16)
+            {
+                var supportedLength = BigInteger.Pow(2, 16 << 3) - 1;
+                throw new InvalidOperationException(
+                    $"Message is too long for this hash algorithm. Actual: {messageLength}, Max supported: {supportedLength} bytes.");
+            }
+
+            var endOffset = padding.Length - 16;
+            for (int ii = 16 - messageLengthInBits.Length; ii < 16; ii++)
+            {
+                padding[endOffset + ii] = messageLengthInBits[15 - ii];
+            }
+
+            return padding;
         }
     }
 }

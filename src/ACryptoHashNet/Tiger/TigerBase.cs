@@ -541,46 +541,28 @@ namespace acryptohashnet
 
         #endregion
 
-        private readonly BigCounter processedLength = new BigCounter(8);
-
-        private readonly ulong[] state = new ulong[3];
+        private readonly HashState state = new HashState();
 
         private readonly ulong[] buffer = new ulong[8];
 
-        private readonly byte[] finalBlock;
-
-        private readonly TigerPaddingMethod paddingMethod;
-
-        protected TigerBase(TigerPaddingMethod paddingMethod) : base(64)
+        protected TigerBase() : base(64)
         {
-            this.paddingMethod = paddingMethod;
-
             HashSizeValue = 192;
-
-            finalBlock = new byte[BlockSize];
-            Initialize();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            processedLength.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
+            state.Initialize();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            processedLength.Add(BlockSize << 3);
+            LittleEndian.Copy(block, buffer);
 
-            Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
-
-            ulong a = state[0];
-            ulong b = state[1];
-            ulong c = state[2];
+            ulong a = state.A;
+            ulong b = state.B;
+            ulong c = state.C;
 
             // pass 1
             for (int ii = 0; ii < 6; ii += 3)
@@ -707,67 +689,44 @@ namespace acryptohashnet
                 a += (a << 3);
             }
 
-            state[0] = a ^ state[0];
-            state[1] = b - state[1];
-            state[2] = c + state[2];
+            state.A = a ^ state.A;
+            state.B = b - state.B;
+            state.C = c + state.C;
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock()
         {
-            processedLength.Add(length << 3); // * 8
-
-            byte[] messageLength = processedLength.GetBytes();
-
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
-
-            switch (paddingMethod)
-            {
-                case TigerPaddingMethod.MD4:
-                    // padding message with 000100..000 bits
-                    finalBlock[length] = 0x01;
-                    break;
-                case TigerPaddingMethod.MD5:
-                    // padding message with 100..000 bits
-                    finalBlock[length] = 0x80;
-                    break;
-                default:
-                    throw new NotSupportedException($"Padding method '{paddingMethod}' is not supported");
-            }
-
-            int endOffset = BlockSize - 8;
-            if (length >= endOffset)
-            {
-                ProcessBlock(finalBlock, 0);
-
-                Array.Clear(finalBlock, 0, finalBlock.Length);
-            }
-
-            for (int ii = 0; ii < 8; ii++)
-            {
-                finalBlock[endOffset + ii] = messageLength[ii];
-            }
-
-            // Processing of last block
-            ProcessBlock(finalBlock, 0);
+            return state.ToByteArray();
         }
 
-        protected override byte[] Result
+        private sealed class HashState
         {
-            get
-            {
-                byte[] result = new byte[24];
+            public ulong A;
+            public ulong B;
+            public ulong C;
 
-                Buffer.BlockCopy(state, 0, result, 0, result.Length);
+            public HashState()
+            {
+                Initialize();
+            }
+
+            public void Initialize()
+            {
+                A = 0x0123456789abcdef;
+                B = 0xfedcba9876543210;
+                C = 0xf096a5b4c3b2e187;
+            }
+
+            public byte[] ToByteArray()
+            {
+                var result = new byte[24];
+
+                LittleEndian.Copy(A, result);
+                LittleEndian.Copy(B, result.AsSpan(8));
+                LittleEndian.Copy(C, result.AsSpan(16));
 
                 return result;
             }
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x0123456789abcdef;
-            state[1] = 0xfedcba9876543210;
-            state[2] = 0xf096a5b4c3b2e187;
         }
     }
 }

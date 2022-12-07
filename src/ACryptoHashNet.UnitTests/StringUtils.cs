@@ -5,9 +5,9 @@ namespace acryptohashnet.UnitTests
 {
     internal static class StringUtils
     {
-        public static string ByteArrayToHexString(byte[] array)
+        public static string ToHexString(this byte[] bytes)
         {
-            return string.Join("", array.Select(x => x.ToString("x2")));
+            return string.Join("", bytes.Select(x => x.ToString("x2")));
         }
     }
 }

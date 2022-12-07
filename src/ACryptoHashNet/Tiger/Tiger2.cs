@@ -10,8 +10,9 @@ namespace acryptohashnet
     /// </summary>
     public sealed class Tiger2 : TigerBase
     {
-        public Tiger2() : base(TigerPaddingMethod.MD5)
+        public Tiger2() : base()
         {
+            PaddingType = PaddingType.OneZeroFillAnd8BytesMessageLengthLittleEndian;
         }
     }
 }

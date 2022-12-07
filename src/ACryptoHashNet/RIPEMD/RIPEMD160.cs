@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace acryptohashnet
 {
@@ -8,7 +9,7 @@ namespace acryptohashnet
     /// </summary>
     public sealed class RIPEMD160 : BlockHashAlgorithm
     {
-        #region algorithm constant parameters 
+        #region Constants
 
         private static readonly uint[] Constants1 = new uint[]
         {
@@ -87,105 +88,47 @@ namespace acryptohashnet
 
         #endregion
 
-        private readonly BigCounter processedLength = new BigCounter(8);
-
-        private readonly uint[] state = new uint[5];
+        private readonly HashState state = new HashState();
 
         private readonly uint[] buffer = new uint[16];
-
-        private readonly byte[] finalBlock;
 
         public RIPEMD160() : base(64)
         {
             HashSizeValue = 160;
-
-            finalBlock = new byte[BlockSize];
-            Initialize();
+            PaddingType = PaddingType.OneZeroFillAnd8BytesMessageLengthLittleEndian;
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-            processedLength.Clear();
-
-            Array.Clear(finalBlock, 0, finalBlock.Length);
-
-            InitializeState();
+            state.Initialize();
         }
 
-        protected override void ProcessBlock(byte[] array, int offset)
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            processedLength.Add(BlockSize << 3); // * 8
-
             // Fill buffer for transformations
-            Buffer.BlockCopy(array, offset, buffer, 0, BlockSize);
+            LittleEndian.Copy(block, buffer);
 
-            uint a1 = state[0], a2 = state[0];
-            uint b1 = state[1], b2 = state[1];
-            uint c1 = state[2], c2 = state[2];
-            uint d1 = state[3], d2 = state[3];
-            uint e1 = state[4], e2 = state[4];
+            uint a1 = state.A, a2 = state.A;
+            uint b1 = state.B, b2 = state.B;
+            uint c1 = state.C, c2 = state.C;
+            uint d1 = state.D, d2 = state.D;
+            uint e1 = state.E, e2 = state.E;
 
             MDTransform1(ref a1, ref b1, ref c1, ref d1, ref e1);
             MDTransform2(ref a2, ref b2, ref c2, ref d2, ref e2);
 
-            uint t = state[1] + c1 + d2;
-            state[1] = state[2] + d1 + e2;
-            state[2] = state[3] + e1 + a2;
-            state[3] = state[4] + a1 + b2;
-            state[4] = state[0] + b1 + c2;
-            state[0] = t;
+            uint t = state.B + c1 + d2;
+            state.B = state.C + d1 + e2;
+            state.C = state.D + e1 + a2;
+            state.D = state.E + a1 + b2;
+            state.E = state.A + b1 + c2;
+            state.A = t;
         }
 
-        protected override void ProcessFinalBlock(byte[] array, int offset, int length)
+        protected override byte[] ProcessFinalBlock()
         {
-            processedLength.Add(length << 3); // * 8
-
-            byte[] messageLength = processedLength.GetBytes();
-
-            Buffer.BlockCopy(array, offset, finalBlock, 0, length);
-
-            // padding message with 100..000 bits
-            finalBlock[length] = 0x80;
-
-            int endOffset = BlockSize - 8;
-
-            if (length >= endOffset)
-            {
-                ProcessBlock(finalBlock, 0);
-
-                Array.Clear(finalBlock, 0, finalBlock.Length);
-            }
-
-            for (int ii = 0; ii < 8; ii++)
-            {
-                finalBlock[endOffset + ii] = messageLength[ii];
-            }
-
-            // Processing of last block
-            ProcessBlock(finalBlock, 0);
-        }
-
-        protected override byte[] Result
-        {
-            get
-            {
-                byte[] result = new byte[20];
-
-                Buffer.BlockCopy(state, 0, result, 0, result.Length);
-
-                return result;
-            }
-        }
-
-        private void InitializeState()
-        {
-            state[0] = 0x67452301;
-            state[1] = 0xefcdab89;
-            state[2] = 0x98badcfe;
-            state[3] = 0x10325476;
-            state[4] = 0xc3d2e1f0;
+            return state.ToByteArray();
         }
 
         private void MDTransform1(ref uint a, ref uint b, ref uint c, ref uint d, ref uint e)
@@ -655,6 +598,44 @@ namespace acryptohashnet
             b += a;
 
             d = d << 10 | d >> 22;
+        }
+
+        private sealed class HashState
+        {
+            public uint A;
+            public uint B;
+            public uint C;
+            public uint D;
+            public uint E;
+
+            public HashState()
+            {
+                Initialize();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Initialize()
+            {
+                A = 0x67452301;
+                B = 0xefcdab89;
+                C = 0x98badcfe;
+                D = 0x10325476;
+                E = 0xc3d2e1f0;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public byte[] ToByteArray()
+            {
+                var result = new byte[20];
+
+                LittleEndian.Copy(A, result);
+                LittleEndian.Copy(B, result.AsSpan(4));
+                LittleEndian.Copy(C, result.AsSpan(8));
+                LittleEndian.Copy(D, result.AsSpan(12));
+                LittleEndian.Copy(E, result.AsSpan(16));
+
+                return result;
+            }
         }
     }
 }

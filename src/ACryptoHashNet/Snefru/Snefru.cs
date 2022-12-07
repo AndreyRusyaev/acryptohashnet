@@ -1,5 +1,4 @@
-﻿
-namespace acryptohashnet
+﻿namespace acryptohashnet
 {
     /// <summary>
     /// Ralph C. Merkle (1990). "A fast software one-way hash function"

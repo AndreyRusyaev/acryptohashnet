@@ -1,5 +1,4 @@
-﻿
-namespace acryptohashnet
+﻿namespace acryptohashnet
 {
     public sealed class Snefru256 : SnefruBase
     {
