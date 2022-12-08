@@ -22,6 +22,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Include="readme.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
       <None Include="..\..\lgpl1.0.txt">
         <Pack>True</Pack>
         <PackagePath></PackagePath>
