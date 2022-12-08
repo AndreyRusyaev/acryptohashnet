@@ -10,5 +10,5 @@ $TargetDir = "$PSScriptRoot/../bin"
 dotnet build "$SrcDir/acryptohashnet.sln" --configuration $Configuration
 
 New-Item -Force -Type Directory $TargetDir | Out-Null
-Copy-Item -Force "$OutDir/netstandard2.1/*.dll" $TargetDir
+Compress-Archive -Force "$OutDir/net*" $TargetDir/acryptohashnet.zip
 Copy-Item -Force "$OutDir/*.nupkg" $TargetDir
