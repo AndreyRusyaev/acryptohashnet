@@ -60,14 +60,19 @@ namespace acryptohashnet
         /// <returns></returns>
         protected virtual byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
         {
-            return PaddingType switch
+            switch (PaddingType)
             {
-                PaddingType.Custom => throw new InvalidOperationException("Custom padding type should override GeneratePaddingBlocks method."),
-                PaddingType.OneZeroFillAnd8BytesMessageLengthLittleEndian => GenerateOneZeroFillAnd8BytesMessageLengthLittleEndianPadding(lastBlock, messageLength),
-                PaddingType.OneZeroFillAnd8BytesMessageLengthBigEndian => GenerateOneZeroFillAnd8BytesMessageLengthBigEndianPadding(lastBlock, messageLength),
-                PaddingType.OneZeroFillAnd16BytesMessageLengthBigEndian => GenerateOneZeroFillAnd16BytesMessageLengthBigEndianPadding(lastBlock, messageLength),
-                _ => throw new InvalidOperationException($"Unsupported padding type '{PaddingType}'."),
-            };
+                case PaddingType.Custom:
+                    throw new InvalidOperationException("Custom padding type should override GeneratePaddingBlocks method.");
+                case PaddingType.OneZeroFillAnd8BytesMessageLengthLittleEndian:
+                    return GenerateOneZeroFillAnd8BytesMessageLengthLittleEndianPadding(lastBlock, messageLength);
+                case PaddingType.OneZeroFillAnd8BytesMessageLengthBigEndian:
+                    return GenerateOneZeroFillAnd8BytesMessageLengthBigEndianPadding(lastBlock, messageLength);
+                case PaddingType.OneZeroFillAnd16BytesMessageLengthBigEndian:
+                    return GenerateOneZeroFillAnd16BytesMessageLengthBigEndianPadding(lastBlock, messageLength);
+                default:
+                    throw new InvalidOperationException($"Unsupported padding type '{PaddingType}'.");
+            }
         }
 
         protected abstract byte[] ProcessFinalBlock();
