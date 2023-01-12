@@ -8,6 +8,6 @@ namespace acryptohashnet.Benchmarks
     {
         static void Main(string[] args) => BenchmarkSwitcher
             .FromAssembly(typeof(Program).Assembly)
-            .Run(args, DefaultConfig.Instance.AddJob(Job.ShortRun));
+            .Run(args);
     }
 }
