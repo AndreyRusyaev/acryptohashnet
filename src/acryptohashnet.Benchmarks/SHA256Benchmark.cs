@@ -12,7 +12,7 @@ namespace acryptohashnet.Benchmarks
 
         private System.Security.Cryptography.SHA256Managed systemManagedImpl = new System.Security.Cryptography.SHA256Managed();
 
-        private global::acryptohashnet.SHA256 acryptohashnetImpl = new global::acryptohashnet.SHA256();
+        private global::acryptohashnet.Sha2_256 acryptohashnetImpl = new global::acryptohashnet.Sha2_256();
 
         [ParamsSource(nameof(InputSource))]
         public byte[] Input { get; set; }

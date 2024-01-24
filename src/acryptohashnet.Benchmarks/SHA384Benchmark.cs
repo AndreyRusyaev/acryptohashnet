@@ -11,7 +11,7 @@ namespace acryptohashnet.Benchmarks
 
         private System.Security.Cryptography.SHA384Managed systemManagedImpl = new System.Security.Cryptography.SHA384Managed();
 
-        private global::acryptohashnet.SHA384 acryptohashnetImpl = new global::acryptohashnet.SHA384();
+        private global::acryptohashnet.Sha2_384 acryptohashnetImpl = new global::acryptohashnet.Sha2_384();
 
         [ParamsSource(nameof(InputSource))]
         public byte[] Input { get; set; }

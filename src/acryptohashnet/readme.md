@@ -5,13 +5,28 @@ A pure C# implementation of well-known cryptographic hash functions for .Net Sta
 
 * MD family: MD2, MD4, MD5,
 * SHA family: SHA0, SHA1,
-* SHA2 family: SHA256, SHA384, SHA512,
+* SHA2 family: SHA224, SHA256, SHA384, SHA512,
+* SHA3 family: SHA3_224, SHA3_256, SHA3_384, SHA3_512,
 * RIPEMD family: RIPEMD128, RIPEMD160,
 * Haval family: Haval128, Haval160, Haval192, Haval224, Haval256,
 * Snefru, Snefru256,
 * Tiger and Tiger2 (192 bits output)
 
 # Usage examples
+
+## Different algorithms with ToHexDigest extensions
+
+``` csharp
+using acryptohashnet;
+
+var message = "Lorem ipsum is placeholder text commonly used in the graphic, print";
+Console.WriteLine($"MD5 Hash: {message.ToHexDigest(HashAlgorithms.Md5)}");
+Console.WriteLine($"SHA256 Hash: {message.ToHexDigest(HashAlgorithms.Sha1)}");
+Console.WriteLine($"SHA256 Hash: {message.ToHexDigest(HashAlgorithms.Sha2_256)}");
+Console.WriteLine($"SHA512 Hash: {message.ToHexDigest(HashAlgorithms.Sha2_512)}");
+Console.WriteLine($"SHA3 256 Hash: {message.ToHexDigest(HashAlgorithms.Sha3_256)}");
+Console.WriteLine($"SHA3 512 Hash: {message.ToHexDigest(HashAlgorithms.Sha3_512)}");
+```
 
 ## MD5
 
@@ -34,7 +49,7 @@ static class Program
 }
 ```
 
-## SHA256
+## SHA2_256
 
 ``` csharp
 using System;
@@ -45,7 +60,7 @@ static class Program
 {
   static void Main(string[] args)
   {
-    var hashAlgorithm = new acryptohashnet.SHA256();
+    var hashAlgorithm = new acryptohashnet.Sha2_256();
     var hashBytes = hashAlgorithm.ComputeHash("message digest".ToUtf8Bytes());
     Console.WriteLine("Hash: {0}", hashBytes.ToHexString());
   }
@@ -55,7 +70,7 @@ static class Program
 }
 ```
 
-## SHA512
+## SHA2_512
 
 ``` csharp
 using System;
@@ -66,7 +81,7 @@ static class Program
 {
   static void Main(string[] args)
   {
-    var hashAlgorithm = new acryptohashnet.SHA512();
+    var hashAlgorithm = new acryptohashnet.Sha2_512();
     var hashBytes = hashAlgorithm.ComputeHash("message digest".ToUtf8Bytes());
     Console.WriteLine("Hash: {0}", hashBytes.ToHexString());
   }

@@ -11,7 +11,7 @@ namespace acryptohashnet.Benchmarks
 
         private System.Security.Cryptography.SHA512Managed systemManagedImpl = new System.Security.Cryptography.SHA512Managed();
 
-        private global::acryptohashnet.SHA512 acryptohashnetImpl = new global::acryptohashnet.SHA512();
+        private global::acryptohashnet.Sha2_512 acryptohashnetImpl = new global::acryptohashnet.Sha2_512();
 
         [ParamsSource(nameof(InputSource))]
         public byte[] Input { get; set; }

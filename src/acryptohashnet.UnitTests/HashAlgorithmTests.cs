@@ -38,9 +38,16 @@ namespace acryptohashnet.UnitTests
 
                     new SHA0(),
                     new SHA1(),
-                    new SHA256(),
-                    new SHA256(),
-                    new SHA512(),
+
+                    new Sha2_224(),
+                    new Sha2_256(),
+                    new Sha2_384(),
+                    new Sha2_512(),
+
+                    new Sha3_224(),
+                    new Sha3_256(),
+                    new Sha3_384(),
+                    new Sha3_512(),
 
                     new Snefru(),
                     new Snefru256(),

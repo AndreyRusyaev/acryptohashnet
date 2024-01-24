@@ -1,0 +1,49 @@
+﻿using System;
+using System.Numerics;
+
+namespace acryptohashnet
+{   
+    /// <summary>
+    /// Defined by FIPS PUB 202: SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions
+    /// </summary>
+    public sealed class Sha3_512 : BlockHashAlgorithm
+    {
+        private readonly ulong[] state = new ulong[25];
+        public Sha3_512() : base(72)
+        {
+            HashSizeValue = 512;
+            PaddingType = PaddingType.Custom;
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            state.AsSpan().Fill(0);
+        }
+        protected override void ProcessBlock(ReadOnlySpan<byte> block)
+        {
+            for (int jj = 0; jj < BlockSize / 8; jj += 1)
+            {
+                state[jj] ^= LittleEndian.ToUInt64(block.Slice(jj * 8, 8));
+            }
+
+            KeccakPermutation.Run(state, 24);
+        }
+
+        protected override byte[] ProcessFinalBlock()
+        {
+            return LittleEndian.ToByteArray(state.AsSpan(0, 8));
+        }
+
+        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+        {
+            var padding = new byte[BlockSize];
+            lastBlock.CopyTo(padding);
+
+            padding[lastBlock.Length] = 0x06; // 0000 0110
+            padding[BlockSize - 1] |= 0x80; // 1000 0000
+
+            return padding;
+        }
+    }
+}

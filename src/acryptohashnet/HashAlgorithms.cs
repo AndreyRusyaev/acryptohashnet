@@ -1,0 +1,30 @@
+﻿namespace acryptohashnet
+{
+    public enum HashAlgorithms
+    {
+        Haval128,
+        Haval160,
+        Haval192,
+        Haval224,
+        Haval256,
+        Md2,
+        Md4,
+        Md5,
+        RipeMd128,
+        RipeMd160,
+        Sha0,
+        Sha1,
+        Sha2_224,
+        Sha2_256,
+        Sha2_384,
+        Sha2_512,
+        Sha3_224,
+        Sha3_256,
+        Sha3_384,
+        Sha3_512,
+        Snefru128,
+        Snefru256,
+        Tiger,
+        Tiger2
+    }
+}

@@ -1,25 +1,25 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
+using NUnit.Framework;
 
 namespace acryptohashnet.UnitTests
 {
     [TestFixture]
     public class SHA0Tests
     {
-        [TestCaseSource(nameof(TestCases))]
-        public void HashOfString(string input, string expected)
+        [TestCaseSource(nameof(Sha0TestCases))]
+        public void Sha0_(string input, string expected)
         {
-            var actual = new SHA0().ComputeHash(Encoding.UTF8.GetBytes(input)).ToHexString();
+            var actual = input.ToHexDigest(new SHA0());
             Assert.That(actual, Is.EqualTo(expected));
         }
 
-        public static IEnumerable<object[]> TestCases
+        public static IEnumerable<object[]> Sha0TestCases
         {
             get
             {
-                return SHAFamilyTestCases.All().Select(x => new object[] { x.Input, x.Sha0 });
+                return SHAFamilyTestCases.All().Select(x => new object[] { x.Message, x.Sha0 });
             }
         }
     }
