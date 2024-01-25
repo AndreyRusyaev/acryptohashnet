@@ -67,7 +67,7 @@ namespace acryptohashnet.UnitTests
             var hash1 = hashAlgorithm.ComputeHash(input);
             var hash2 = hashAlgorithm.ComputeHash(input);
 
-            Assert.AreEqual(hash1.ToHexString(), hash2.ToHexString());
+            Assert.That(hash1.ToHexString(), Is.EqualTo(hash2.ToHexString()));
         }
 
         [Test]
@@ -85,7 +85,9 @@ namespace acryptohashnet.UnitTests
             hashAlgorithm.TransformBlock(b1, 0, b1.Length, null, 0);
             hashAlgorithm.TransformFinalBlock(b2, 0, b2.Length);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
         [Test]
@@ -104,7 +106,9 @@ namespace acryptohashnet.UnitTests
             hashAlgorithm.TransformBlock(b2, 0, b2.Length, null, 0);
             hashAlgorithm.TransformFinalBlock(new byte[0], 0, 0);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
         [Test]
@@ -123,7 +127,9 @@ namespace acryptohashnet.UnitTests
 
             hashAlgorithm.TransformFinalBlock(new byte[0], 0, 0);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
         [Test]
@@ -136,7 +142,9 @@ namespace acryptohashnet.UnitTests
             hashAlgorithm.Initialize();
             hashAlgorithm.TransformFinalBlock(binaryMessage, 0, binaryMessage.Length);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
 
@@ -151,7 +159,9 @@ namespace acryptohashnet.UnitTests
             hashAlgorithm.TransformBlock(binaryMessage, 0, binaryMessage.Length, null, 0);
             hashAlgorithm.TransformFinalBlock(new byte[0], 0, 0);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
         [Test]
@@ -172,7 +182,9 @@ namespace acryptohashnet.UnitTests
             }
             hashAlgorithm.TransformFinalBlock(binaryMessage, binaryMessage.Length - remainingBytes, remainingBytes);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
         [Test]
@@ -193,7 +205,9 @@ namespace acryptohashnet.UnitTests
             }
             hashAlgorithm.TransformFinalBlock(binaryMessage, binaryMessage.Length - remainingBytes, remainingBytes);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
         [Test]
@@ -214,7 +228,9 @@ namespace acryptohashnet.UnitTests
             }
             hashAlgorithm.TransformFinalBlock(binaryMessage, binaryMessage.Length - remainingBytes, remainingBytes);
 
-            Assert.AreEqual(expected, hashAlgorithm.Hash?.ToHexString());
+            Assert.That(
+                hashAlgorithm.Hash?.ToHexString(),
+                Is.EqualTo(expected));
         }
 
         private static string GenerateMessageWithAtLeastBlocks(HashAlgorithm hashAlgorithm, int minimumBlocksRequired)

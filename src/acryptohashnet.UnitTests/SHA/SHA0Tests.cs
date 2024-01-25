@@ -9,7 +9,7 @@ namespace acryptohashnet.UnitTests
     public class SHA0Tests
     {
         [TestCaseSource(nameof(Sha0TestCases))]
-        public void Sha0_(string input, string expected)
+        public void Sha0(string input, string expected)
         {
             var actual = input.ToHexDigest(new SHA0());
             Assert.That(actual, Is.EqualTo(expected));
