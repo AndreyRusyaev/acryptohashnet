@@ -12,7 +12,6 @@ namespace acryptohashnet
         public Sha3_224() : base(144)
         {
             HashSizeValue = 224;
-            PaddingType = PaddingType.Custom;
         }
 
         public override void Initialize()
@@ -27,7 +26,7 @@ namespace acryptohashnet
                 state[jj] ^= LittleEndian.ToUInt64(block.Slice(jj * 8, 8));
             }
 
-            KeccakPermutation.Run(state, 24);
+            KeccakPermutation.Run(state);
         }
 
         protected override byte[] ProcessFinalBlock()

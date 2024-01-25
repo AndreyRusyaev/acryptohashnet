@@ -12,7 +12,6 @@ namespace acryptohashnet
         public Sha3_512() : base(72)
         {
             HashSizeValue = 512;
-            PaddingType = PaddingType.Custom;
         }
 
         public override void Initialize()
@@ -27,7 +26,7 @@ namespace acryptohashnet
                 state[jj] ^= LittleEndian.ToUInt64(block.Slice(jj * 8, 8));
             }
 
-            KeccakPermutation.Run(state, 24);
+            KeccakPermutation.Run(state);
         }
 
         protected override byte[] ProcessFinalBlock()
@@ -41,7 +40,7 @@ namespace acryptohashnet
             lastBlock.CopyTo(padding);
 
             padding[lastBlock.Length] = 0x06; // 0000 0110
-            padding[BlockSize - 1] |= 0x80; // 1000 0000
+            padding[BlockSize - 1] |= 0x80;   // 1000 0000
 
             return padding;
         }
