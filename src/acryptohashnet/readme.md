@@ -19,13 +19,19 @@ A pure C# implementation of well-known cryptographic hash functions for .Net Sta
 ``` csharp
 using acryptohashnet;
 
-var message = "Lorem ipsum is placeholder text commonly used in the graphic, print";
-Console.WriteLine($"MD5 Hash: {message.ToHexDigest(HashAlgorithms.Md5)}");
-Console.WriteLine($"SHA256 Hash: {message.ToHexDigest(HashAlgorithms.Sha1)}");
-Console.WriteLine($"SHA256 Hash: {message.ToHexDigest(HashAlgorithms.Sha2_256)}");
-Console.WriteLine($"SHA512 Hash: {message.ToHexDigest(HashAlgorithms.Sha2_512)}");
-Console.WriteLine($"SHA3 256 Hash: {message.ToHexDigest(HashAlgorithms.Sha3_256)}");
-Console.WriteLine($"SHA3 512 Hash: {message.ToHexDigest(HashAlgorithms.Sha3_512)}");
+var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
+    "print, and publishing industries for previewing layouts and visual mockups.";
+
+Console.WriteLine($"Message: '{message}'.");
+Console.WriteLine($"MD5  128bit: {message.ToHexDigest(HashAlgorithms.Md5)}");
+Console.WriteLine($"SHA1 160bit: {message.ToHexDigest(HashAlgorithms.Sha1)}");
+Console.WriteLine($"SHA2 256bit: {message.ToHexDigest(HashAlgorithms.Sha2_256)}");
+Console.WriteLine($"SHA3 256bit: {message.ToHexDigest(HashAlgorithms.Sha3_256)}");
+
+using (var file = File.OpenRead(@"C:\Windows\explorer.exe"))
+{
+    Console.WriteLine($"explorer.exe SHA3 512bit: {file.ToHexDigest(HashAlgorithms.Sha3_512)}");
+}
 ```
 
 ## MD5
