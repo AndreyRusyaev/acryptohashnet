@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0; netstandard2.1; net8.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0; netstandard2.1; net6.0; net8.0</TargetFrameworks>
         <Nullable Condition=" '$(TargetFramework)' != 'netstandard2.0' ">enable</Nullable>
         <Version>3.0.0</Version>
         <Description>A pure managed C# implementation of well-known cryptographic hash functions such as SHA-family (SHA0, SHA1, SHA2, SHA256, SHA384, SHA512), MD-family (MD2, MD4, MD5), RIPEMD, Tiger, Haval, Snefru and others.</Description>
