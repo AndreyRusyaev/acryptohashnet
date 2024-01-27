@@ -20,46 +20,6 @@ A pure C# implementation of cryptographic hash functions for .Net Standard 2.0 c
 
 # Usage examples
 
-## Compute hashes with different algorithms and use of System.Security.Cryptography.HashAlgorithm
-
-``` csharp
-static class Program
-{
-    static void Main(string[] args)
-    {
-        var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
-          "print, and publishing industries for previewing layouts and visual mockups.";
-
-        var md5 = new acryptohashnet.MD5();
-        var sha1 = new acryptohashnet.SHA1();
-        var sha2_256 = new acryptohashnet.Sha2_256();
-        var sha3_512 = new acryptohashnet.Sha3_512();
-
-        Console.WriteLine("message MD5: {0}", md5.ComputeHash(message.ToUtf8Bytes()).ToHexString());
-        Console.WriteLine("message SHA1: {0}", sha1.ComputeHash(message.ToUtf8Bytes()).ToHexString());
-        Console.WriteLine("message SHA256: {0}", sha2_256.ComputeHash(message.ToUtf8Bytes()).ToHexString());
-        Console.WriteLine("message SHA3-512: {0}", sha3_512.ComputeHash(message.ToUtf8Bytes()).ToHexString());
-
-        using (var file = File.OpenRead(@"C:\Windows\explorer.exe"))
-        {
-            Console.WriteLine("explorer.exe MD5: {0}", md5.ComputeHash(file).ToHexString());
-
-            file.Position = 0; // Rewind stream to beginning
-            Console.WriteLine("explorer.exe SHA1: {0}", sha1.ComputeHash(file).ToHexString());
-
-            file.Position = 0; // Rewind stream to beginning
-            Console.WriteLine("explorer.exe SHA256: {0}", sha2_256.ComputeHash(file).ToHexString());
-
-            file.Position = 0; // Rewind stream to beginning
-            Console.WriteLine("explorer.exe SHA3-512: {0}", sha3_512.ComputeHash(file).ToHexString());
-        }
-    }
-
-    static byte[] ToUtf8Bytes(this string input) => System.Text.Encoding.UTF8.GetBytes(input);
-    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
-}
-```
-
 ## MD5
 
 ``` csharp
@@ -97,7 +57,7 @@ static class Program
         var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
             "print, and publishing industries for previewing layouts and visual mockups.";
 
-        var hashAlgorithm = new acryptohashnet.Sha2_512();
+        var hashAlgorithm = new acryptohashnet.Sha2_256();
         Console.WriteLine("SHA256: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
     }
 
@@ -171,6 +131,46 @@ static class Program
     }
 
     static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
+## Compute hashes with different algorithms and use of System.Security.Cryptography.HashAlgorithm
+
+``` csharp
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
+          "print, and publishing industries for previewing layouts and visual mockups.";
+
+        var md5 = new acryptohashnet.MD5();
+        var sha1 = new acryptohashnet.SHA1();
+        var sha2_256 = new acryptohashnet.Sha2_256();
+        var sha3_512 = new acryptohashnet.Sha3_512();
+
+        Console.WriteLine("message MD5: {0}", md5.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+        Console.WriteLine("message SHA1: {0}", sha1.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+        Console.WriteLine("message SHA256: {0}", sha2_256.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+        Console.WriteLine("message SHA3-512: {0}", sha3_512.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+
+        using (var file = File.OpenRead(@"C:\Windows\explorer.exe"))
+        {
+            Console.WriteLine("explorer.exe MD5: {0}", md5.ComputeHash(file).ToHexString());
+
+            file.Position = 0; // Rewind stream
+            Console.WriteLine("explorer.exe SHA1: {0}", sha1.ComputeHash(file).ToHexString());
+
+            file.Position = 0; // Rewind stream
+            Console.WriteLine("explorer.exe SHA256: {0}", sha2_256.ComputeHash(file).ToHexString());
+
+            file.Position = 0; // Rewind stream
+            Console.WriteLine("explorer.exe SHA3-512: {0}", sha3_512.ComputeHash(file).ToHexString());
+        }
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => System.Text.Encoding.UTF8.GetBytes(input);
     static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
 }
 ```

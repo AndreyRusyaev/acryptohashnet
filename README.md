@@ -9,6 +9,50 @@ A pure C# implementation of cryptographic hash functions for .Net Standard 2.0 c
 
 # Usage examples
 
+## MD5
+
+``` csharp
+using System;
+using System.Linq;
+using System.Text;
+
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Test Message";
+
+        var hashAlgorithm = new acryptohashnet.MD5();
+        Console.WriteLine("MD5: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
+## SHA256 (SHA2-256 bits)
+
+``` csharp
+using System;
+using System.Linq;
+using System.Text;
+
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Test Message";
+
+        var hashAlgorithm = new acryptohashnet.Sha2_256();
+        Console.WriteLine("SHA256: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
 ## Compute string message hash via HashAlgorithm interface (MD5, SHA1, SHA256, SHA3-512)
 
 ``` csharp
