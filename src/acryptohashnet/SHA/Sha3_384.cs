@@ -21,12 +21,12 @@ namespace acryptohashnet
         }
         protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
-            for (int jj = 0; jj < BlockSize / 8; jj += 1)
+            for (int ii = 0; ii < BlockSize / 8; ii += 1)
             {
-                state[jj] ^= LittleEndian.ToUInt64(block.Slice(jj * 8, 8));
+                state[ii] ^= LittleEndian.ToUInt64(block.Slice(ii * 8, 8));
             }
 
-            KeccakPermutation.Run(state);
+            Keccak.Permute(state);
         }
 
         protected override byte[] ProcessFinalBlock()
@@ -39,8 +39,8 @@ namespace acryptohashnet
             var padding = new byte[BlockSize];
             lastBlock.CopyTo(padding);
 
-            padding[lastBlock.Length] = 0x06; // 0000 0110
-            padding[BlockSize - 1] |= 0x80;   // 1000 0000
+            padding[lastBlock.Length] = 0x06;    // 0000 0110
+            padding[padding.Length - 1] |= 0x80; // 1000 0000
 
             return padding;
         }
