@@ -1,0 +1,1 @@
+pwsh -ExecutionPolicy ByPass -NoProfile -file ./build.ps1
