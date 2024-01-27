@@ -1,5 +1,5 @@
 # acryptohashnet
-A pure C# implementation of cryptographic hash functions for .Net Standard 2.0 compatible platforms (.Net Framework, .Net Core, Mono, Xamarin, UWP, Unity).
+A pure managed C# implementation of cryptographic hash functions for .Net Standard 2.0 compatible platforms (.Net Framework, .Net Core, Mono, Xamarin, UWP, Unity).
 
 # Features  
 
@@ -121,7 +121,7 @@ static class Program
 }
 ```
 
-# Implamented hash algorithms
+# Implemented hash algorithms
 
 ## MD Family
 All functions designed and specified by [Ron Rivest](https://en.wikipedia.org/wiki/Ron_Rivest).
