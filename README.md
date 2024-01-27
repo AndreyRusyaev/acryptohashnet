@@ -7,6 +7,17 @@ A pure C# implementation of cryptographic hash functions for .Net Standard 2.0 c
 * Compatible with System.Security.Cryptography.HashAlgorithm and can be used everywhere as a simple drop replacement for the target hash algorithm,
 * Extremely fast, highly optimized with low memory footprint (less GC time).
 
+# Supported hash functions
+
+* MD family: MD2, MD4, MD5,
+* SHA family: SHA0, SHA1,
+* SHA2 family: SHA224, SHA256, SHA384, SHA512,
+* SHA3 family: SHA3-224, SHA3-256, SHA3-384, SHA3-512,
+* RIPEMD family: RIPEMD128, RIPEMD160,
+* Haval family: Haval128, Haval160, Haval192, Haval224, Haval256,
+* Snefru, Snefru256,
+* Tiger and Tiger2 (192 bits output)
+
 # Usage examples
 
 ## MD5
@@ -110,7 +121,7 @@ static class Program
 }
 ```
 
-# Implemented hash algorithms
+# Implamented hash algorithms
 
 ## MD Family
 All functions designed and specified by [Ron Rivest](https://en.wikipedia.org/wiki/Ron_Rivest).
