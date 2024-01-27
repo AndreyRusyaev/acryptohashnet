@@ -5,6 +5,8 @@ namespace acryptohashnet
 {
     /// <summary>
     /// Defined by FIPS 180-4: Secure Hash Standard (SHS)
+    /// This is an alias of <see cref="Sha2_384" />. 
+    /// It's provided only for backward compatibility with acryptohashnet < 3.0 and .Net Framework naming scheme.
     /// </summary>
     public sealed class SHA384 : BlockHashAlgorithm
     {
@@ -41,7 +43,7 @@ namespace acryptohashnet
             0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc, 0x431d67c49c100d4c,
             0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
         };
-        
+
         private readonly HashState state = new HashState();
 
         private readonly ulong[] buffer = new ulong[80];
@@ -176,8 +178,6 @@ namespace acryptohashnet
                 BigEndian.Copy(D, result.AsSpan(24));
                 BigEndian.Copy(E, result.AsSpan(32));
                 BigEndian.Copy(F, result.AsSpan(40));
-                // BigEndian.Copy(G, result.AsSpan(48));
-                // BigEndian.Copy(H, result.AsSpan(56));
 
                 return result;
             }

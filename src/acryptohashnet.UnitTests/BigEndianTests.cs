@@ -14,9 +14,9 @@ namespace acryptohashnet.UnitTests
 
             BigEndian.Copy(input, output);
 
-            CollectionAssert.AreEqual(
-                new uint[] { 0x12345678, 0x78563412 },
-                output);
+            Assert.That(
+                output,
+                Is.EqualTo(new uint[] { 0x12345678, 0x78563412 }));
         }
 
         [Test]
@@ -28,9 +28,9 @@ namespace acryptohashnet.UnitTests
 
             BigEndian.Copy(input, output);
 
-            CollectionAssert.AreEqual(
-                new byte[] { 0x12, 0x34, 0x56, 0x78, 0x78, 0x56, 0x34, 0x12 },
-                output);
+           Assert.That(
+               output,
+               Is.EqualTo(new byte[] { 0x12, 0x34, 0x56, 0x78, 0x78, 0x56, 0x34, 0x12 }));
         }
 
         [Test]
@@ -42,9 +42,9 @@ namespace acryptohashnet.UnitTests
 
             BigEndian.Copy(input, output);
 
-            CollectionAssert.AreEqual(
-                new ulong[] { 0x123456789ABCDEF1, 0x1FEDCBA978563412 },
-                output);
+           Assert.That(
+               output,
+               Is.EqualTo(new ulong[] { 0x123456789ABCDEF1, 0x1FEDCBA978563412 }));
         }
 
         [Test]
@@ -56,9 +56,9 @@ namespace acryptohashnet.UnitTests
 
             BigEndian.Copy(input, output);
 
-            CollectionAssert.AreEqual(
-                new byte[] { 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF1, 0x1F, 0xED, 0xCB, 0xA9, 0x78, 0x56, 0x34, 0x12 },
-                output);
+           Assert.That(
+               output,
+               Is.EqualTo(new byte[] { 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF1, 0x1F, 0xED, 0xCB, 0xA9, 0x78, 0x56, 0x34, 0x12 }));
         }
     }
 }

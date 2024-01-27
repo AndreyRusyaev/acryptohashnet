@@ -34,9 +34,9 @@ namespace acryptohashnet.UnitTests
                 message[ii] = (byte)'a';
             }
 
-            Assert.AreEqual(
-                "e068281f060f551628cc5715b9d0226796914d45f7717cf4",
-                new Tiger2().ComputeHash(message).ToHexString());
+            Assert.That(
+                new Tiger2().ComputeHash(message).ToHexString(),
+                Is.EqualTo("e068281f060f551628cc5715b9d0226796914d45f7717cf4"));
         }
     }
 }
