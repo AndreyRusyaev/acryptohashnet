@@ -9,6 +9,7 @@ namespace acryptohashnet
     public sealed class Sha3_224 : BlockHashAlgorithm
     {
         private readonly ulong[] state = new ulong[25];
+
         public Sha3_224() : base(144)
         {
             HashSizeValue = 224;
@@ -19,6 +20,7 @@ namespace acryptohashnet
             base.Initialize();
             state.AsSpan().Fill(0);
         }
+
         protected override void ProcessBlock(ReadOnlySpan<byte> block)
         {
             for (int ii = 0; ii < BlockSize / 8; ii += 1)

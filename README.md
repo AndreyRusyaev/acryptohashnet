@@ -1,58 +1,72 @@
 # acryptohashnet
-A pure C# implementation of well-known cryptographic hash functions for .Net Standard 2.0 compatible platforms (.Net Framework, .Net Core, Mono, Xamarin, UWP, Unity).
+A pure C# implementation of cryptographic hash functions for .Net Standard 2.0 compatible platforms (.Net Framework, .Net Core, Mono, Xamarin, UWP, Unity).
 
 # Features  
-  * Pure managed implementations,
-  * Compatible with System.Security.Cryptography.HashAlgorithm and can be used everywhere as a simple replacement of the target hash algorithm,
-  * Fast and has low memory footprint (less GC).
+
+* Pure managed C# implementation,
+* Compatible with System.Security.Cryptography.HashAlgorithm and can be used everywhere as a simple drop replacement for the target hash algorithm,
+* Extremely fast, highly optimized with low memory footprint (less GC time).
 
 # Usage examples
 
-## MD5 of file
-``` csharp
-using System;
-using System.IO;
-using System.Linq;
+## Compute string message hash via HashAlgorithm interface (MD5, SHA1, SHA256, SHA3-512)
 
+``` csharp
 static class Program
 {
-  static void Main(string[] args)
-  {
-    var hashAlgorithm = new acryptohashnet.MD5();
-
-    using(var stream = File.OpenRead(@"C:\Windows\System32\explorer.exe"))
+    static void Main(string[] args)
     {
-      var hashBytes = hashAlgorithm.ComputeHash(stream);
-      Console.WriteLine("Hash: {0}", hashBytes.ToHexString());
-    }
-  }
+        var md5 = new acryptohashnet.MD5();
+        var sha1 = new acryptohashnet.SHA1();
+        var sha2_256 = new acryptohashnet.Sha2_256();
+        var sha3_512 = new acryptohashnet.Sha3_512();
 
-   static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+        var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
+                  "print, and publishing industries for previewing layouts and visual mockups.";
+
+        Console.WriteLine("MD5: {0}", md5.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+        Console.WriteLine("SHA1: {0}", sha1.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+        Console.WriteLine("SHA256: {0}", sha2_256.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+        Console.WriteLine("SHA3-512: {0}", sha3_512.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => System.Text.Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
 }
 ```
 
-## SHA512 of string
+## Compute hash of file via HashAlgorithm interface (MD5, SHA1, SHA256, SHA3-512)
 
 ``` csharp
-using System;
-using System.Linq;
-using System.Text;
-
 static class Program
 {
-  static void Main(string[] args)
-  {
-    var hashAlgorithm = new acryptohashnet.SHA512();
-    var hashBytes = hashAlgorithm.ComputeHash("message digest".ToUtf8Bytes());
-    Console.WriteLine("Hash: {0}", hashBytes.ToHexString());
-  }
-  
-   static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
-   static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+    static void Main(string[] args)
+    {
+        var md5 = new acryptohashnet.MD5();
+        var sha1 = new acryptohashnet.SHA1();
+        var sha2_256 = new acryptohashnet.Sha2_256();
+        var sha3_512 = new acryptohashnet.Sha3_512();
+
+        using (var file = File.OpenRead(@"C:\Windows\explorer.exe"))
+        {
+            Console.WriteLine("MD5: {0}", md5.ComputeHash(file).ToHexString());
+
+            file.Position = 0; // Rewind stream to beginning
+            Console.WriteLine("SHA1: {0}", sha1.ComputeHash(file).ToHexString());
+
+            file.Position = 0; // Rewind stream to beginning
+            Console.WriteLine("SHA256: {0}", sha2_256.ComputeHash(file).ToHexString());
+
+            file.Position = 0; // Rewind stream to beginning
+            Console.WriteLine("SHA3-512: {0}", sha3_512.ComputeHash(file).ToHexString());
+        }
+    }
+
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
 }
 ```
 
-# Implemented hash functions
+# Implemented hash algorithms
 
 ## MD Family
 All functions designed and specified by [Ron Rivest](https://en.wikipedia.org/wiki/Ron_Rivest).
@@ -60,16 +74,30 @@ All functions designed and specified by [Ron Rivest](https://en.wikipedia.org/wi
   * MD4, specification: [RFC 1320](docs/rfc1320.txt).
   * MD5, specification: [RFC 1321](docs/rfc1320.txt).
 
-## SHA Family
-Secure Hash Standard [[pdf]](docs/fips180-3_final.pdf)
+## SHA0 & SHA1
+Secure Hash Standard [[pdf]](docs/NIST.FIPS.180-4.pdf)
+
+## SHA2 Family
+Secure Hash Standard [[pdf]](docs/NIST.FIPS.180-4.pdf)
 
 Published as standard by "National Institute of Standards and Technology".
 
 * SHA-0, 
 * SHA-1,
-* SHA-256,
-* SHA-384,
-* SHA-512
+* SHA2-224 (also known as SHA224),
+* SHA2-256 (also known as SHA256),
+* SHA2-384 (also known as SHA384),
+* SHA2-512 (also known as SHA512)
+
+## SHA3 Family
+SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions [[pdf]](docs/NIST.FIPS.202.pdf)
+
+Published as standard by "National Institute of Standards and Technology".
+
+* SHA3-224,
+* SHA3-256,
+* SHA3-384,
+* SHA3-512
 
 ## RIPEMD
 RIPEMD-160: A Strengthened Version of RIPEMD [[pdf]](docs/AB-9601.pdf)

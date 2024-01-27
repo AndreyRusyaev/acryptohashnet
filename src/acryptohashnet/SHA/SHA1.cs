@@ -46,7 +46,7 @@ namespace acryptohashnet
             {
                 uint x = buffer[ii - 3] ^ buffer[ii - 8] ^ buffer[ii - 14] ^ buffer[ii - 16];
                 // added in sha-1
-                buffer[ii] = x << 1 | x >> 31;
+                buffer[ii] = x.RotateLeft(1);
             }
 
             uint a = state.A;

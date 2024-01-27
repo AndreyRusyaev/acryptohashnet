@@ -11,7 +11,7 @@ namespace acryptohashnet.UnitTests
         [TestCaseSource(nameof(Sha1TestCases))]
         public void Sha1(string input, string expected)
         {
-            var actual = input.ToHexDigest(new SHA1());
+            var actual = new SHA1().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 

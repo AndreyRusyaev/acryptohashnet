@@ -11,28 +11,28 @@ namespace acryptohashnet.UnitTests
         [TestCaseSource(nameof(Sha3_224Cases))]
         public void Sha3_224(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha3_224());
+            var actual = new Sha3_224().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha3_256Cases))]
         public void Sha3_256(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha3_256());
+            var actual = new Sha3_256().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha3_384Cases))]
         public void Sha3_384(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha3_384());
+            var actual = new Sha3_384().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha3_512Cases))]
         public void Sha3_512(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha3_512());
+            var actual = new Sha3_512().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 

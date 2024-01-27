@@ -11,56 +11,56 @@ namespace acryptohashnet.UnitTests
         [TestCaseSource(nameof(Sha2_224Cases))]
         public void SHA224(string input, string expected)
         {
-            var actual = input.ToHexDigest(new SHA224());
+            var actual = new SHA224().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha2_224Cases))]
         public void Sha2_224(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha2_224());
+            var actual = new Sha2_224().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha2_256Cases))]
         public void SHA256(string input, string expected)
         {
-            var actual = input.ToHexDigest(new SHA256());
+            var actual = new SHA256().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha2_256Cases))]
         public void Sha2_256(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha2_256());
+            var actual = new Sha2_256().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha2_384Cases))]
         public void SHA384(string input, string expected)
         {
-            var actual = input.ToHexDigest(new SHA384());
+            var actual = new SHA384().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha2_384Cases))]
         public void Sha2_384(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha2_384());
+            var actual = new Sha2_384().ComputeHash(input.GetUtf8Bytes()).ToHexString(); ;
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha2_512Cases))]
         public void SHA512(string input, string expected)
         {
-            var actual = input.ToHexDigest(new SHA512());
+            var actual = new SHA512().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
         [TestCaseSource(nameof(Sha2_512Cases))]
         public void Sha2_512(string input, string expected)
         {
-            var actual = input.ToHexDigest(new Sha2_512());
+            var actual = new Sha2_512().ComputeHash(input.GetUtf8Bytes()).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
         }
 
