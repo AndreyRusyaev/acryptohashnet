@@ -1,6 +1,9 @@
 # acryptohashnet
 A pure managed C# implementation of cryptographic hash functions for .Net Standard 2.0 compatible platforms (.Net Framework, .Net Core, Mono, Xamarin, UWP, Unity).
 
+[![NuGet Downloads](https://img.shields.io/nuget/dt/acryptohashnet)](https://www.nuget.org/packages/acryptohashnet)
+[![NuGet Version](https://img.shields.io/nuget/v/acryptohashnet)](https://www.nuget.org/packages/acryptohashnet)
+
 # Features  
 
 * Pure managed C# implementation,
