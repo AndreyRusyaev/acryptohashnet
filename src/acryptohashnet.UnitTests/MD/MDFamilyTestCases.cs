@@ -110,7 +110,23 @@ namespace acryptohashnet.UnitTests
                     Md2 = "58bacf68f1f8ed5a3515ae0607b3b511",
                     Md4 = "50385e2a1f0b9869040a289eff3abff2",
                     Md5 = "43696c3abe0610e776cde9bf4c052421",
-                }
+                },
+
+                new HashTestCase
+                {
+                    Input = new ('A', 56),
+                    Md2 = "2d416b30f66eebcecccee3072aba0066",
+                    Md4 = "2eae267be1bd32ff073b50f7b654aed2",
+                    Md5 = "a2f3e2024931bd470555002aa5ccc010",
+                },
+
+                new HashTestCase
+                {
+                    Input = new string('A', 120),
+                    Md2 = "498b1c1738973ca0256868c109e7f770",
+                    Md4 = "f395d199ef36203ccb40e4cf19e6b5f9",
+                    Md5 = "2fc9840470860d0d8e67a2207d15c4c9",
+                },
             };
         }
 

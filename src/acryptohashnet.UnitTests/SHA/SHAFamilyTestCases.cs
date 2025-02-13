@@ -11,9 +11,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "",
-                    Md2 = "8350e5a3e24c153df2275c9f80692773",
-                    Md4 = "31d6cfe0d16ae931b73c59d7e0c089c0",
-                    Md5 = "d41d8cd98f00b204e9800998ecf8427e",
                     Sha0 = "f96cea198ad1dd5617ac084a3d92c6107708c0ef",
                     Sha1 = "da39a3ee5e6b4b0d3255bfef95601890afd80709",
                     Sha2_224 = "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f",
@@ -29,9 +26,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "a",
-                    Md2 = "32ec01ec4a6dac72c0ab96fb34c0b5d1",
-                    Md4 = "bde52cb31de33e46245e05fbdbd6fb24",
-                    Md5 = "0cc175b9c0f1b6a831c399e269772661",
                     Sha0 = "37f297772fae4cb1ba39b6cf9cf0381180bd62f2",
                     Sha1 = "86f7e437faa5a7fce15d1ddcb9eaeaea377667b8",
                     Sha2_224 = "abd37534c7d9a2efb9465de931cd7055ffdb8879563ae98078d6d6d5",
@@ -47,9 +41,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "abc",
-                    Md2 = "da853b0d3f88d99b30283a69e6ded6bb",
-                    Md4 = "a448017aaf21d8525fc10ae87aa6729d",
-                    Md5 = "900150983cd24fb0d6963f7d28e17f72",
                     Sha0 = "0164b8a914cd2a5e74c4f7ff082c4d97f1edf880",
                     Sha1 = "a9993e364706816aba3e25717850c26c9cd0d89d",
                     Sha2_224 = "23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7",
@@ -65,9 +56,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "message digest",
-                    Md2 = "ab4f496bfb2a530b219ff33031fe06b0",
-                    Md4 = "d9130a8164549fe818874806e1c7014b",
-                    Md5 = "f96b697d7cb7938d525a2f31aaf161d0",
                     Sha0 = "c1b0f222d150ebb9aa36a40cafdc8bcbed830b14",
                     Sha1 = "c12252ceda8be8994d5fa0290a47231c1d16aae3",
                     Sha2_224 = "2cb21c83ae2f004de7e81c3c7019cbcb65b71ab656b22d6d0c39b8eb",
@@ -83,9 +71,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "abcdefghijklmnopqrstuvwxyz",
-                    Md2 = "4e8ddff3650292ab5a4108c3aa47940b",
-                    Md4 = "d79e1c308aa5bbcdeea8ed63df412da9",
-                    Md5 = "c3fcd3d76192e4007dfb496cca67e13b",
                     Sha0 = "b40ce07a430cfd3c033039b9fe9afec95dc1bdcd",
                     Sha1 = "32d10c7b8cf96570ca04ce37f2a19d84240d3a89",
                     Sha2_224 = "45a5f72c39c5cff2522eb3429799e49e5f44b356ef926bcf390dccc2",
@@ -101,9 +86,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-                    Md2 = "da33def2a42df13975352846c30338cd",
-                    Md4 = "043f8582f241db351ce627e153e7f0e4",
-                    Md5 = "d174ab98d277d9f5a5611c2c9f419d9f",
                     Sha0 = "79e966f7a3a990df33e40e3d7f8f18d2caebadfa",
                     Sha1 = "761c457bf73b14d27e9e9265c46f4b4dda11f940",
                     Sha2_224 = "bff72b4fcb7d75e5632900ac5f90d219e05e97a7bde72e740db393d9",
@@ -137,9 +119,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "This is exactly 64 bytes long, not counting the terminating byte",
-                    Md2 = "6caa9cd8554a2152f201f9705d7027a6",
-                    Md4 = "572c146781d8abc6d5f827844cf4d94b",
-                    Md5 = "debcb70bf9c8e83659ef1d85aa51c5e9",
                     Sha0 = "922f7783393e8f2ee8b948c8dd7b6d542b19be4c",
                     Sha1 = "fb679f23e7d1ce053313e66e127ab1b444397057",
                     Sha2_224 = "d92622d56f83d869a884f6cc0763e90c4520a21e1cc429841e4584d2",
@@ -155,9 +134,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "By hashing data that is one byte less than a multiple of a hash block length (like this 127-byte string), bugs may be revealed.",
-                    Md2 = "303a4941ba2a3fb01430289503d074ee",
-                    Md4 = "0c1d5450ebdf236aceee8b0b66cdfa72",
-                    Md5 = "50c757c2522680444582b8f4572b32f2",
                     Sha0 = "a66bc4b1b05eb0a0c22625ea87e05363f1ca19d2",
                     Sha1 = "69e8e40e4a20b17a8de35505e2fe6ff1fe63cc96",
                     Sha2_224 = "49e54148d21d457f2ffe28532543d91da98724c9883e67682301dec4",
@@ -173,9 +149,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "And this textual data, astonishing as it may appear, is exactly 128 bytes in length, as are both SHA-384 and SHA-512 block sizes",
-                    Md2 = "0b4e8940897149509fd7bc5078032578",
-                    Md4 = "dadc76e37d7b36b2e313a13657ac5f9f",
-                    Md5 = "268dc47e6b6f19a86481374b2ced6f18",
                     Sha0 = "b1b8de4c612ea852c9e55ac6fdae3f7ee8bf56c0",
                     Sha1 = "7e9fb243f2cb25eab54b1217ab104d72ddec1c6a",
                     Sha2_224 = "5a69ccca0b5e7f84efda7c026d010fa46569c03f97b4440eba32b941",
@@ -191,9 +164,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "Exactly 1000 bytes: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX",
-                    Md2 = "cbede9d6080aea700605ad4565a9e3af",
-                    Md4 = "0fc4c9f881efddbd5712c8a52d4f5271",
-                    Md5 = "8552d46f34d75f4f770ea10227d73cb9",
                     Sha0 = "98b59f2c2e9b87473f685d2339bbc839d84065ff",
                     Sha1 = "a26ab5cb975a0ebad8fde68cb157a05ad169b632",
                     Sha2_224 = "9ca47d8b16589c19fe4f40545ecc0c6b106bf9e8f30f914136e11d30",
@@ -227,9 +197,6 @@ namespace acryptohashnet.UnitTests
                 new HashTestCase
                 {
                     Message = "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.  Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. We are met on a great battlefield of that war.  We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live.  It is altogether fitting and proper that we should do this.  But, in a larger sense, we can not dedicate--we can not consecrate--we can not hallow--this ground.  The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract.  The world will little note, nor long remember what we say here, but it can never forget what they did here.  It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced.  It is rather for us to be here dedicated to the great task remaining before us--that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion--that we here highly resolve that these dead shall not have died in vain--that this nation, under God, shall have a new birth of freedom--and that government of the people, by the people, for the people, shall not perish from the earth.  -- President Abraham Lincoln, November 19, 1863",
-                    Md2 = "58bacf68f1f8ed5a3515ae0607b3b511",
-                    Md4 = "50385e2a1f0b9869040a289eff3abff2",
-                    Md5 = "43696c3abe0610e776cde9bf4c052421",
                     Sha0 = "54a84ee72093c6265e264cdb0127a5b2334f19c8",
                     Sha1 = "3728b3fd827fe2bfd0900e0586a03ffd3394e647",
                     Sha2_224 = "62a41ab0961bcdd22db70b896db3955c1d04096af6de47f5aaad1226",
@@ -240,6 +207,36 @@ namespace acryptohashnet.UnitTests
                     Sha3_256 = "9b50251ac0a8cbadc9aaf2596932443cc2f33f11d79c3ef2a67dd7c867c0e71b",
                     Sha3_384 = "6ca40c91ca4f4ba8bc530cc7dcd69d9bcc891fa58692a0e0700f4a7e3945d8c9940f1071d2f8b4ad47c5c8cb9f304e1d",
                     Sha3_512 = "d889af1035efe42795a971a2d4da562574b0e00353179086a0d8d21fa65517def799a19f2d4d9dbd810cb7969fe73fe4ab8597fef7d04e98b3ab64b3bee4237c"
+                },
+
+                new HashTestCase
+                {
+                    Message = new string('A', 56),
+                    Sha0 = "7ed65d395cfede495043e882d1a4d5ffe4b90e0f",
+                    Sha1 = "6b45e3cf1eb3324b9fd4df3b83d89c4c2c4ca896",
+                    Sha2_224 = "fbb95341a79d03298f64fd990118d3a34ecc3b8124d34c49f43a4b9a",
+                    Sha2_256 = "6ea719cefa4b31862035a7fa606b7cc3602f46231117d135cc7119b3c1412314",
+                    Sha2_384 = "2aef2e21b372d018fb7d17ecdc85660eda2e19d7a2663238116d1ccd8e831efb9f2c11f0d9221f26b931255e8171442c",
+                    Sha2_512 = "80b696886087d1e05a32df1e90409adcb8dec7d46ef81a727976572d8c07d07429b3ba4c3a55fdeb00ebed2d6c3987726e81aebbadb64f1e898a66fdcd379d9a",
+                    Sha3_224 = "e8956a2e575555fdbd49afcfad107e63b0443ba519c3dc0de561c937",
+                    Sha3_256 = "c73bd195e03e963f4cdd8b93744f97ff9e80c77cc428a5ba5b938fc694fd966b",
+                    Sha3_384 = "5bef6783fa9f75e6354ff3a66679241981c8d1938f822d713f41a9a147cb364a31935d7ca402fd5265e96968b5d9a6c1",
+                    Sha3_512 = "112907fd615ba0b4375e0ed3693d25519e2798461953ac6ce1006580be703c3bf677fc8faa0d3dab6885ea6289243f76ae3bd513e4eadd4d9539a362f4da4a76"
+                },
+
+                new HashTestCase
+                {
+                    Message = new string('A', 112),
+                    Sha0 = "55c4ab1b66ab2fd74553fff03e2d079bafd78ee8",
+                    Sha1 = "2760153e60cb7bc96eb59a04ed2db5de4a94edb2",
+                    Sha2_224 = "f2acf3a0a0fc9d4ed67b75853467be4d8a6bf249ffafc4d138aa13c3",
+                    Sha2_256 = "64bdc48c731313c7b37c1f1d13d6265ac7a2604ff630b50f591a86e610cb3005",
+                    Sha2_384 = "c13b89e0caf1bf5b1d7c9aca86418c38e2551367464dad217aef1aff3529a4595fae593668a269bd9592ae2710ab3d77",
+                    Sha2_512 = "1a008b0480a4eb64d292db671d4f43f46fc57e077b72ad3ec0a3b0b63b320357a11418ea916038e9b659ccf39ae574ef8a8f683f1eff954788591c13022fcd81",
+                    Sha3_224 = "bcde0a934aa4120c30428895e33570ad9054079f0b93382323d70339",
+                    Sha3_256 = "85bd0e34cf551cf96fc8b76d245ba271b55acc5f765456384c30f14e19afdeec",
+                    Sha3_384 = "42f906466d4a6c3c5f9d57fcab9a5f41a76fab51d2962dc7a4d882810590aad7fa21ff05182a7f67bf671a56c250f847",
+                    Sha3_512 = "40543ddb862c6e4a254d8eedae2a059cfb216ada7061d54aa9d90b9817935128b24508537bbdd9cc9b596169fc49e6e2e424d18fd8ec94e39d1fd5daa410b67f"
                 }
             };
         }
