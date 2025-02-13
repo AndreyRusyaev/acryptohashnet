@@ -3,13 +3,13 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0; netstandard2.1; net6.0; net8.0</TargetFrameworks>
         <Nullable Condition=" '$(TargetFramework)' != 'netstandard2.0' ">enable</Nullable>
-        <Version>3.0.0</Version>
-        <Description>A pure managed C# implementation of well-known cryptographic hash functions such as SHA-family (SHA0, SHA1, SHA2, SHA256, SHA384, SHA512), MD-family (MD2, MD4, MD5), RIPEMD, Tiger, Haval, Snefru and others.</Description>
+        <Version>3.0.1</Version>
+        <Description>A pure managed C# implementation of well-known cryptographic hash functions such as SHA-family (SHA0, SHA1, SHA2, SHA3), MD-family (MD2, MD4, MD5), RIPEMD, Tiger, Haval, Snefru.</Description>
         <Copyright>Andrey Rusyaev</Copyright>
         <Authors>Andrey Rusyaev</Authors>
         <RepositoryUrl>https://github.com/AndreyRusyaev/acryptohashnet</RepositoryUrl>
         <RepositoryType>Git</RepositoryType>
-        <PackageTags>cryptography cryptohash hash md4 md5 sha0 sha1 sha2 sha256 sha384 sha512 tiger ripemd snefru haval</PackageTags>
+        <PackageTags>cryptography cryptohash hash digest integrity md2 md4 md5 sha0 sha1 sha2 sha3 sha256 sha384 sha512 sha3-256 sha3-384 sha3-512 keccak tiger ripemd snefru haval</PackageTags>
         <PackageLicenseFile>lgpl1.0.txt</PackageLicenseFile>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

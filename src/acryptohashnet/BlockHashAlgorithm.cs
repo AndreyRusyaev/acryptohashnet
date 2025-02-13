@@ -143,7 +143,7 @@ namespace acryptohashnet
 
         private byte[] GenerateOneZeroFillAnd8BytesMessageLengthLittleEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
         {
-            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
+            var paddingBlocks = lastBlock.Length + 8 >= BlockSizeValue ? 2 : 1;
             var padding = new byte[paddingBlocks * BlockSizeValue];
 
             lastBlock.CopyTo(padding);
@@ -169,7 +169,7 @@ namespace acryptohashnet
 
         private byte[] GenerateOneZeroFillAnd8BytesMessageLengthBigEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
         {
-            var paddingBlocks = lastBlock.Length + 8 > BlockSizeValue ? 2 : 1;
+            var paddingBlocks = lastBlock.Length + 8 >= BlockSizeValue ? 2 : 1;
             var padding = new byte[paddingBlocks * BlockSizeValue];
 
             lastBlock.CopyTo(padding);
@@ -195,7 +195,7 @@ namespace acryptohashnet
 
         private byte[] GenerateOneZeroFillAnd16BytesMessageLengthBigEndianPadding(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
         {
-            var paddingBlocks = lastBlock.Length + 16 > BlockSizeValue ? 2 : 1;
+            var paddingBlocks = lastBlock.Length + 16 >= BlockSizeValue ? 2 : 1;
             var padding = new byte[paddingBlocks * BlockSizeValue];
 
             lastBlock.CopyTo(padding);
