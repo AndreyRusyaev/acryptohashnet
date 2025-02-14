@@ -21,6 +21,23 @@ namespace acryptohashnet.UnitTests
         {
             var actual = new MD5().ComputeHash(Encoding.UTF8.GetBytes(input)).ToHexString();
             Assert.That(actual, Is.EqualTo(expected));
-        }        
+        }
+
+        [Test]
+        public void ValidateWithSystemCryptography()
+        {
+            var systemImpl = System.Security.Cryptography.MD5.Create();
+            var acryptohashnetImpl = new MD5();
+
+            for (var ii = 0; ii < 1024; ii += 1)
+            {
+                var input = new string('a', ii);
+
+                var expected = systemImpl.ComputeHash(Encoding.UTF8.GetBytes(input)).ToHexString();
+                var actual = acryptohashnetImpl.ComputeHash(Encoding.UTF8.GetBytes(input)).ToHexString();
+
+                Assert.That(actual, Is.EqualTo(expected));
+            }
+        }
     }
 }

@@ -136,6 +136,26 @@ namespace acryptohashnet.UnitTests
                     Sha256 = "4d25fccf8752ce470a58cd21d90939b7eb25f3fa418dd2da4c38288ea561e600",
                     Sha384 = "69cc75b95280bdd9e154e743903e37b1205aa382e92e051b1f48a6db9d0203f8a17c1762d46887037275606932d3381e",
                     Sha512 = "23450737795d2f6a13aa61adcca0df5eef6df8d8db2b42cd2ca8f783734217a73e9cabc3c9b8a8602f8aeaeb34562b6b1286846060f9809b90286b3555751f09"
+                },
+
+                new HashTestCase
+                {
+                    Input = new string('A', 56),
+                    Sha0 = "7ed65d395cfede495043e882d1a4d5ffe4b90e0f",
+                    Sha1 = "6b45e3cf1eb3324b9fd4df3b83d89c4c2c4ca896",
+                    Sha256 = "6ea719cefa4b31862035a7fa606b7cc3602f46231117d135cc7119b3c1412314",
+                    Sha384 = "2aef2e21b372d018fb7d17ecdc85660eda2e19d7a2663238116d1ccd8e831efb9f2c11f0d9221f26b931255e8171442c",
+                    Sha512 = "80b696886087d1e05a32df1e90409adcb8dec7d46ef81a727976572d8c07d07429b3ba4c3a55fdeb00ebed2d6c3987726e81aebbadb64f1e898a66fdcd379d9a",
+                },
+
+                new HashTestCase
+                {
+                    Input = new string('A', 112),
+                    Sha0 = "55c4ab1b66ab2fd74553fff03e2d079bafd78ee8",
+                    Sha1 = "2760153e60cb7bc96eb59a04ed2db5de4a94edb2",
+                    Sha256 = "64bdc48c731313c7b37c1f1d13d6265ac7a2604ff630b50f591a86e610cb3005",
+                    Sha384 = "c13b89e0caf1bf5b1d7c9aca86418c38e2551367464dad217aef1aff3529a4595fae593668a269bd9592ae2710ab3d77",
+                    Sha512 = "1a008b0480a4eb64d292db671d4f43f46fc57e077b72ad3ec0a3b0b63b320357a11418ea916038e9b659ccf39ae574ef8a8f683f1eff954788591c13022fcd81",
                 }
             };
         }
