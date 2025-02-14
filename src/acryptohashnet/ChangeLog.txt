@@ -1,0 +1,16 @@
+﻿v2.0.1
+* FIX: Improper padding for specific lengths that supplements to almost block size (minus 8 byte)
+
+v2.0.0
+* Backport to .Net Standard 2.0 to support all major .Net platforms that includes Mono, Xamarin, Unity, UWP.
+* .Net Standard 2.1 and .Net 6.0 also included in NuGet package now.
+
+v1.1.0
+* BlockHashAlgorithm migrated to Span/ReadOnlySpan interfaces to improve general performance,
+* Set of optimizations for MD5, SHA family
+
+v1.0.0
+Library modernization: Migrate to .Net Core, Add benchmarks, tests.
+
+Beta2
+Release back from 2009 (Sourceforge)
