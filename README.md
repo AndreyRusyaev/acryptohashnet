@@ -16,6 +16,7 @@ A pure managed C# implementation of cryptographic hash functions for .Net Standa
 * SHA family: SHA0, SHA1,
 * SHA2 family: SHA224, SHA256, SHA384, SHA512,
 * SHA3 family: SHA3-224, SHA3-256, SHA3-384, SHA3-512,
+* Keccak family: Keccak224, Keccak256, Keccak384, Keccak512,
 * RIPEMD family: RIPEMD128, RIPEMD160,
 * Haval family: Haval128, Haval160, Haval192, Haval224, Haval256,
 * Snefru, Snefru256,
@@ -60,6 +61,50 @@ static class Program
 
         var hashAlgorithm = new acryptohashnet.Sha2_256();
         Console.WriteLine("SHA256: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
+## SHA3_256 (SHA3-256 bits)
+
+``` csharp
+using System;
+using System.Linq;
+using System.Text;
+
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Test Message";
+
+        var hashAlgorithm = new acryptohashnet.Sha3_256();
+        Console.WriteLine("SHA3_256: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
+## Keccak256 (Keccak 256 bits)
+
+``` csharp
+using System;
+using System.Linq;
+using System.Text;
+
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Test Message";
+
+        var hashAlgorithm = new acryptohashnet.Keccak256();
+        Console.WriteLine("Keccak256: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
     }
 
     static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
@@ -156,6 +201,16 @@ Published as standard by "National Institute of Standards and Technology".
 * SHA3-256,
 * SHA3-384,
 * SHA3-512
+
+## Keccak family
+Keccak implementation overview [[pdf]](docs/Keccak-implementation-3.2.pdf)
+
+Designed by Guido Bertoni, Joan Daeme, Michaël Peeters, Gilles Van Assche and Ronny Van Keer.
+
+* Keccak224,
+* Keccak256,
+* Keccak384,
+* Keccak512
 
 ## RIPEMD
 RIPEMD-160: A Strengthened Version of RIPEMD [[pdf]](docs/AB-9601.pdf)

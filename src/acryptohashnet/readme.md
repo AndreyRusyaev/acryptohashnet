@@ -13,6 +13,7 @@ A pure C# implementation of cryptographic hash functions for .Net Standard 2.0 c
 * SHA family: SHA0, SHA1,
 * SHA2 family: SHA224, SHA256, SHA384, SHA512,
 * SHA3 family: SHA3-224, SHA3-256, SHA3-384, SHA3-512,
+* Keccak family: Keccak224, Keccak256, Keccak384, Keccak512,
 * RIPEMD family: RIPEMD128, RIPEMD160,
 * Haval family: Haval128, Haval160, Haval192, Haval224, Haval256,
 * Snefru, Snefru256,
@@ -89,6 +90,29 @@ static class Program
 }
 ```
 
+## SHA3-256
+
+``` csharp
+using System;
+using System.Linq;
+using System.Text;
+
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
+            "print, and publishing industries for previewing layouts and visual mockups.";
+
+        var hashAlgorithm = new acryptohashnet.Sha3_256();
+        Console.WriteLine("SHA3-256: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
 ## SHA3-512
 
 ``` csharp
@@ -104,6 +128,52 @@ static class Program
             "print, and publishing industries for previewing layouts and visual mockups.";
 
         var hashAlgorithm = new acryptohashnet.Sha3_512();
+        Console.WriteLine("SHA3-512: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
+## Keccak256
+
+``` csharp
+using System;
+using System.Linq;
+using System.Text;
+
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
+            "print, and publishing industries for previewing layouts and visual mockups.";
+
+        var hashAlgorithm = new acryptohashnet.Keccak256();
+        Console.WriteLine("Keccak256: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
+    }
+
+    static byte[] ToUtf8Bytes(this string input) => Encoding.UTF8.GetBytes(input);
+    static string ToHexString(this byte[] input) => string.Join("", input.Select(x => x.ToString("x2")));
+}
+```
+
+## Keccak512
+
+``` csharp
+using System;
+using System.Linq;
+using System.Text;
+
+static class Program
+{
+    static void Main(string[] args)
+    {
+        var message = "Lorem ipsum is placeholder text commonly used in the graphic, " +
+            "print, and publishing industries for previewing layouts and visual mockups.";
+
+        var hashAlgorithm = new acryptohashnet.Keccak512();
         Console.WriteLine("SHA3-512: {0}", hashAlgorithm.ComputeHash(message.ToUtf8Bytes()).ToHexString());
     }
 
