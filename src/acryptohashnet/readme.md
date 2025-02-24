@@ -13,6 +13,7 @@ A pure C# implementation of cryptographic hash functions for .Net Standard 2.0 c
 * SHA family: SHA0, SHA1,
 * SHA2 family: SHA224, SHA256, SHA384, SHA512,
 * SHA3 family: SHA3-224, SHA3-256, SHA3-384, SHA3-512,
+* Keccak family: Keccak224, Keccak256, Keccak384, Keccak512,
 * RIPEMD family: RIPEMD128, RIPEMD160,
 * Haval family: Haval128, Haval160, Haval192, Haval224, Haval256,
 * Snefru, Snefru256,
