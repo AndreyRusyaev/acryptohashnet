@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+
 using acryptohashnet;
 
 using static System.Console;
@@ -20,7 +21,11 @@ WriteLine($"Keccak512: {HashDataTool.Keccak512(loremIpsumMsg)}");
 
 WriteLine();
 
+#if WINDOWS
 var filePath = @"C:\Windows\explorer.exe";
+#else
+var filePath = "/bin/bash";
+#endif
 
 WriteLine($"File:      {filePath}, size: {new FileInfo(filePath).Length} bytes, version: {FileVersionInfo.GetVersionInfo(filePath).FileVersion}.");
 
