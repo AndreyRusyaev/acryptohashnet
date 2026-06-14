@@ -3,29 +3,28 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 
-namespace acryptohashnet.Benchmarks
+namespace acryptohashnet.Benchmarks;
+
+[MemoryDiagnoser]
+public class SHA256Benchmark
 {
-    [MemoryDiagnoser]
-    public class SHA256Benchmark
-    {
-        private System.Security.Cryptography.SHA256 cryptoProviderImpl = System.Security.Cryptography.SHA256.Create();
+    private System.Security.Cryptography.SHA256 cryptoProviderImpl = System.Security.Cryptography.SHA256.Create();
 
-        private System.Security.Cryptography.SHA256Managed systemManagedImpl = new System.Security.Cryptography.SHA256Managed();
+    private System.Security.Cryptography.SHA256Managed systemManagedImpl = new System.Security.Cryptography.SHA256Managed();
 
-        private global::acryptohashnet.Sha2_256 acryptohashnetImpl = new global::acryptohashnet.Sha2_256();
+    private global::acryptohashnet.Sha2_256 acryptohashnetImpl = new global::acryptohashnet.Sha2_256();
 
-        [ParamsSource(nameof(InputSource))]
-        public byte[] Input { get; set; }
+    [ParamsSource(nameof(InputSource))]
+    public byte[] Input { get; set; }
 
-        public IEnumerable<byte[]> InputSource { get; } = TestSuite.BinaryMessages;
+    public IEnumerable<byte[]> InputSource { get; } = TestSuite.BinaryMessages;
 
-        [Benchmark]
-        public byte[] CryptoProviderImpl() => cryptoProviderImpl.ComputeHash(Input);
+    [Benchmark]
+    public byte[] CryptoProviderImpl() => cryptoProviderImpl.ComputeHash(Input);
 
-        [Benchmark]
-        public byte[] SystemManagedImpl() => systemManagedImpl.ComputeHash(Input);
+    [Benchmark]
+    public byte[] SystemManagedImpl() => systemManagedImpl.ComputeHash(Input);
 
-        [Benchmark]
-        public byte[] AcryptoHashNetImpl() => acryptohashnetImpl.ComputeHash(Input);
-    }
+    [Benchmark]
+    public byte[] AcryptoHashNetImpl() => acryptohashnetImpl.ComputeHash(Input);
 }

@@ -1,10 +1,9 @@
 ﻿
-namespace acryptohashnet
+namespace acryptohashnet;
+
+public enum HavalPassCount
 {
-    public enum HavalPassCount
-    {
-        Pass3 = 3,
-        Pass4 = 4,
-        Pass5 = 5
-    }
+    Pass3 = 3,
+    Pass4 = 4,
+    Pass5 = 5
 }

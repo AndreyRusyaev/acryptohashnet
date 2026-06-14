@@ -1,9 +1,8 @@
 ﻿
-namespace acryptohashnet
+namespace acryptohashnet;
+
+public enum SnefruOutputSize
 {
-    public enum SnefruOutputSize
-    {
-        Output4 = 4,
-        Output8 = 8
-    }
+    Output4 = 4,
+    Output8 = 8
 }

@@ -2,19 +2,18 @@
 
 using BenchmarkDotNet.Attributes;
 
-namespace acryptohashnet.Benchmarks
+namespace acryptohashnet.Benchmarks;
+
+[MemoryDiagnoser]
+public class MD4Benchmark
 {
-    [MemoryDiagnoser]
-    public class MD4Benchmark
-    {
-        private global::acryptohashnet.MD4 md4Impl = new global::acryptohashnet.MD4();
+    private global::acryptohashnet.MD4 md4Impl = new global::acryptohashnet.MD4();
 
-        [ParamsSource(nameof(InputSource))]
-        public byte[] Input { get; set; }
+    [ParamsSource(nameof(InputSource))]
+    public byte[] Input { get; set; }
 
-        public IEnumerable<byte[]> InputSource { get; } = TestSuite.BinaryMessages;
+    public IEnumerable<byte[]> InputSource { get; } = TestSuite.BinaryMessages;
 
-        [Benchmark]
-        public byte[] MD4Impl() => md4Impl.ComputeHash(Input);
-    }
+    [Benchmark]
+    public byte[] MD4Impl() => md4Impl.ComputeHash(Input);
 }

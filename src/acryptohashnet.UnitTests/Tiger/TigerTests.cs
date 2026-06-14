@@ -3,55 +3,54 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace acryptohashnet.UnitTests
+namespace acryptohashnet.UnitTests;
+
+[TestFixture]
+public class TigerTests
 {
-    [TestFixture]
-    public class TigerTests
+    public static IEnumerable<object[]> TestCases
     {
-        public static IEnumerable<object[]> TestCases
+        get
         {
-            get
-            {
-                return TigerTestCases.All().Select(x => new object[] { x.Input, x.Tiger });
-            }
+            return TigerTestCases.All().Select(x => new object[] { x.Input, x.Tiger });
+        }
+    }
+
+    [Test]
+    [TestCaseSource(nameof(TestCases))]
+    public void HashOfString(string input, string expected)
+    {
+        var actual = new Tiger().ComputeHash(Encoding.UTF8.GetBytes(input)).ToHexString();
+        Assert.That(actual, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void TestCase_1_million_times_a()
+    {
+        byte[] message = new byte[1_000_000];
+
+        for (int ii = 0; ii < message.Length; ii++)
+        {
+            message[ii] = (byte)'a';
         }
 
-        [Test]
-        [TestCaseSource(nameof(TestCases))]
-        public void HashOfString(string input, string expected)
+        Assert.That(
+            new Tiger().ComputeHash(message).ToHexString(),
+            Is.EqualTo("6db0e2729cbead93d715c6a7d36302e9b3cee0d2bc314b41"));
+    }
+
+    [Test]
+    public void TestString_64Kb()
+    {
+        byte[] message = new byte[65536];
+
+        for (int ii = 0; ii < message.Length; ii++)
         {
-            var actual = new Tiger().ComputeHash(Encoding.UTF8.GetBytes(input)).ToHexString();
-            Assert.That(actual, Is.EqualTo(expected));
+            message[ii] = (byte)(ii & 0xff);
         }
 
-        [Test]
-        public void TestCase_1_million_times_a()
-        {
-            byte[] message = new byte[1_000_000];
-
-            for (int ii = 0; ii < message.Length; ii++)
-            {
-                message[ii] = (byte)'a';
-            }
-
-            Assert.That(
-                new Tiger().ComputeHash(message).ToHexString(),
-                Is.EqualTo("6db0e2729cbead93d715c6a7d36302e9b3cee0d2bc314b41"));
-        }
-
-        [Test]
-        public void TestString_64Kb()
-        {
-            byte[] message = new byte[65536];
-
-            for (int ii = 0; ii < message.Length; ii++)
-            {
-                message[ii] = (byte)(ii & 0xff);
-            }
-
-            Assert.That(
-                new Tiger().ComputeHash(message).ToHexString(),
-                Is.EqualTo("fdf4f5b35139f48e710e421be5af411de1a8aac333f26204"));
-        }
+        Assert.That(
+            new Tiger().ComputeHash(message).ToHexString(),
+            Is.EqualTo("fdf4f5b35139f48e710e421be5af411de1a8aac333f26204"));
     }
 }

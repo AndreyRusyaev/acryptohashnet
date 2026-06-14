@@ -1,52 +1,51 @@
 ﻿using System;
 using System.Numerics;
 
-namespace acryptohashnet
+namespace acryptohashnet;
+
+/// <summary>
+/// Defined by 'Keccak implementation overview' article 
+/// by Guido Bertoni, Joan Daeme, Michaël Peeters, Gilles Van Assche and Ronny Van Keer.
+/// https://keccak.team/keccak.html
+/// </summary>
+public sealed class Keccak384 : BlockHashAlgorithm
 {
-    /// <summary>
-    /// Defined by 'Keccak implementation overview' article 
-    /// by Guido Bertoni, Joan Daeme, Michaël Peeters, Gilles Van Assche and Ronny Van Keer.
-    /// https://keccak.team/keccak.html
-    /// </summary>
-    public sealed class Keccak384 : BlockHashAlgorithm
+    private readonly ulong[] state = new ulong[25];
+
+    public Keccak384() : base(104)
     {
-        private readonly ulong[] state = new ulong[25];
+        HashSizeValue = 384;
+    }
 
-        public Keccak384() : base(104)
+    public override void Initialize()
+    {
+        base.Initialize();
+        state.AsSpan().Fill(0);
+    }
+
+    protected override void ProcessBlock(ReadOnlySpan<byte> block)
+    {
+        for (int ii = 0; ii < BlockSize / 8; ii += 1)
         {
-            HashSizeValue = 384;
+            state[ii] ^= LittleEndian.ToUInt64(block.Slice(ii * 8, 8));
         }
 
-        public override void Initialize()
-        {
-            base.Initialize();
-            state.AsSpan().Fill(0);
-        }
+        Keccak.Permute(state);
+    }
 
-        protected override void ProcessBlock(ReadOnlySpan<byte> block)
-        {
-            for (int ii = 0; ii < BlockSize / 8; ii += 1)
-            {
-                state[ii] ^= LittleEndian.ToUInt64(block.Slice(ii * 8, 8));
-            }
+    protected override byte[] ProcessFinalBlock()
+    {
+        return LittleEndian.ToByteArray(state.AsSpan(0, 6));
+    }
 
-            Keccak.Permute(state);
-        }
+    protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
+    {
+        var padding = new byte[BlockSize];
+        lastBlock.CopyTo(padding);
 
-        protected override byte[] ProcessFinalBlock()
-        {
-            return LittleEndian.ToByteArray(state.AsSpan(0, 6));
-        }
+        padding[lastBlock.Length] = 0x01;    // 0000 0001
+        padding[padding.Length - 1] |= 0x80; // 1000 0000
 
-        protected override byte[] GeneratePaddingBlocks(ReadOnlySpan<byte> lastBlock, BigInteger messageLength)
-        {
-            var padding = new byte[BlockSize];
-            lastBlock.CopyTo(padding);
-
-            padding[lastBlock.Length] = 0x01;    // 0000 0001
-            padding[padding.Length - 1] |= 0x80; // 1000 0000
-
-            return padding;
-        }
+        return padding;
     }
 }

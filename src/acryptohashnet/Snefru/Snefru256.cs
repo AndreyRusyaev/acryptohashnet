@@ -1,10 +1,9 @@
-﻿namespace acryptohashnet
+﻿namespace acryptohashnet;
+
+public sealed class Snefru256 : SnefruBase
 {
-    public sealed class Snefru256 : SnefruBase
+    public Snefru256(): base(SnefruOutputSize.Output8)
     {
-        public Snefru256(): base(SnefruOutputSize.Output8)
-        {
-            HashSizeValue = 256;
-        }
+        HashSizeValue = 256;
     }
 }

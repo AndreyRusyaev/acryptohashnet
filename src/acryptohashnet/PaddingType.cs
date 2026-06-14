@@ -1,10 +1,9 @@
-﻿namespace acryptohashnet
+﻿namespace acryptohashnet;
+
+public enum PaddingType
 {
-    public enum PaddingType
-    {
-        Custom,
-        OneZeroFillAnd8BytesMessageLengthLittleEndian,
-        OneZeroFillAnd8BytesMessageLengthBigEndian,
-        OneZeroFillAnd16BytesMessageLengthBigEndian
-    }
+    Custom,
+    OneZeroFillAnd8BytesMessageLengthLittleEndian,
+    OneZeroFillAnd8BytesMessageLengthBigEndian,
+    OneZeroFillAnd16BytesMessageLengthBigEndian
 }
