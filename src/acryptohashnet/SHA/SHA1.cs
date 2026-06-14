@@ -8,8 +8,8 @@ namespace acryptohashnet;
 /// </summary>
 public sealed class SHA1 : BlockHashAlgorithm
 {
-    private static readonly uint[] Constants = new uint[4]
-    {
+    private static readonly uint[] Constants =
+    [
         // round 1
         0x5a827999, // [2 ^ 30 * sqrt(2)]
         // round 2
@@ -18,7 +18,7 @@ public sealed class SHA1 : BlockHashAlgorithm
         0x8f1bbcdc, // [2 ^ 30 * sqrt(5)]
         // round 4
         0xca62c1d6  // [2 ^ 30 * sqrt(10)]
-    };
+    ];
 
     private readonly HashState state = new HashState();
 

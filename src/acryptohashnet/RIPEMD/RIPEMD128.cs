@@ -10,16 +10,16 @@ public sealed class RIPEMD128 : BlockHashAlgorithm
 {
     #region Constants
 
-    private static readonly uint[] Constants1 = new uint[]
-    {
+    private static readonly uint[] Constants1 =
+    [
         0x00000000,
         0x5a827999, // [2 ^ 30 * sqrt(2)]
         0x6ed9eba1, // [2 ^ 30 * sqrt(3)]
         0x8f1bbcdc  // [2 ^ 30 * sqrt(5)]
-    };
+    ];
 
-    private static readonly uint[] WordOrders1 = new uint[]
-    {
+    private static readonly uint[] WordOrders1 =
+    [
         // round 1
         00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15,
         // round 2
@@ -28,10 +28,10 @@ public sealed class RIPEMD128 : BlockHashAlgorithm
         03, 10, 14, 04, 09, 15, 08, 01, 02, 07, 00, 06, 13, 11, 05, 12,
         // round 4
         01, 09, 11, 10, 00, 08, 12, 04, 13, 03, 07, 15, 14, 05, 06, 02
-    };
+    ];
 
-    private static readonly int[] Shifts1 = new int[]
-    {
+    private static readonly int[] Shifts1 =
+    [
         // round 1
         11, 14, 15, 12, 05, 08, 07, 09, 11, 13, 14, 15, 06, 07, 09, 08,
         // round 2
@@ -40,19 +40,19 @@ public sealed class RIPEMD128 : BlockHashAlgorithm
         11, 13, 06, 07, 14, 09, 13, 15, 14, 08, 13, 06, 05, 12, 07, 05,
         // round 4
         11, 12, 14, 15, 14, 15, 09, 08, 09, 14, 05, 06, 08, 06, 05, 12
-    };
+    ];
 
-    private static readonly uint[] Constants2 = new uint[]
-    {
+    private static readonly uint[] Constants2 =
+    [
         // root3 is a cube root
         0x50a28be6, // [2 ^ 30 * root3(2)]
         0x5c4dd124, // [2 ^ 30 * root3(3)]
         0x6d703ef3, // [2 ^ 30 * root3(5)]
         0x00000000
-    };
+    ];
 
-    private static readonly uint[] WordOrders2 = new uint[]
-    {
+    private static readonly uint[] WordOrders2 =
+    [
         // round 1
         05, 14, 07, 00, 09, 02, 11, 04, 13, 06, 15, 08, 01, 10, 03, 12,
         // round 2
@@ -61,10 +61,10 @@ public sealed class RIPEMD128 : BlockHashAlgorithm
         15, 05, 01, 03, 07, 14, 06, 09, 11, 08, 12, 02, 10, 00, 04, 13,
         // round 4
         08, 06, 04, 01, 03, 11, 15, 00, 05, 12, 02, 13, 09, 07, 10, 14
-    };
+    ];
 
-    private static readonly int[] Shifts2 = new int[]
-    {
+    private static readonly int[] Shifts2 =
+    [
         // round 1
         08, 09, 09, 11, 13, 15, 15, 05, 07, 07, 08, 11, 14, 14, 12, 06,
         // round 2
@@ -73,7 +73,7 @@ public sealed class RIPEMD128 : BlockHashAlgorithm
         09, 07, 15, 11, 08, 06, 06, 14, 12, 13, 05, 14, 13, 13, 07, 05,
         // round 4
         15, 05, 08, 11, 14, 14, 06, 14, 06, 09, 12, 09, 12, 05, 15, 08
-    };
+    ];
 
     #endregion
 

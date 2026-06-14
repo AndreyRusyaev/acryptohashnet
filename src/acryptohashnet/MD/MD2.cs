@@ -9,8 +9,8 @@ namespace acryptohashnet;
 /// </summary>
 public sealed class MD2 : BlockHashAlgorithm
 {
-    private static readonly int[] Pi = new int[]
-    {
+    private static readonly int[] Pi =
+    [
         041, 046, 067, 201,
         162, 216, 124, 001,
         061, 054, 084, 161,
@@ -90,7 +90,7 @@ public sealed class MD2 : BlockHashAlgorithm
         143, 237, 031, 026,
         219, 153, 141, 051,
         159, 017, 131, 020
-    };
+    ];
 
     private readonly HashState state = new HashState();
 

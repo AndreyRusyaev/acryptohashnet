@@ -11,8 +11,8 @@ public abstract class TigerBase : BlockHashAlgorithm
 {
     #region Constants (S-Boxes)
 
-    private static readonly ulong[] SBox1 = new ulong[256]
-    {
+    private static readonly ulong[] SBox1 =
+    [
         0x02aab17cf7e90c5e   /*    0 */,    0xac424b03e243a8ec   /*    1 */,
         0x72cd5be30dd5fcd3   /*    2 */,    0x6d019b93f6f97f3a   /*    3 */,
         0xcd9978ffd21f9193   /*    4 */,    0x7573a1c9708029e2   /*    5 */,
@@ -141,10 +141,10 @@ public abstract class TigerBase : BlockHashAlgorithm
         0x74036c3a497732b7   /*  250 */,    0x89b67ed96361f5ab   /*  251 */,
         0xffed95d8f1ea02a2   /*  252 */,    0xe72b3bd61464d43d   /*  253 */,
         0xa6300f170bdc4820   /*  254 */,    0xebc18760ed78a77a   /*  255 */
-    };
+    ];
 
-    private static readonly ulong[] SBox2 = new ulong[256]
-    {
+    private static readonly ulong[] SBox2 =
+    [
         0xe6a6be5a05a12138   /*  256 */,    0xb5a122a5b4f87c98   /*  257 */,
         0x563c6089140b6990   /*  258 */,    0x4c46cb2e391f5dd5   /*  259 */,
         0xd932addbc9b79434   /*  260 */,    0x08ea70e42015aff5   /*  261 */,
@@ -273,10 +273,10 @@ public abstract class TigerBase : BlockHashAlgorithm
         0x388cb31a69dde259   /*  506 */,    0x2db4a83455820a86   /*  507 */,
         0x9010a91e84711ae9   /*  508 */,    0x4df7f0b7b1498371   /*  509 */,
         0xd62a2eabc0977179   /*  510 */,    0x22fac097aa8d5c0e   /*  511 */
-    };
+    ];
 
-    private static readonly ulong[] SBox3 = new ulong[256]
-    {
+    private static readonly ulong[] SBox3 =
+    [
         0xf49fcc2ff1daf39b   /*  512 */,    0x487fd5c66ff29281   /*  513 */,
         0xe8a30667fcdca83f   /*  514 */,    0x2c9b4be3d2fcce63   /*  515 */,
         0xda3ff74b93fbbbc2   /*  516 */,    0x2fa165d2fe70ba66   /*  517 */,
@@ -405,10 +405,10 @@ public abstract class TigerBase : BlockHashAlgorithm
         0xbf619f9954c21157   /*  762 */,    0xeabac46040a8eae9   /*  763 */,
         0x454c6fe9f2c0c1cd   /*  764 */,    0x419cf6496412691c   /*  765 */,
         0xd3dc3bef265b0f70   /*  766 */,    0x6d0e60f5c3578a9e   /*  767 */
-    };
+    ];
 
-    private static readonly ulong[] SBox4 = new ulong[256]
-    {
+    private static readonly ulong[] SBox4 =
+    [
         0x5b0e608526323c55   /*  768 */,    0x1a46c1a9fa1b59f5   /*  769 */,
         0xa9e245a17c4c8ffa   /*  770 */,    0x65ca5159db2955d7   /*  771 */,
         0x05db0a76ce35afc2   /*  772 */,    0x81eac77ea9113d45   /*  773 */,
@@ -537,7 +537,7 @@ public abstract class TigerBase : BlockHashAlgorithm
         0xcb0c0708705a36a3   /* 1018 */,    0xe74d14754f986044   /* 1019 */,
         0xcd56d9430ea8280e   /* 1020 */,    0xc12591d7535f5065   /* 1021 */,
         0xc83223f1720aef96   /* 1022 */,    0xc3a0396f7363a51f   /* 1023 */
-    };
+    ];
 
     #endregion
 

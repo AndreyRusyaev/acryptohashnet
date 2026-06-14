@@ -9,12 +9,12 @@ namespace acryptohashnet;
 /// </summary>
 public sealed class MD4 : BlockHashAlgorithm
 {
-    private static readonly uint[] Constants = new uint[]
-    {
+    private static readonly uint[] Constants =
+    [
         0x00000000,
         0x5a827999, // [2 ^ 30 * sqrt(2)]
         0x6ed9eba1, // [2 ^ 30 * sqrt(3)]
-    };
+    ];
 
     private readonly HashState state = new HashState();
 

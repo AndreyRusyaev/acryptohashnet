@@ -10,7 +10,7 @@ public class MD2Benchmark
     private global::acryptohashnet.MD2 md2Impl = new global::acryptohashnet.MD2();
 
     [ParamsSource(nameof(InputSource))]
-    public byte[] Input { get; set; }
+    public required byte[] Input { get; set; }
 
     public IEnumerable<byte[]> InputSource { get; } = TestSuite.BinaryMessages;
 

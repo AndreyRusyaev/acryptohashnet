@@ -12,8 +12,8 @@ public abstract class HavalBase : BlockHashAlgorithm
 {
     private const uint HavalVersion = 1;
 
-    private static readonly uint[] WordOrders = new uint[]
-    {
+    private static readonly uint[] WordOrders =
+    [
         // pass 2
         05, 14, 26, 18, 11, 28, 07, 16, 00, 23, 20, 22, 01, 10, 04, 08,
         30, 03, 21, 09, 17, 24, 29, 06, 19, 12, 15, 13, 02, 25, 31, 27,
@@ -26,10 +26,10 @@ public abstract class HavalBase : BlockHashAlgorithm
         // pass 5
         27, 03, 21, 26, 17, 11, 20, 29, 19, 00, 12, 07, 13, 08, 31, 10,
         05, 09, 14, 30, 18, 06, 28, 24, 02, 23, 16, 22, 04, 01, 25, 15
-    };
+    ];
 
-    private static readonly uint[] Constants = new uint[]
-    {
+    private static readonly uint[] Constants =
+    [
         // pass 2
         0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c, 0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5, 0xb5470917,
         0x9216d5d9, 0x8979fb1b, 0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7, 0xb8e1afed, 0x6a267e96,
@@ -50,7 +50,7 @@ public abstract class HavalBase : BlockHashAlgorithm
         0x7d84a5c3, 0x3b8b5ebe, 0xe06f75d8, 0x85c12073, 0x401a449f, 0x56c16aa6, 0x4ed3aa62, 0x363f7706,
         0x1bfedf72, 0x429b023d, 0x37d0d724, 0xd00a1248, 0xdb0fead3, 0x49f1c09b, 0x075372c9, 0x80991b7b,
         0x25d479d8, 0xf6e8def7, 0xe3fe501a, 0xb6794c3b, 0x976ce0bd, 0x04c006ba, 0xc1a94fb6, 0x409f60c4
-    };
+    ];
 
     private readonly HavalHashSize havalHashSize;
 

@@ -5,12 +5,11 @@ namespace acryptohashnet;
 
 public abstract class SnefruBase : BlockHashAlgorithm
 {
-    private static readonly uint[][] Constants = new uint[][]
-    {
+    private static readonly uint[][] Constants =
+    [
         #region S-Box 0
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x64f9001b, 0xfeddcdf6, 0x7c8ff1e2, 0x11d71514, 0x8b8c18d3,
             /*   5*/ 0xdddf881e, 0x6eab5056, 0x88ced8e1, 0x49148959, 0x69c56fd5,
             /*  10*/ 0xb7994f03, 0x0fbcee3e, 0x3c264940, 0x21557e58, 0xe14b3fc2,
@@ -63,14 +62,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x1a82a373, 0x0896aa49, 0x42233681, 0xf62c55cb, 0x9f1c5404,
             /* 250*/ 0xf74fb15c, 0xc06e4312, 0x6ffe5d72, 0x8aa8678b, 0x337cd129,
             /* 255*/ 0x8211cefd
-        },
+        ],
 
         #endregion
 
         #region S-Box 1
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x074a1d09, 0x52a10e5a, 0x9275a3f8, 0x4b82506c, 0x37df7e1b,
             /*   5*/ 0x4c78b3c5, 0xcefab1da, 0xf472267e, 0xb63045f6, 0xd66a1fc0,
             /*  10*/ 0x400298e3, 0x27e60c94, 0x87d2f1b8, 0xdf9e56cc, 0x45cd1803,
@@ -123,14 +121,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x3c8cf495, 0xbefceebd, 0xfd25b714, 0xc498d83d, 0x0d2e1a8d,
             /* 250*/ 0xe9f966ac, 0x0e387445, 0x435419e5, 0x5e7ebec4, 0xaa90b8d9,
             /* 255*/ 0xff1a3a96
-        },
+        ],
 
         #endregion S-Box 1
 
         #region S-Box 2
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x4a8fe4e3, 0xf27d99cd, 0xd04a40ca, 0xcb5ff194, 0x3668275a,
             /*   5*/ 0xff4816be, 0xa78b394c, 0x4c6be9db, 0x4eec38d2, 0x4296ec80,
             /*  10*/ 0xcdce96f8, 0x888c2f38, 0xe75508f5, 0x7b916414, 0x060aa14a,
@@ -183,14 +180,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x2184bb6e, 0x70c43c1e, 0x4d435915, 0xae7b8523, 0xb6fb06bc,
             /* 250*/ 0x5431ee76, 0xfdbc5d26, 0xed77493d, 0xc5712ee4, 0xa8380437,
             /* 255*/ 0x2eef261a
-        },
+        ],
 
         #endregion S-Box 2
 
         #region S-Box 3
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x5a79392b, 0xb8af32c2, 0x41f7720a, 0x833a61ec, 0x13dfedac,
             /*   5*/ 0xc4990bc4, 0xdc0f54bc, 0xfedd5e88, 0x80da1881, 0x4dea1afd,
             /*  10*/ 0xfd402cc6, 0xae67cc7a, 0xc5238525, 0x8ea01254, 0xb56b9bd5,
@@ -243,14 +239,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x674a6bf1, 0x5b5d587f, 0x4772deaa, 0x4a63968f, 0x0be68686,
             /* 250*/ 0x513d6426, 0x939a4787, 0xbba89296, 0x4ec20007, 0x818d0d08,
             /* 255*/ 0xff64dfd6
-        },
+        ],
 
         #endregion S-Box 3
 
         #region S-Box 4
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0xcb2297cb, 0xdb48a144, 0xa16cbe4b, 0xbbea1d6c, 0x5af6b6b7,
             /*   5*/ 0x8a8110b6, 0xf9236ef9, 0xc98f83e6, 0x0f9c65b8, 0x252d4a89,
             /*  10*/ 0xa497f068, 0xa5d7ed2d, 0x94c22845, 0x9da1c8c4, 0xe27c2e2e,
@@ -303,14 +298,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0xecc963cf, 0x3c6984aa, 0x4ed056ef, 0x9ca56976, 0x8f3e80d4,
             /* 250*/ 0xb5bae7c5, 0x30b5caf5, 0x63f33a64, 0xa9e4bbde, 0xf6b82298,
             /* 255*/ 0x4d673c1d
-        },
+        ],
 
         #endregion S-Box 4
 
         #region S-Box 5
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x4b4f1121, 0xba183081, 0xc784f41f, 0xd17d0bac, 0x083d2267,
             /*   5*/ 0x37b1361e, 0x3581ad05, 0xfda2f6bc, 0x1e892cdd, 0xb56d3c3a,
             /*  10*/ 0x32140e46, 0x138d8aab, 0xe14773d4, 0x5b0e71df, 0x5d1fe055,
@@ -363,14 +357,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x485918fc, 0xd635d04c, 0xdf96ac33, 0x66f2d303, 0x247056ae,
             /* 250*/ 0xa1a7b2a8, 0x27d8cc9c, 0x17b6e998, 0x7bf5590f, 0xfe97f557,
             /* 255*/ 0x5471d8a2
-        },
+        ],
 
         #endregion S-Box 5
 
         #region S-Box 6
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x83a327a1, 0x9f379f51, 0x40a7d007, 0x11307423, 0x224587c1,
             /*   5*/ 0xac27d63b, 0x3b7e64ea, 0x2e1cbfa6, 0x09996000, 0x03bc0e2c,
             /*  10*/ 0xd4c4478a, 0x4542e0ab, 0xfeda26d4, 0xc1d10fcb, 0x8252f596,
@@ -423,14 +416,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0xdf81b4d8, 0xd7809e55, 0xd6d883d9, 0x2cc7978c, 0x5e787cc5,
             /* 250*/ 0xdd0033d1, 0xa050c937, 0x97f75dcd, 0x299de580, 0x41e2b261,
             /* 255*/ 0xea5a54f1
-        },
+        ],
 
         #endregion S-Box 6
 
         #region S-Box 7
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x7e672590, 0xbea513bb, 0x2c906fe6, 0x86029c2b, 0x55dc4f74,
             /*   5*/ 0x0553398e, 0x63e09647, 0xcafd0bab, 0x264c37df, 0x8272210f,
             /*  10*/ 0x67afa669, 0x12d98a5f, 0x8cab23c4, 0x75c68bd1, 0xc3370470,
@@ -483,14 +475,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x4d01f931, 0x34edf760, 0xb45f266b, 0xd5d4de14, 0x52d8ac35,
             /* 250*/ 0x15cfd885, 0xcbc5cd21, 0x4cd76d4d, 0x7c80ef54, 0xbc92ee75,
             /* 255*/ 0x1e56a1f6
-        },
+        ],
 
         #endregion S-Box 7
 
         #region S-Box 8
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0xbaa20b6c, 0x9ffbad26, 0xe1f7d738, 0x794aec8d, 0xc9e9cf3c,
             /*   5*/ 0x8a9a7846, 0xc57c4685, 0xb9a92fed, 0x29cb141f, 0x52f9ddb7,
             /*  10*/ 0xf68ba6bc, 0x19ccc020, 0x4f584aaa, 0x3bf6a596, 0x003b7cf7,
@@ -543,14 +534,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0xf796f168, 0x71492c84, 0x33c0f5a6, 0x3144f6ec, 0x25dc412e,
             /* 250*/ 0xb16c5743, 0x83a1fa7e, 0x0997b101, 0xb627e6e8, 0xcf33905c,
             /* 255*/ 0x8456fb65
-        },
+        ],
 
         #endregion S-Box 8
 
         #region S-Box 9
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0xb29bea74, 0xc35da605, 0x305c1ca3, 0xd2e9f5bc, 0x6fd5bff4,
             /*   5*/ 0xff347703, 0xfc45b163, 0xf498e068, 0xb71229fc, 0x81acc3fb,
             /*  10*/ 0x78538a8b, 0x984ecf81, 0xa5da47a4, 0x8f259eef, 0x6475dc65,
@@ -603,14 +593,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0xb1ae572a, 0x7c0d7bc1, 0xe1c37eb2, 0xf542aa60, 0xf1a48ea0,
             /* 250*/ 0xd067b89f, 0xbbfa195d, 0x1a049b0d, 0x315946aa, 0x36d1b447,
             /* 255*/ 0x6d2ebdf0
-        },
+        ],
 
         #endregion S-Box 9
 
         #region S-Box 10
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x0d188a6d, 0x12cea0db, 0x7e63740e, 0x6a444821, 0x253d234f,
             /*   5*/ 0x6ffc6597, 0x94a6bdef, 0x33ee1b2f, 0x0a6c00c0, 0x3aa336b1,
             /*  10*/ 0x5af55d17, 0x265fb3dc, 0x0e89cf4d, 0x0786b008, 0xc80055b8,
@@ -663,14 +652,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x3fd80f52, 0x4290a8be, 0x75ff44c7, 0xa554e546, 0xe1023499,
             /* 250*/ 0xbf2652e3, 0x7d20399e, 0xa1df7e82, 0x177092ee, 0x217dd3f1,
             /* 255*/ 0x7c1ff8d9
-        },
+        ],
 
         #endregion
 
         #region S-Box 11
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x12113f2e, 0xbfbd0785, 0xf11793fb, 0xa5bff566, 0x83c7b0e5,
             /*   5*/ 0x72fb316b, 0x75526a9a, 0x41e0e612, 0x7156ba09, 0x53ce7dee,
             /*  10*/ 0x0aa26881, 0xa43e0d7d, 0x3da73ca3, 0x182761ed, 0xbd5077ff,
@@ -723,14 +711,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x9ee7d7c8, 0xf9f24fa9, 0xdb04b35d, 0x9ab0c9e0, 0x651f4417,
             /* 250*/ 0x028f8b07, 0x6e28d9aa, 0xfba96319, 0x8ed66687, 0xfecbc58d,
             /* 255*/ 0x954ddb44
-        },
+        ],
 
         #endregion S-Box 11
 
         #region S-Box 12
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x7b0bdffe, 0x865d16b1, 0x49a058c0, 0x97abaa3f, 0xcaacc75d,
             /*   5*/ 0xaba6c17d, 0xf8746f92, 0x6f48aeed, 0x8841d4b5, 0xf36a146a,
             /*  10*/ 0x73c390ab, 0xe6fb558f, 0x87b1019e, 0x26970252, 0x246377b2,
@@ -783,14 +770,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x19831810, 0xc670d518, 0xb05b51d8, 0x0f3a1ce5, 0x6caa1f9c,
             /* 250*/ 0xaacc31be, 0x949ed050, 0x1ead07e7, 0xa8479abd, 0xd6cffcd5,
             /* 255*/ 0x936993ef
-        },
+        ],
 
         #endregion S-Box 12
 
         #region S-Box 13
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x472e91cb, 0x5444b5b6, 0x62be5861, 0x1be102c7, 0x63e4b31e,
             /*   5*/ 0xe81f71b7, 0x9e2317c9, 0x39a408ae, 0x518024f4, 0x1731c66f,
             /*  10*/ 0x68cbc918, 0x71fb0c9e, 0xd03b7fdd, 0x7d6222eb, 0x9057eda3,
@@ -843,14 +829,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x169d9229, 0x887761df, 0x00b667d5, 0xdb425e59, 0xb72f2844,
             /* 250*/ 0x9b0ac1f5, 0x9c737e3a, 0x2b85476c, 0x6722add6, 0x44a63297,
             /* 255*/ 0x0d688ced
-        },
+        ],
 
         #endregion S-Box 13
 
         #region S-Box 14
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0xabc59484, 0x4107778a, 0x8ad94c6f, 0xfe83df90, 0x0f64053f,
             /*   5*/ 0xd1292e9d, 0xc5744356, 0x8dd1abb4, 0x4c4e7667, 0xfb4a7fc1,
             /*  10*/ 0x74f402cb, 0x70f06afd, 0xa82286f2, 0x918dd076, 0x7a97c5ce,
@@ -903,14 +888,13 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0xca0041d8, 0xbbea3aaf, 0xda628291, 0x9d5c95d4, 0xadd504a6,
             /* 250*/ 0xc39ab482, 0x5e9e14a4, 0x2be065f0, 0x2a13fc3a, 0x9052e8ec,
             /* 255*/ 0xaf6f5afc
-        },
+        ],
 
         #endregion  S-Box 14
 
         #region S-Box 15
 
-        new uint[256]
-        {
+        [
             /*   0*/ 0x519aa8b5, 0xbb303da9, 0xe00e2b10, 0xdfa6c1db, 0x2e6b952e,
             /*   5*/ 0xee10dc23, 0x37936d09, 0x1fc42e92, 0x39b25a9f, 0x13ff89f4,
             /*  10*/ 0xc8f53fea, 0x18500bc7, 0x95a0379d, 0x98f751c2, 0x2289c42f,
@@ -963,15 +947,15 @@ public abstract class SnefruBase : BlockHashAlgorithm
             /* 245*/ 0x869222f0, 0x6ef21769, 0x839d20a5, 0xd03b24c9, 0xf412601e,
             /* 250*/ 0x6d72a243, 0x0e018dfd, 0x89f3721a, 0xc94f4134, 0x2f992f20,
             /* 255*/ 0x4d87253c
-        }
+        ]
 
         #endregion
-    };
+    ];
 
-    private static readonly int[] Shifts = new int[]
-    {
+    private static readonly int[] Shifts =
+    [
         16, 8, 16, 24
-    };
+    ];
 
     private static readonly int Mask = 0x0000000f;
 

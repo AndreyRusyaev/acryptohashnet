@@ -1,3 +1,8 @@
+v3.2.0
+
+* net 10.0 support, 
+* migrate to modern c# features (file-scoped namespaces)
+
 v3.1.0
 
 * FEATURE: Original set of Keccak hash algorithms implemented.

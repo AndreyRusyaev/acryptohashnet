@@ -8,8 +8,8 @@ namespace acryptohashnet;
 /// </summary>
 public sealed class Sha2_384 : BlockHashAlgorithm
 {
-    private static readonly ulong[] Constants = new ulong[]
-    {
+    private static readonly ulong[] Constants =
+    [
         // round 1
         0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
         0x3956c25bf348b538, 0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118,
@@ -40,7 +40,7 @@ public sealed class Sha2_384 : BlockHashAlgorithm
         // round 10
         0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc, 0x431d67c49c100d4c,
         0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
-    };
+    ];
     
     private readonly HashState state = new HashState();
 
