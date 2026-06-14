@@ -2,8 +2,15 @@ using System.IO;
 
 using acryptohashnet;
 
+// TODO: Generate for all supported hash algorithms
 public static class HashFileTool
 {
+    public static HashResult Md2(string filePath)
+    {
+        using var stream = File.OpenRead(filePath);
+        return HashDataTool.Md2(stream);
+    }
+
     public static HashResult Md4(string filePath)
     {
         using var stream = File.OpenRead(filePath);
